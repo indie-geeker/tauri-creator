@@ -1,0 +1,30 @@
+{
+  "name": "i18n",
+  "description": "Internationalization framework using react-i18next with persistence.",
+  "stage": "v1",
+  "dependsOn": [
+    "preferences"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "i18next",
+    "react-i18next"
+  ],
+  "cargoDependencies": [
+    "tauri-plugin-os"
+  ],
+  "files": [
+    "src/i18n",
+    "locales"
+  ],
+  "tauriCommands": [],
+  "capabilities": [
+    "os:allow-locale"
+  ],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `i18n` imports and initializations from `src/App.tsx`.",
+    "Delete `src/i18n` and `locales` directories."
+  ],
+  "spectaExports": []
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "native-menu-import-effect",
+    "file": "src/App.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "kind": "named-import",
+    "module": "react",
+    "names": [
+      "useEffect"
+    ]
+  },
+  {
+    "id": "native-menu-import",
+    "file": "src/App.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "insert": "import { buildAppMenu } from './lib/menu'"
+  },
+  {
+    "id": "native-menu-effect",
+    "file": "src/App.tsx",
+    "marker": "  // TAURI_CREATOR:APP_EFFECT",
+    "insert": "  useEffect(() => {\n    buildAppMenu()\n  }, [])"
+  }
+]

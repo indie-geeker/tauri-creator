@@ -1,0 +1,40 @@
+{
+  "name": "{{APP_NAME}}",
+  "private": true,
+  "version": "0.1.0",
+  "license": "{{APP_LICENSE}}",
+  "packageManager": "{{PACKAGE_MANAGER_SPEC}}",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "rust:fmt": "cd src-tauri && cargo fmt",
+    "rust:fmt:check": "cd src-tauri && cargo fmt --check",
+    "rust:test": "cd src-tauri && cargo test",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "check:all": "tsc --noEmit && vitest run && cd src-tauri && cargo fmt --check && cargo test"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.9.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.9.6",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vitest": "^4.0.15"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

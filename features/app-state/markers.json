@@ -1,0 +1,20 @@
+[
+  {
+    "id": "app-state-query-import",
+    "file": "src/main.tsx",
+    "marker": "// TAURI_CREATOR:FRONTEND_IMPORTS",
+    "insert": "import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\nimport { ReactQueryDevtools } from '@tanstack/react-query-devtools'\n\nconst queryClient = new QueryClient({\n  defaultOptions: {\n    queries: {\n      staleTime: 1000 * 60 * 5,\n      retry: 1,\n    },\n  },\n})"
+  },
+  {
+    "id": "app-state-query-provider-start",
+    "file": "src/main.tsx",
+    "marker": "    {/* TAURI_CREATOR:APP_PROVIDERS_START */}",
+    "insert": "    <QueryClientProvider client={queryClient}>"
+  },
+  {
+    "id": "app-state-query-provider-end",
+    "file": "src/main.tsx",
+    "marker": "    {/* TAURI_CREATOR:APP_PROVIDERS_END */}",
+    "insert": "      <ReactQueryDevtools initialIsOpen={false} />\n    </QueryClientProvider>"
+  }
+]

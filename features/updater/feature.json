@@ -1,0 +1,50 @@
+{
+  "name": "updater",
+  "description": "Tauri updater integration with release configuration checks.",
+  "stage": "v1",
+  "dependsOn": [
+    "project-governance"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "@tauri-apps/plugin-updater"
+  ],
+  "cargoDependencies": [
+    "tauri-plugin-updater"
+  ],
+  "files": [
+    "src/features/updater",
+    "src-tauri/src/features/updater.rs",
+    "docs/features/updater.md"
+  ],
+  "tauriCommands": [
+    "get_updater_status"
+  ],
+  "capabilities": [
+    "updater:default"
+  ],
+  "qualityChecks": [
+    "npm run typecheck",
+    "npm run test:run",
+    "npm run rust:test"
+  ],
+  "removeHints": [
+    "Remove updater status command registration.",
+    "Remove release configuration notes from project docs.",
+    "Remove updater actions from menus or settings if the app added them later."
+  ],
+  "spectaExports": [
+    {
+      "module": "features::updater",
+      "commands": [
+        "get_updater_status"
+      ],
+      "files": [
+        "src-tauri/src/features/updater.rs"
+      ],
+      "types": [
+        "UpdaterStatus"
+      ]
+    }
+  ]
+}

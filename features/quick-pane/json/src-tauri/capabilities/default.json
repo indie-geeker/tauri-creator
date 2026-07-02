@@ -1,0 +1,4 @@
+{
+  "windows": ["quick-pane"],
+  "permissions": ["core:event:default"]
+}

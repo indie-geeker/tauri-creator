@@ -1,0 +1,8 @@
+[
+  {
+    "id": "specta-bindings-rust-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "// TAURI_CREATOR:RUST_IMPORTS",
+    "insert": "mod bindings;"
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "name": "ui-shadcn",
+  "description": "Base UI component library using shadcn/ui and Radix.",
+  "stage": "v1",
+  "dependsOn": [
+    "ui-tailwind"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "@radix-ui/react-alert-dialog",
+    "@radix-ui/react-checkbox",
+    "@radix-ui/react-dialog",
+    "@radix-ui/react-dropdown-menu",
+    "@radix-ui/react-label",
+    "@radix-ui/react-popover",
+    "@radix-ui/react-radio-group",
+    "@radix-ui/react-scroll-area",
+    "@radix-ui/react-select",
+    "@radix-ui/react-separator",
+    "@radix-ui/react-slot",
+    "@radix-ui/react-switch",
+    "@radix-ui/react-toggle",
+    "@radix-ui/react-toggle-group",
+    "@radix-ui/react-tooltip",
+    "class-variance-authority",
+    "cmdk",
+    "react-day-picker",
+    "react-resizable-panels",
+    "sonner"
+  ],
+  "cargoDependencies": [],
+  "files": [
+    "src/components/ui",
+    "src/components/ThemeProvider.tsx",
+    "src/components/ErrorBoundary.tsx",
+    "src/hooks/use-mobile.ts",
+    "src/hooks/use-theme.ts",
+    "src/lib/theme-context.ts",
+    "src/lib/utils.ts"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `ThemeProvider` wrapper from `src/App.tsx`.",
+    "Delete `src/components/ui`.",
+    "Delete `ThemeProvider.tsx`, `ErrorBoundary.tsx`, `use-mobile.ts`, `use-theme.ts`, `theme-context.ts`."
+  ],
+  "spectaExports": []
+}

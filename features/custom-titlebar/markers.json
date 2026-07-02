@@ -1,0 +1,14 @@
+[
+  {
+    "id": "custom-titlebar-import",
+    "file": "src/App.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "insert": "import { Titlebar } from './components/titlebar'"
+  },
+  {
+    "id": "custom-titlebar-component",
+    "file": "src/App.tsx",
+    "marker": "{/* TAURI_CREATOR:APP_CONTENT */}",
+    "insert": "        <Titlebar />"
+  }
+]

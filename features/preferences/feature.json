@@ -1,0 +1,50 @@
+{
+  "name": "preferences",
+  "description": "App-data JSON preferences backed by typed Tauri commands.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "@tanstack/react-query"
+  ],
+  "cargoDependencies": [
+    "serde",
+    "serde_json"
+  ],
+  "files": [
+    "src/features/preferences",
+    "src-tauri/src/features/preferences.rs",
+    "docs/features/preferences.md"
+  ],
+  "tauriCommands": [
+    "load_preferences",
+    "save_preferences"
+  ],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run typecheck",
+    "npm run test:run",
+    "npm run rust:fmt:check",
+    "npm run rust:test"
+  ],
+  "removeHints": [
+    "Remove preferences query keys and hooks.",
+    "Remove preferences command registration.",
+    "Remove preferences capability entries."
+  ],
+  "spectaExports": [
+    {
+      "module": "features::preferences",
+      "commands": [
+        "load_preferences",
+        "save_preferences"
+      ],
+      "files": [
+        "src-tauri/src/features/preferences.rs"
+      ],
+      "types": [
+        "PreferencesSnapshot"
+      ]
+    }
+  ]
+}

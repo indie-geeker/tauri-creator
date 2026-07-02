@@ -1,0 +1,26 @@
+{
+  "name": "ui-preferences",
+  "description": "Generic settings panel for app-wide shortcuts and appearance preferences.",
+  "stage": "v1",
+  "dependsOn": [
+    "preferences",
+    "ui-shadcn",
+    "app-state",
+    "i18n",
+    "quick-pane"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [],
+  "files": [
+    "src/components/preferences"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `<PreferencesDialog />` from global UI.",
+    "Delete `src/components/preferences`."
+  ],
+  "spectaExports": []
+}

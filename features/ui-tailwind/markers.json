@@ -1,0 +1,20 @@
+[
+  {
+    "id": "ui-tailwind-css-import",
+    "file": "src/main.tsx",
+    "marker": "// TAURI_CREATOR:FRONTEND_IMPORTS",
+    "insert": "import './tailwind.css'"
+  },
+  {
+    "id": "ui-tailwind-vite-plugin-import",
+    "file": "vite.config.ts",
+    "marker": "// TAURI_CREATOR:VITE_IMPORTS",
+    "insert": "import tailwindcss from '@tailwindcss/vite'"
+  },
+  {
+    "id": "ui-tailwind-vite-plugin",
+    "file": "vite.config.ts",
+    "marker": "    // TAURI_CREATOR:VITE_PLUGINS",
+    "insert": "    tailwindcss(),"
+  }
+]

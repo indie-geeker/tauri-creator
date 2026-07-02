@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+dist/
+*.log
+.env
+.env.*
+generated/
+test-run/
+tmp/
+tauri-tray/
+docs/plans/
+examples/*/node_modules/
+examples/*/dist/
+examples/*/src-tauri/target/

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "{{APP_PRODUCT_NAME}}",
+  "version": "0.1.0",
+  "identifier": "{{APP_IDENTIFIER}}",
+  "build": {
+    "beforeDevCommand": "{{PACKAGE_MANAGER}} run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "{{PACKAGE_MANAGER}} run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "{{APP_PRODUCT_NAME}}",
+        "width": {{APP_WINDOW_WIDTH}},
+        "height": {{APP_WINDOW_HEIGHT}},
+        "minWidth": 800,
+        "minHeight": 560,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' tauri: ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": []
+  }
+}

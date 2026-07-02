@@ -1,0 +1,64 @@
+:root {
+  color: #172026;
+  background: #f6f7f9;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+}
+
+button {
+  border: 1px solid #b8c0cc;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #172026;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.625rem 0.875rem;
+}
+
+button:hover {
+  border-color: #667085;
+}
+
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--background, #ffffff);
+  border-radius: var(--app-corner-radius, 0px);
+}
+
+.app-shell {
+  flex: 1;
+  display: flex;
+  box-sizing: border-box;
+  padding: 2rem;
+}
+
+.app-panel {
+  max-width: 760px;
+}
+
+.app-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.muted {
+  color: #596579;
+}

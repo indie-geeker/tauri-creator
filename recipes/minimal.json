@@ -1,0 +1,5 @@
+{
+  "name": "minimal",
+  "description": "Base Tauri React app with no optional feature packages.",
+  "features": []
+}

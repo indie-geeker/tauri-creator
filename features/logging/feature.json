@@ -1,0 +1,34 @@
+{
+  "name": "logging",
+  "description": "Rust and frontend logging through tauri-plugin-log.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "@tauri-apps/plugin-log"
+  ],
+  "cargoDependencies": [
+    "log",
+    "tauri-plugin-log"
+  ],
+  "files": [
+    "src/lib/logger.ts",
+    "src/lib/logger.test.ts",
+    "docs/features/logging.md"
+  ],
+  "tauriCommands": [],
+  "capabilities": [
+    "log:default"
+  ],
+  "qualityChecks": [
+    "npm run typecheck",
+    "npm run test:run",
+    "npm run rust:fmt:check"
+  ],
+  "removeHints": [
+    "Replace imports from src/lib/logger if application code depends on the wrapper.",
+    "Remove log facade calls from Rust modules if you added any.",
+    "Remove the log capability if no other feature uses frontend log guest bindings."
+  ],
+  "spectaExports": []
+}

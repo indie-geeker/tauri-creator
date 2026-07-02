@@ -1,0 +1,18 @@
+{
+  "name": "production",
+  "description": "Desktop app plus persistence, updater, release workflow, project governance, and strict quality gates.",
+  "features": [
+    "specta-bindings",
+    "preferences",
+    "logging",
+    "diagnostics",
+    "app-lifecycle",
+    "command-palette",
+    "native-menu",
+    "ui-layout",
+    "sqlite",
+    "project-governance",
+    "updater",
+    "dx-tools"
+  ]
+}

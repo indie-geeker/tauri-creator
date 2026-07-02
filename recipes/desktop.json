@@ -1,0 +1,16 @@
+{
+  "name": "desktop",
+  "description": "Essential app plus the stable, non-conflicting desktop production feature set.",
+  "features": [
+    "specta-bindings",
+    "preferences",
+    "logging",
+    "diagnostics",
+    "app-lifecycle",
+    "command-palette",
+    "native-menu",
+    "ui-layout",
+    "sqlite",
+    "updater"
+  ]
+}

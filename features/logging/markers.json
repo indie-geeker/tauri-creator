@@ -1,0 +1,8 @@
+[
+  {
+    "id": "logging-plugin",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "        // TAURI_CREATOR:TAURI_PLUGINS",
+    "insert": "        .plugin({\n            #[allow(unused_mut)]\n            let mut targets = vec![\n                tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),\n                #[cfg(target_os = \"macos\")]\n                tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::LogDir {\n                    file_name: None,\n                }),\n            ];\n            #[cfg(not(target_os = \"linux\"))]\n            targets.push(tauri_plugin_log::Target::new(\n                tauri_plugin_log::TargetKind::Webview,\n            ));\n            tauri_plugin_log::Builder::new()\n                .level(if cfg!(debug_assertions) {\n                    log::LevelFilter::Debug\n                } else {\n                    log::LevelFilter::Info\n                })\n                .targets(targets)\n                .build()\n        })"
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "name": "sqlite",
+  "description": "SQLite persistence with Rust repositories and frontend query hooks.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "@tanstack/react-query"
+  ],
+  "cargoDependencies": [
+    "rusqlite"
+  ],
+  "files": [
+    "src/features/sqlite",
+    "src-tauri/src/infrastructure/database",
+    "docs/features/sqlite.md"
+  ],
+  "tauriCommands": [
+    "get_database_health",
+    "list_notes",
+    "create_note",
+    "update_note",
+    "delete_note"
+  ],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run typecheck",
+    "npm run test:run",
+    "npm run rust:test"
+  ],
+  "removeHints": [
+    "Remove database initialization from Tauri setup.",
+    "Remove SQLite repository modules.",
+    "Remove database health command registration."
+  ],
+  "spectaExports": [
+    {
+      "module": "infrastructure::database",
+      "commands": [
+        "get_database_health",
+        "list_notes",
+        "create_note",
+        "update_note",
+        "delete_note"
+      ],
+      "files": [
+        "src-tauri/src/infrastructure/database/mod.rs"
+      ],
+      "types": [
+        "DatabaseHealth",
+        "Note",
+        "CreateNoteInput",
+        "UpdateNoteInput"
+      ]
+    }
+  ]
+}

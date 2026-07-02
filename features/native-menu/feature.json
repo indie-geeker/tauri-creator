@@ -1,0 +1,22 @@
+{
+  "name": "native-menu",
+  "description": "Native OS application menu built dynamically from JavaScript.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [],
+  "files": [
+    "src/lib/menu.ts"
+  ],
+  "tauriCommands": [],
+  "capabilities": [
+    "core:menu:default"
+  ],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `buildAppMenu` call from `src/App.tsx`.",
+    "Remove `src/lib/menu.ts`."
+  ],
+  "spectaExports": []
+}

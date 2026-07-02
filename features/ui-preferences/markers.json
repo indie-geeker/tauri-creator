@@ -1,0 +1,14 @@
+[
+  {
+    "id": "ui-preferences-import",
+    "file": "src/App.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "insert": "import { PreferencesDialog } from './components/preferences/PreferencesDialog'"
+  },
+  {
+    "id": "ui-preferences-component",
+    "file": "src/App.tsx",
+    "marker": "      {/* TAURI_CREATOR:APP_CONTENT */}",
+    "insert": "      <PreferencesDialog />"
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "name": "quick-pane",
+  "description": "Floating quick-entry window with global shortcut support.",
+  "stage": "v2",
+  "dependsOn": [
+    "preferences"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "lucide-react"
+  ],
+  "cargoDependencies": [
+    "tauri-plugin-global-shortcut",
+    "tauri-nspanel"
+  ],
+  "files": [
+    "quick-pane.html",
+    "src/quick-pane-main.tsx",
+    "src/features/quick-pane",
+    "src-tauri/src/features/quick_pane.rs",
+    "docs/features/quick-pane.md"
+  ],
+  "tauriCommands": [
+    "get_quick_pane_state",
+    "get_default_quick_pane_shortcut",
+    "show_quick_pane",
+    "dismiss_quick_pane",
+    "toggle_quick_pane",
+    "update_quick_pane_shortcut"
+  ],
+  "capabilities": [
+    "core:event:default"
+  ],
+  "qualityChecks": [
+    "npm run typecheck",
+    "npm run test:run",
+    "npm run rust:test"
+  ],
+  "removeHints": [
+    "Remove secondary window entry from Vite config.",
+    "Remove quick-pane capability.",
+    "Remove global shortcut registration from setup."
+  ],
+  "spectaExports": [
+    {
+      "module": "features::quick_pane",
+      "commands": [
+        "get_quick_pane_state",
+        "get_default_quick_pane_shortcut",
+        "show_quick_pane",
+        "dismiss_quick_pane",
+        "toggle_quick_pane",
+        "update_quick_pane_shortcut"
+      ],
+      "files": [
+        "src-tauri/src/features/quick_pane.rs"
+      ],
+      "types": [
+        "QuickPaneState"
+      ]
+    }
+  ]
+}

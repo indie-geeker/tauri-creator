@@ -1,0 +1,26 @@
+{
+  "name": "app-lifecycle",
+  "description": "macOS close-to-hide, dock reopen, and exit cleanup hooks.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [
+    "log"
+  ],
+  "files": [
+    "docs/features/app-lifecycle.md"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run rust:fmt:check",
+    "npm run rust:test"
+  ],
+  "removeHints": [
+    "Remove lifecycle-specific cleanup marker insertions.",
+    "Remove app-lifecycle assumptions from quick-entry or tray behavior.",
+    "Keep the base run-event marker if other features still use it."
+  ],
+  "spectaExports": []
+}

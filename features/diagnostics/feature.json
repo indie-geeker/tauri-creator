@@ -1,0 +1,48 @@
+{
+  "name": "diagnostics",
+  "description": "Export app diagnostics for debugging production issues.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [
+    "serde",
+    "serde_json"
+  ],
+  "files": [
+    "src/features/diagnostics",
+    "src-tauri/src/features/diagnostics.rs",
+    "docs/features/diagnostics.md"
+  ],
+  "tauriCommands": [
+    "collect_diagnostics",
+    "export_diagnostics"
+  ],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run typecheck",
+    "npm run test:run",
+    "npm run rust:test"
+  ],
+  "removeHints": [
+    "Remove diagnostics actions from settings or command palette.",
+    "Remove diagnostics command registration.",
+    "Remove diagnostics capability entries."
+  ],
+  "spectaExports": [
+    {
+      "module": "features::diagnostics",
+      "commands": [
+        "collect_diagnostics",
+        "export_diagnostics"
+      ],
+      "files": [
+        "src-tauri/src/features/diagnostics.rs"
+      ],
+      "types": [
+        "DiagnosticsSnapshot",
+        "DiagnosticsCheck"
+      ]
+    }
+  ]
+}

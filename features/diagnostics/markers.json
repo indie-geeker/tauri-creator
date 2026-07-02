@@ -1,0 +1,20 @@
+[
+  {
+    "id": "diagnostics-rust-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "    // TAURI_CREATOR:RUST_FEATURE_MODULES",
+    "insert": "    pub mod diagnostics;"
+  },
+  {
+    "id": "diagnostics-collect-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::diagnostics::collect_diagnostics,"
+  },
+  {
+    "id": "diagnostics-export-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::diagnostics::export_diagnostics,"
+  }
+]

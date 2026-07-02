@@ -1,0 +1,80 @@
+[
+  {
+    "id": "quick-pane-vite-import",
+    "file": "vite.config.ts",
+    "marker": "// TAURI_CREATOR:VITE_IMPORTS",
+    "insert": "import { resolve } from 'node:path'"
+  },
+  {
+    "id": "quick-pane-vite-entry",
+    "file": "vite.config.ts",
+    "marker": "  // TAURI_CREATOR:VITE_CONFIG",
+    "insert": "  build: {\n    rolldownOptions: {\n      input: {\n        main: resolve(__dirname, 'index.html'),\n        quickPane: resolve(__dirname, 'quick-pane.html'),\n      },\n    },\n  },"
+  },
+  {
+    "id": "quick-pane-plugin",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_SETUP",
+    "insert": "            app.handle()\n                .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;"
+  },
+  {
+    "id": "quick-pane-nspanel-plugin",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_SETUP",
+    "insert": "            #[cfg(target_os = \"macos\")]\n            app.handle().plugin(tauri_nspanel::init())?;"
+  },
+  {
+    "id": "quick-pane-window-init",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_SETUP",
+    "insert": "            features::quick_pane::init_quick_pane_window(app.handle());"
+  },
+  {
+    "id": "quick-pane-default-shortcut",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_SETUP",
+    "insert": "            features::quick_pane::register_saved_or_default_quick_pane_shortcut(app.handle());"
+  },
+  {
+    "id": "quick-pane-rust-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "    // TAURI_CREATOR:RUST_FEATURE_MODULES",
+    "insert": "    pub mod quick_pane;"
+  },
+  {
+    "id": "quick-pane-state-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::quick_pane::get_quick_pane_state,"
+  },
+  {
+    "id": "quick-pane-default-shortcut-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::quick_pane::get_default_quick_pane_shortcut,"
+  },
+  {
+    "id": "quick-pane-show-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::quick_pane::show_quick_pane,"
+  },
+  {
+    "id": "quick-pane-dismiss-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::quick_pane::dismiss_quick_pane,"
+  },
+  {
+    "id": "quick-pane-toggle-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::quick_pane::toggle_quick_pane,"
+  },
+  {
+    "id": "quick-pane-update-shortcut-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::quick_pane::update_quick_pane_shortcut,"
+  }
+]

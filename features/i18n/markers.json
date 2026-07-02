@@ -1,0 +1,30 @@
+[
+  {
+    "id": "i18n-import-effect",
+    "file": "src/App.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "kind": "named-import",
+    "module": "react",
+    "names": [
+      "useEffect"
+    ]
+  },
+  {
+    "id": "i18n-import",
+    "file": "src/App.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "insert": "import { invoke } from '@tauri-apps/api/core'\nimport { initializeLanguage } from './i18n/language-init'"
+  },
+  {
+    "id": "i18n-effect",
+    "file": "src/App.tsx",
+    "marker": "  // TAURI_CREATOR:APP_EFFECT",
+    "insert": "  useEffect(() => {\n    const initLanguage = async () => {\n      try {\n        const preferences = await invoke<{ language?: string }>('load_preferences')\n        await initializeLanguage(preferences.language ?? 'system')\n      } catch (error) {\n        console.warn('Failed to load preferences for language:', error)\n        await initializeLanguage('system')\n      }\n    }\n    initLanguage()\n  }, [])"
+  },
+  {
+    "id": "i18n-tauri-plugin-os",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "        // TAURI_CREATOR:TAURI_PLUGINS",
+    "insert": "        .plugin(tauri_plugin_os::init())"
+  }
+]

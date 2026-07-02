@@ -1,0 +1,229 @@
+function manifestFromEntry(entry) {
+  return entry?.manifest ?? entry
+}
+
+function enabledFeatureEntries(state, manifests) {
+  return (state.enabledFeatures ?? []).map((featureName) => ({
+    name: featureName,
+    manifest: manifestFromEntry(manifests.get(featureName)),
+  }))
+}
+
+function formatNameList(values) {
+  return values.length === 0 ? 'none' : values.join(', ')
+}
+
+function formatInlineFiles(files) {
+  return files.length === 0 ? 'none' : files.map((file) => `\`${file}\``).join(', ')
+}
+
+function docsFiles(manifest) {
+  return (manifest?.files ?? []).filter((file) => (
+    file.startsWith('docs/features/') && file.endsWith('.md')
+  ))
+}
+
+function frontendFiles(manifest) {
+  return (manifest?.files ?? []).filter((file) => (
+    (file.startsWith('src/') || file.endsWith('.html')) &&
+    !file.startsWith('src-tauri/') &&
+    !file.startsWith('docs/')
+  ))
+}
+
+function backendFiles(manifest) {
+  return (manifest?.files ?? []).filter((file) => file.startsWith('src-tauri/'))
+}
+
+function renderList(rows, emptyText) {
+  return rows.length === 0 ? `- ${emptyText}` : rows.join('\n')
+}
+
+function renderFeatureOverview(entries) {
+  return renderList(entries.map(({ name, manifest }) => {
+    if (!manifest) return `- \`${name}\`: manifest not found`
+    return `- \`${name}\`: ${manifest.description} (stage ${manifest.stage})`
+  }), 'No optional features are enabled.')
+}
+
+function renderCommands(entries) {
+  const rows = []
+
+  for (const { name, manifest } of entries) {
+    for (const command of manifest?.tauriCommands ?? []) {
+      rows.push(`- \`${command}\` - \`${name}\``)
+    }
+  }
+
+  return renderList(rows, 'No feature commands are enabled.')
+}
+
+function renderPermissions(entries) {
+  const rows = []
+
+  for (const { name, manifest } of entries) {
+    for (const permission of manifest?.capabilities ?? []) {
+      rows.push(`- \`${permission}\` - \`${name}\``)
+    }
+  }
+
+  return renderList(rows, 'No feature permissions are declared.')
+}
+
+function renderGeneratedFeatureFiles(entries) {
+  return renderList(entries.map(({ name, manifest }) => {
+    if (!manifest) return `- \`${name}\`: manifest not found`
+    return `- \`${name}\`: ${formatInlineFiles(manifest.files ?? [])}`
+  }), 'No feature files are generated.')
+}
+
+function renderFeatureDocs(entries) {
+  const rows = []
+
+  for (const { name, manifest } of entries) {
+    for (const file of docsFiles(manifest)) {
+      rows.push(`- \`${name}\`: \`${file}\``)
+    }
+  }
+
+  return renderList(rows, 'No feature docs were generated.')
+}
+
+function renderNextEditSuggestion(name, manifest) {
+  if (!manifest) return `- \`${name}\`: inspect the feature manifest before editing.`
+
+  const parts = []
+  const frontend = frontendFiles(manifest)
+  const backend = backendFiles(manifest)
+  const docs = docsFiles(manifest)
+
+  if (frontend.length > 0) parts.push(`frontend ${formatInlineFiles(frontend)}`)
+  if (backend.length > 0) parts.push(`backend ${formatInlineFiles(backend)}`)
+  if (docs.length > 0) parts.push(`docs ${formatInlineFiles(docs)}`)
+
+  return `- \`${name}\`: ${parts.length > 0 ? parts.join('; ') : 'start from the feature docs or manifest.'}`
+}
+
+function renderNextEditSuggestions(entries) {
+  return renderList(entries.map(({ name, manifest }) => (
+    renderNextEditSuggestion(name, manifest)
+  )), 'Start with `src/App.tsx`, `src/AppContent.tsx`, and `src-tauri/src/lib.rs`.')
+}
+
+function renderKnownFollowUps(state) {
+  const enabled = new Set(state.enabledFeatures ?? [])
+  const rows = [
+    '- Configure code signing, notarization, icons, and release profile before distribution.',
+  ]
+
+  if (enabled.has('updater')) {
+    rows.push('- Configure updater endpoint and signing before production releases.')
+  }
+
+  if (enabled.has('quick-pane')) {
+    rows.push('- Review the default global shortcut before shipping to users.')
+  }
+
+  return rows.join('\n')
+}
+
+function renderRemovalNotes(entries) {
+  const rows = []
+
+  for (const { name, manifest } of entries) {
+    const hints = manifest?.removeHints ?? []
+    if (hints.length === 0) {
+      rows.push(`- \`${name}\`: no removal notes declared.`)
+      continue
+    }
+
+    rows.push(`- \`${name}\`: ${hints.join(' ')}`)
+  }
+
+  return renderList(rows, 'No feature removal notes are needed.')
+}
+
+export function renderProjectMap(state, manifests) {
+  const enabledEntries = enabledFeatureEntries(state, manifests)
+  const baseRows = (state.baseFiles ?? []).map((file) => `- \`${file}\``).join('\n')
+  const packageManager = state.packageManager ?? 'npm'
+  const integrationMode = state.integrationMode ?? (state.recipe ? 'recipe' : 'features')
+  const recipe = state.recipe ?? 'none'
+  const requestedFeatures = state.requestedFeatures ?? [
+    ...(state.recipeFeatures ?? []),
+    ...(state.optionalFeatures ?? []),
+  ]
+  const resolvedFeatures = state.resolvedFeatures ?? state.enabledFeatures ?? []
+  const sidebar = state.options?.layout?.sidebar ?? 'both'
+
+  return `# ${state.productName} Project Map
+
+Generated by \`tauri-creator\`.
+
+- Integration mode: \`${integrationMode}\`
+- Recipe: \`${recipe}\`
+- Package name: \`${state.packageName}\`
+- Product name: \`${state.productName}\`
+- Bundle identifier: \`${state.bundleIdentifier}\`
+- Author: \`${state.author ?? 'you'}\`
+- License: \`${state.license ?? 'UNLICENSED'}\`
+- Package manager: \`${packageManager}\`
+- Requested features: ${formatNameList(requestedFeatures)}
+- Resolved features: ${formatNameList(resolvedFeatures)}
+- Enabled features: ${formatNameList(state.enabledFeatures ?? [])}
+- Sidebar layout: \`${sidebar}\`
+- Feature application status: Applied features are copied into this generated app.
+
+## Common Commands
+
+- Install dependencies: \`${packageManager} install\`
+- Run checks: \`${packageManager} run check:all\`
+- Start Tauri dev mode: \`${packageManager} run tauri:dev\`
+
+## Entry Files
+
+- Frontend entry: \`src/main.tsx\`
+- React app: \`src/App.tsx\`
+- Shared app content: \`src/AppContent.tsx\`
+- Tauri config: \`src-tauri/tauri.conf.json\`
+- Tauri capabilities: \`src-tauri/capabilities/default.json\`
+- Rust entry: \`src-tauri/src/lib.rs\`
+- Scaffold state: \`.tauri-creator.json\`
+
+## Enabled Features
+
+${renderFeatureOverview(enabledEntries)}
+
+## Commands
+
+${renderCommands(enabledEntries)}
+
+## Permissions
+
+${renderPermissions(enabledEntries)}
+
+## Generated Feature Files
+
+${renderGeneratedFeatureFiles(enabledEntries)}
+
+## Feature Docs
+
+${renderFeatureDocs(enabledEntries)}
+
+## Next Edit Suggestions
+
+${renderNextEditSuggestions(enabledEntries)}
+
+## Known Follow-Up Setup
+
+${renderKnownFollowUps(state)}
+
+## Removal Notes
+
+${renderRemovalNotes(enabledEntries)}
+
+## Base Files
+
+${baseRows || '- Base file list is unavailable.'}
+`
+}

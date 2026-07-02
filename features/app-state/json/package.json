@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.12",
+    "sonner": "^2.0.7",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@tanstack/react-query-devtools": "^5.91.1"
+  }
+}

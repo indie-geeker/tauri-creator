@@ -1,0 +1,25 @@
+{
+  "name": "ui-layout",
+  "description": "Three-pane resizable desktop layout.",
+  "stage": "v1",
+  "dependsOn": [
+    "ui-shadcn",
+    "app-state",
+    "ui-preferences"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [],
+  "files": [
+    "src/components/layout"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `<MainWindow>` from `src/App.tsx`.",
+    "Restore original `<main>` wrapper in `src/App.tsx`.",
+    "Delete `src/components/layout`."
+  ],
+  "spectaExports": []
+}

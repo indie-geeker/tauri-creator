@@ -1,0 +1,20 @@
+[
+  {
+    "id": "preferences-rust-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "    // TAURI_CREATOR:RUST_FEATURE_MODULES",
+    "insert": "    pub mod preferences;"
+  },
+  {
+    "id": "preferences-load-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::preferences::load_preferences,"
+  },
+  {
+    "id": "preferences-save-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::preferences::save_preferences,"
+  }
+]

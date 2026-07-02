@@ -1,0 +1,20 @@
+[
+  {
+    "id": "app-lifecycle-manager-import",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "// TAURI_CREATOR:RUST_IMPORTS",
+    "insert": "use tauri::Manager;"
+  },
+  {
+    "id": "app-lifecycle-run-events",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_RUN_EVENT",
+    "insert": "            #[cfg(target_os = \"macos\")]\n            tauri::RunEvent::WindowEvent {\n                label,\n                event: tauri::WindowEvent::CloseRequested { api, .. },\n                ..\n            } if label == \"main\" => {\n                api.prevent_close();\n\n                if let Some(window) = app_handle.get_webview_window(\"main\") {\n                    let _ = window.hide();\n                    log::info!(\"Main window hidden instead of closing\");\n                }\n            }\n\n            #[cfg(target_os = \"macos\")]\n            tauri::RunEvent::Reopen { .. } => {\n                if let Some(window) = app_handle.get_webview_window(\"main\") {\n                    if !window.is_visible().unwrap_or(true) {\n                        let _ = window.show();\n                    }\n                    let _ = window.set_focus();\n                    log::info!(\"Main window reopened from dock\");\n                }\n            }"
+  },
+  {
+    "id": "app-lifecycle-exit-cleanup-log",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "                // TAURI_CREATOR:TAURI_EXIT_CLEANUP",
+    "insert": "                log::info!(\"Application exiting; running lifecycle cleanup hooks\");"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "sqlite-infrastructure-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "    // TAURI_CREATOR:RUST_INFRASTRUCTURE_MODULES",
+    "insert": "    pub mod database;"
+  },
+  {
+    "id": "sqlite-health-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            infrastructure::database::get_database_health,"
+  },
+  {
+    "id": "sqlite-list-notes-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            infrastructure::database::list_notes,"
+  },
+  {
+    "id": "sqlite-create-note-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            infrastructure::database::create_note,"
+  },
+  {
+    "id": "sqlite-update-note-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            infrastructure::database::update_note,"
+  },
+  {
+    "id": "sqlite-delete-note-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            infrastructure::database::delete_note,"
+  }
+]

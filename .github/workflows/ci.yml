@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  scaffold:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - name: Enable pnpm for generated-app checks
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.7.0 --activate
+      - name: Install root dependencies
+        run: npm install
+      - name: Run fast scaffold checks
+        run: npm run check:fast
+      - name: Verify generated npm apps
+        run: npm run check:generated:npm
+      - name: Verify generated pnpm desktop app
+        run: npm run check:generated:pnpm
+      - name: Verify strict production app
+        run: npm run check:generated:strict

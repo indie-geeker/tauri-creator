@@ -1,0 +1,5 @@
+{
+  "name": "essential",
+  "description": "Minimal app plus typed production foundations: Specta bindings, preferences, logging, and diagnostics.",
+  "features": ["specta-bindings", "preferences", "logging", "diagnostics"]
+}

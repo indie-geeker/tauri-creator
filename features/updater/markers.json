@@ -1,0 +1,20 @@
+[
+  {
+    "id": "updater-rust-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "    // TAURI_CREATOR:RUST_FEATURE_MODULES",
+    "insert": "    pub mod updater;"
+  },
+  {
+    "id": "updater-status-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            features::updater::get_updater_status,"
+  },
+  {
+    "id": "updater-plugin",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "        // TAURI_CREATOR:TAURI_PLUGINS",
+    "insert": "        .plugin(tauri_plugin_updater::Builder::new().build())"
+  }
+]

@@ -1,0 +1,66 @@
+.command-palette-panel {
+  background: #ffffff;
+  border: 1px solid #d7dce5;
+  border-radius: 8px;
+  box-shadow: 0 12px 34px rgb(23 32 38 / 8%);
+  left: 50%;
+  margin-top: 0;
+  max-width: 460px;
+  overflow: hidden;
+  position: fixed;
+  top: 56px;
+  transform: translateX(-50%);
+  width: min(460px, calc(100vw - 32px));
+  z-index: 50;
+}
+
+.command-palette-header {
+  align-items: center;
+  border-bottom: 1px solid #e5e8ef;
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: auto 1fr;
+  padding: 0.75rem 0.875rem;
+}
+
+.command-palette-header svg {
+  color: #596579;
+}
+
+.command-palette-header input {
+  border: 0;
+  color: #172026;
+  font: inherit;
+  min-width: 0;
+  outline: 0;
+}
+
+.command-palette-list {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem;
+}
+
+.command-palette-item {
+  align-items: center;
+  border: 0;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+}
+
+.command-palette-item:hover {
+  background: #eef3f8;
+}
+
+.command-palette-item small,
+.command-palette-empty {
+  color: #596579;
+}
+
+.command-palette-empty {
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+}

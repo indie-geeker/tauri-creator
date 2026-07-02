@@ -1,0 +1,27 @@
+{
+  "name": "specta-bindings",
+  "description": "End-to-end type safety between Rust and TypeScript.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [
+    "specta",
+    "tauri-specta",
+    "specta-typescript"
+  ],
+  "files": [
+    "src-tauri/src/bindings.rs"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run rust:bindings"
+  ],
+  "removeHints": [
+    "Remove `bindings.rs` module reference from `lib.rs`.",
+    "Remove Specta builder from `tauri::Builder::default()`.",
+    "Remove `#[specta::specta]` attributes from existing commands."
+  ],
+  "spectaExports": []
+}

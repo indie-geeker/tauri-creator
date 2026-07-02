@@ -1,0 +1,31 @@
+{
+  "name": "ui-tailwind",
+  "description": "Tailwind CSS v4 and Shadcn-compatible utility base.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "@tailwindcss/vite",
+    "tailwindcss",
+    "lucide-react",
+    "clsx",
+    "tailwind-merge",
+    "tw-animate-css",
+    "class-variance-authority"
+  ],
+  "cargoDependencies": [],
+  "files": [
+    "src/theme-variables.css",
+    "src/tailwind.css",
+    "src/lib/utils.ts",
+    "components.json"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `import './tailwind.css'` from `src/main.tsx`.",
+    "Remove `@tailwindcss/vite` from `vite.config.ts`."
+  ],
+  "spectaExports": []
+}

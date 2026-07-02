@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "specta": "{ version = \"=2.0.0-rc.22\", features = [\"derive\", \"serde_json\"] }",
+    "tauri-specta": "{ version = \"=2.0.0-rc.21\", features = [\"typescript\"] }",
+    "specta-typescript": "\"=0.0.9\""
+  }
+}

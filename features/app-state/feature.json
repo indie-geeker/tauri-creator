@@ -1,0 +1,28 @@
+{
+  "name": "app-state",
+  "description": "Application state utilities using Zustand and TanStack Query.",
+  "stage": "v1",
+  "dependsOn": [
+    "preferences"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "zustand",
+    "@tanstack/react-query",
+    "@tanstack/react-query-devtools",
+    "sonner"
+  ],
+  "cargoDependencies": [],
+  "files": [
+    "src/store",
+    "src/services"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `QueryClientProvider` and `ReactQueryDevtools` from `src/main.tsx`.",
+    "Remove `src/store` and `src/services` directories."
+  ],
+  "spectaExports": []
+}

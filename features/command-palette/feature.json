@@ -1,0 +1,28 @@
+{
+  "name": "command-palette",
+  "description": "Unified command registry and searchable command palette.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "cmdk",
+    "lucide-react"
+  ],
+  "cargoDependencies": [],
+  "files": [
+    "src/features/command-palette",
+    "src/shared/commands",
+    "docs/features/command-palette.md"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run typecheck",
+    "npm run test:run"
+  ],
+  "removeHints": [
+    "Remove command registry initialization from app bootstrap.",
+    "Remove command palette overlay from the main layout."
+  ],
+  "spectaExports": []
+}

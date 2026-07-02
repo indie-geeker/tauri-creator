@@ -1,0 +1,27 @@
+{
+  "name": "dx-tools",
+  "description": "Strict quality gates including ESLint, Prettier, Knip, and AST-Grep.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [],
+  "files": [
+    ".ast-grep",
+    "sgconfig.yml",
+    "eslint.config.js",
+    ".prettierignore",
+    "prettier.config.js",
+    "knip.json"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run check:all"
+  ],
+  "removeHints": [
+    "Remove `.ast-grep`, `eslint.config.js`, `prettier.config.js`, `knip.json` from the root.",
+    "Remove linting and formatting scripts from `package.json`."
+  ],
+  "spectaExports": []
+}

@@ -1,0 +1,38 @@
+{
+  "name": "tauri-creator",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@11.6.2",
+  "type": "module",
+  "scripts": {
+    "create-app": "node scripts/create-app.js",
+    "apply-feature": "node scripts/apply-feature.js",
+    "remove-feature": "node scripts/remove-feature.js",
+    "docs:generate": "node scripts/generate-docs.js",
+    "docs:check": "node scripts/generate-docs.js --check",
+    "verify:generated": "node scripts/verify-generated-app.js",
+    "verify:generated:quick": "node scripts/verify-generated-app.js --quick",
+    "check:docs": "node scripts/test-generate-docs.js",
+    "check:verify-generated": "node scripts/test-verify-generated-app.js",
+    "check:generated-output": "node scripts/test-generated-output-boundary.js",
+    "check:branding": "node scripts/test-branding.js",
+    "check:create-app": "node scripts/test-create-app.js",
+    "check:apply-feature": "node scripts/test-apply-feature.js",
+    "check:remove-feature": "node scripts/test-remove-feature.js",
+    "check:scaffold": "node scripts/test-scaffold.js",
+    "check:manifests": "node scripts/check-manifests.js",
+    "check:manifest-tests": "node scripts/test-check-manifests.js",
+    "check:fast": "node scripts/check-manifests.js && node scripts/test-check-manifests.js && node scripts/test-generate-docs.js && node scripts/test-verify-generated-app.js && node scripts/test-generated-output-boundary.js && node scripts/test-branding.js && node scripts/test-create-app.js && node scripts/test-apply-feature.js && node scripts/test-remove-feature.js && node scripts/test-scaffold.js",
+    "check:generated:npm": "node scripts/verify-generated-app.js --package-manager npm",
+    "check:generated:pnpm": "node scripts/verify-generated-app.js --recipe desktop --package-manager pnpm",
+    "check:generated:strict": "node scripts/verify-generated-app.js --recipe production --package-manager npm --strict",
+    "check:generated:tauri-build:npm": "node scripts/verify-generated-app.js --recipe production --package-manager npm --tauri-build",
+    "check:generated:tauri-build:pnpm": "node scripts/verify-generated-app.js --recipe desktop --package-manager pnpm --tauri-build",
+    "check:generated": "npm run check:generated:npm && npm run check:generated:pnpm && npm run check:generated:strict",
+    "check:release": "npm run check:generated:tauri-build:npm && npm run check:generated:tauri-build:pnpm",
+    "check:all": "npm run check:fast && npm run check:generated"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

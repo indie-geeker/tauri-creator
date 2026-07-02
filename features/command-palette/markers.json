@@ -1,0 +1,14 @@
+[
+  {
+    "id": "command-palette-app-import",
+    "file": "src/App.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "insert": "import { CommandPalettePanel, createDefaultCommands } from './features/command-palette'"
+  },
+  {
+    "id": "command-palette-app-content",
+    "file": "src/App.tsx",
+    "marker": "{/* TAURI_CREATOR:APP_CONTENT */}",
+    "insert": "        <CommandPalettePanel commands={createDefaultCommands(setMessage)} />"
+  }
+]

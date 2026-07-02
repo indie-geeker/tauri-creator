@@ -1,0 +1,24 @@
+{
+  "name": "custom-titlebar",
+  "description": "Custom frameless titlebar with window controls.",
+  "stage": "v1",
+  "dependsOn": [
+    "ui-tailwind"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [],
+  "files": [
+    "src/components/titlebar"
+  ],
+  "tauriCommands": [],
+  "capabilities": [
+    "core:window:default"
+  ],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove `Titlebar` from `App.tsx`.",
+    "Remove `src/components/titlebar` directory."
+  ],
+  "spectaExports": []
+}

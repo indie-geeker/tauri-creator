@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "log": "\"0.4\"",
+    "tauri-plugin-log": "\"2\""
+  }
+}

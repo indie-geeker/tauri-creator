@@ -1,0 +1,26 @@
+{
+  "name": "project-governance",
+  "description": "Open-source project governance files, release workflow, and security docs.",
+  "stage": "v1",
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [],
+  "files": [
+    ".github/workflows/release.yml",
+    "docs/CONTRIBUTING.md",
+    "docs/SECURITY.md",
+    "LICENSE.md"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [
+    "npm run check:all"
+  ],
+  "removeHints": [
+    "Remove generated release workflow files only if the app has another release process.",
+    "Replace LICENSE.md with the full license text before publishing.",
+    "Keep SECURITY.md updated with the real vulnerability reporting path."
+  ],
+  "spectaExports": []
+}
