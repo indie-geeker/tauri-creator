@@ -1,6 +1,6 @@
 {
-  "name": "desktop",
-  "description": "Essential app plus the stable, non-conflicting desktop production feature set.",
+  "name": "full",
+  "description": "Reference and strict verification app containing the complete stable production feature set.",
   "features": [
     "specta-bindings",
     "preferences",
@@ -11,6 +11,8 @@
     "native-menu",
     "ui-layout",
     "sqlite",
-    "updater"
+    "project-governance",
+    "updater",
+    "dx-tools"
   ]
 }

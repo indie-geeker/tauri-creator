@@ -40,24 +40,17 @@ async function readState(targetDir) {
   return readJson(path.join(targetDir, '.tauri-creator.json'))
 }
 
-function assertStateIncludes(state, featureNames, message) {
-  for (const featureName of featureNames) {
-    assert(state.enabledFeatures.includes(featureName), `${message}: missing ${featureName}`)
-  }
-}
-
 const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'tauri-creator-create-app-'))
 const minimalTarget = path.join(tempRoot, 'minimal-demo')
-const essentialTarget = path.join(tempRoot, 'essential-demo')
-const desktopTarget = path.join(tempRoot, 'desktop-demo')
-const productionTarget = path.join(tempRoot, 'production-demo')
+const starterTarget = path.join(tempRoot, 'starter-demo')
+const fullTarget = path.join(tempRoot, 'full-demo')
 const featureTarget = path.join(tempRoot, 'feature-demo')
 const leftSidebarTarget = path.join(tempRoot, 'left-sidebar-demo')
 const rightSidebarTarget = path.join(tempRoot, 'right-sidebar-demo')
 const bothSidebarTarget = path.join(tempRoot, 'both-sidebar-demo')
 const interactiveTarget = path.join(tempRoot, 'interactive-demo')
 const pnpmManagerTarget = path.join(tempRoot, 'pnpm-manager-demo')
-const pnpmProductionTarget = path.join(tempRoot, 'pnpm-production-demo')
+const pnpmFullTarget = path.join(tempRoot, 'pnpm-full-demo')
 const brokenFeatureDir = path.join(root, 'features', 'broken-readiness-test')
 const brokenTarget = path.join(tempRoot, 'broken-readiness-demo')
 
@@ -95,40 +88,85 @@ try {
   assert(minimalPackage.name === 'minimal-demo', 'package.json should replace the app name')
   assert(minimalPackage.packageManager?.startsWith('npm@'), 'package.json should pin npm by default')
 
+  for (const oldRecipeName of ['essential', 'desktop', 'production']) {
+    const oldRecipeTarget = path.join(tempRoot, `${oldRecipeName}-removed-demo`)
+    let oldRecipeFailed = false
+    try {
+      runCreateApp([
+        '--name',
+        `${oldRecipeName}-removed-demo`,
+        '--target',
+        oldRecipeTarget,
+        '--recipe',
+        oldRecipeName,
+      ])
+    } catch (error) {
+      oldRecipeFailed = true
+      assert(
+        error.stderr?.toString('utf8').includes(`unknown recipe '${oldRecipeName}'`),
+        `${oldRecipeName} should fail with unknown recipe guidance`
+      )
+    }
+    assert(oldRecipeFailed, `${oldRecipeName} should no longer be accepted as a recipe`)
+    assert(!(await pathExists(oldRecipeTarget)), `${oldRecipeName} failure should not create a target`)
+  }
+
   runCreateApp([
     '--name',
-    'essential-demo',
+    'starter-demo',
     '--target',
-    essentialTarget,
+    starterTarget,
     '--recipe',
-    'essential',
+    'starter',
   ])
 
-  const essentialState = await readState(essentialTarget)
+  const starterState = await readState(starterTarget)
   assert(
-    essentialState.enabledFeatures.join(',') === 'specta-bindings,preferences,logging,diagnostics',
-    'essential should enable the production foundation features'
+    starterState.enabledFeatures.join(',') === 'specta-bindings,preferences,logging,diagnostics',
+    'starter should enable exactly the production foundation features'
   )
-  assert(await pathExists(path.join(essentialTarget, 'src-tauri', 'src', 'bindings.rs')), 'essential should include Specta bindings')
-  assert(await pathExists(path.join(essentialTarget, 'src', 'features', 'preferences', 'index.ts')), 'essential should include preferences')
-  assert(await pathExists(path.join(essentialTarget, 'src', 'lib', 'logger.ts')), 'essential should include logging')
-  assert(await pathExists(path.join(essentialTarget, 'src', 'features', 'diagnostics', 'index.ts')), 'essential should include diagnostics')
+  for (const excludedFeature of ['dx-tools', 'quick-pane', 'sqlite', 'updater', 'project-governance']) {
+    assert(
+      !starterState.enabledFeatures.includes(excludedFeature),
+      `starter should exclude ${excludedFeature}`
+    )
+  }
+  assert(await pathExists(path.join(starterTarget, 'src-tauri', 'src', 'bindings.rs')), 'starter should include Specta bindings')
+  assert(await pathExists(path.join(starterTarget, 'src', 'features', 'preferences', 'index.ts')), 'starter should include preferences')
+  assert(await pathExists(path.join(starterTarget, 'src', 'lib', 'logger.ts')), 'starter should include logging')
+  assert(await pathExists(path.join(starterTarget, 'src', 'features', 'diagnostics', 'index.ts')), 'starter should include diagnostics')
 
   runCreateApp([
     '--name',
-    'desktop-demo',
+    'full-demo',
     '--target',
-    desktopTarget,
+    fullTarget,
     '--recipe',
-    'desktop',
+    'full',
   ])
 
-  const desktopState = await readState(desktopTarget)
-  assert(desktopState.integrationMode === 'recipe', 'desktop should use recipe integration mode')
-  assert(desktopState.recipe === 'desktop', 'desktop should record the selected recipe')
-  assertStateIncludes(
-    desktopState,
-    [
+  const fullState = await readState(fullTarget)
+  assert(fullState.integrationMode === 'recipe', 'full should use recipe integration mode')
+  assert(fullState.recipe === 'full', 'full should record the selected recipe')
+  assert(
+    fullState.requestedFeatures.join(',') === [
+      'specta-bindings',
+      'preferences',
+      'logging',
+      'diagnostics',
+      'app-lifecycle',
+      'command-palette',
+      'native-menu',
+      'ui-layout',
+      'sqlite',
+      'project-governance',
+      'updater',
+      'dx-tools',
+    ].join(','),
+    'full should preserve the explicit reference feature selection'
+  )
+  assert(
+    fullState.enabledFeatures.join(',') === [
       'specta-bindings',
       'preferences',
       'logging',
@@ -146,55 +184,26 @@ try {
       'sqlite',
       'project-governance',
       'updater',
-    ],
-    'desktop should include all stable production features'
+      'dx-tools',
+    ].join(','),
+    'full should preserve the complete manifest-resolved reference output'
   )
-  assert(await pathExists(path.join(desktopTarget, 'src', 'components', 'layout', 'MainWindow.tsx')), 'desktop should include the layout shell')
-  assert(await pathExists(path.join(desktopTarget, 'src', 'features', 'sqlite', 'index.ts')), 'desktop should include sqlite')
-  assert(await pathExists(path.join(desktopTarget, 'src', 'features', 'updater', 'index.ts')), 'desktop should include updater')
-  const desktopTauriConfig = await readFile(path.join(desktopTarget, 'src-tauri', 'tauri.conf.json'), 'utf8')
-  assert(!desktopTauriConfig.includes('{{APP_NAME}}'), 'feature JSON patches should render app name placeholders')
+  assert(await pathExists(path.join(fullTarget, 'src', 'components', 'layout', 'MainWindow.tsx')), 'full should include the layout shell')
+  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'sqlite', 'index.ts')), 'full should include sqlite')
+  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'updater', 'index.ts')), 'full should include updater')
+  assert(await pathExists(path.join(fullTarget, 'docs', 'CONTRIBUTING.md')), 'full should include contributing docs')
+  assert(await pathExists(path.join(fullTarget, 'docs', 'SECURITY.md')), 'full should include security docs')
+  assert(await pathExists(path.join(fullTarget, 'LICENSE.md')), 'full should include license guidance')
+  assert(await pathExists(path.join(fullTarget, '.ast-grep', 'rules')), 'full should include dx tools')
+  const fullTauriConfig = await readFile(path.join(fullTarget, 'src-tauri', 'tauri.conf.json'), 'utf8')
+  assert(!fullTauriConfig.includes('{{APP_NAME}}'), 'feature JSON patches should render app name placeholders')
   assert(
-    desktopTauriConfig.includes('https://github.com/desktop-demo/desktop-demo/releases/latest/download/latest.json'),
+    fullTauriConfig.includes('https://github.com/full-demo/full-demo/releases/latest/download/latest.json'),
     'updater endpoint should use the generated app name'
   )
-  const desktopReleaseWorkflow = await readFile(path.join(desktopTarget, '.github', 'workflows', 'release.yml'), 'utf8')
-  assert(!desktopReleaseWorkflow.includes('{{APP_TITLE}}'), 'feature files should render app title placeholders')
-  assert(desktopReleaseWorkflow.includes('name: Release Desktop Demo'), 'release workflow should use the generated product name')
-
-  runCreateApp([
-    '--name',
-    'production-demo',
-    '--target',
-    productionTarget,
-    '--recipe',
-    'production',
-  ])
-
-  const productionState = await readState(productionTarget)
-  assertStateIncludes(
-    productionState,
-    [
-      'specta-bindings',
-      'preferences',
-      'logging',
-      'diagnostics',
-      'app-lifecycle',
-      'command-palette',
-      'native-menu',
-      'ui-layout',
-      'sqlite',
-      'project-governance',
-      'updater',
-      'dx-tools',
-    ],
-    'production should include all requested production features'
-  )
-  assert(await pathExists(path.join(productionTarget, '.github', 'workflows', 'release.yml')), 'production should include a release workflow')
-  assert(await pathExists(path.join(productionTarget, 'docs', 'CONTRIBUTING.md')), 'production should include contributing docs')
-  assert(await pathExists(path.join(productionTarget, 'docs', 'SECURITY.md')), 'production should include security docs')
-  assert(await pathExists(path.join(productionTarget, 'LICENSE.md')), 'production should include license guidance')
-  assert(await pathExists(path.join(productionTarget, '.ast-grep', 'rules')), 'production should include dx tools')
+  const fullReleaseWorkflow = await readFile(path.join(fullTarget, '.github', 'workflows', 'release.yml'), 'utf8')
+  assert(!fullReleaseWorkflow.includes('{{APP_TITLE}}'), 'feature files should render app title placeholders')
+  assert(fullReleaseWorkflow.includes('name: Release Full Demo'), 'release workflow should use the generated product name')
 
   runCreateApp([
     '--name',
@@ -218,7 +227,7 @@ try {
     '--target',
     leftSidebarTarget,
     '--recipe',
-    'desktop',
+    'full',
     '--sidebar',
     'left',
   ])
@@ -244,7 +253,7 @@ try {
     '--target',
     rightSidebarTarget,
     '--recipe',
-    'desktop',
+    'full',
     '--sidebar',
     'right',
   ])
@@ -270,7 +279,7 @@ try {
     '--target',
     bothSidebarTarget,
     '--recipe',
-    'desktop',
+    'full',
     '--sidebar',
     'both',
   ])
@@ -304,11 +313,11 @@ try {
 
   assert(interactiveOutput.includes('Integration mode options:'), 'interactive mode should present integration mode choices')
   assert(interactiveOutput.includes('Recipe options:'), 'interactive recipe mode should present recipe choices')
-  assert(interactiveOutput.includes('Sidebar layout options:'), 'interactive desktop recipe should present sidebar choices')
+  assert(interactiveOutput.includes('Sidebar layout options:'), 'interactive full recipe should present sidebar choices')
 
   const interactiveState = await readState(interactiveTarget)
   assert(interactiveState.integrationMode === 'recipe', 'interactive recipe mode should be recorded')
-  assert(interactiveState.recipe === 'desktop', 'interactive should record the selected desktop recipe')
+  assert(interactiveState.recipe === 'full', 'interactive should record the selected full recipe')
   assert(interactiveState.options.layout.sidebar === 'left', 'interactive should record the selected sidebar layout')
   const interactivePackage = await readJson(path.join(interactiveTarget, 'package.json'))
   assert(interactivePackage.name === 'interactive-demo', 'interactive mode should normalize the app package name')
@@ -332,38 +341,38 @@ try {
 
   runCreateApp([
     '--name',
-    'pnpm-production-demo',
+    'pnpm-full-demo',
     '--target',
-    pnpmProductionTarget,
+    pnpmFullTarget,
     '--recipe',
-    'production',
+    'full',
     '--package-manager',
     'pnpm',
   ])
 
-  const pnpmProductionWorkflow = await readFile(
-    path.join(pnpmProductionTarget, '.github', 'workflows', 'release.yml'),
+  const pnpmFullWorkflow = await readFile(
+    path.join(pnpmFullTarget, '.github', 'workflows', 'release.yml'),
     'utf8'
   )
   assert(
-    pnpmProductionWorkflow.includes('cache: pnpm'),
+    pnpmFullWorkflow.includes('cache: pnpm'),
     'pnpm generated release workflow should use pnpm dependency cache'
   )
   assert(
-    pnpmProductionWorkflow.includes('corepack prepare pnpm@'),
+    pnpmFullWorkflow.includes('corepack prepare pnpm@'),
     'pnpm generated release workflow should activate the pinned pnpm version'
   )
   assert(
-    pnpmProductionWorkflow.includes('pnpm install --frozen-lockfile'),
+    pnpmFullWorkflow.includes('pnpm install --frozen-lockfile'),
     'pnpm generated release workflow should install through pnpm'
   )
   assert(
-    pnpmProductionWorkflow.includes('pnpm run check:all'),
+    pnpmFullWorkflow.includes('pnpm run check:all'),
     'pnpm generated release workflow should run checks through pnpm'
   )
   assert(
-    !/^\s*run: npm ci\s*$/m.test(pnpmProductionWorkflow) &&
-      !/^\s*run: npm run check:all\s*$/m.test(pnpmProductionWorkflow),
+    !/^\s*run: npm ci\s*$/m.test(pnpmFullWorkflow) &&
+      !/^\s*run: npm run check:all\s*$/m.test(pnpmFullWorkflow),
     'pnpm generated release workflow should not leave npm release commands behind'
   )
 

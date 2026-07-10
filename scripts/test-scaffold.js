@@ -106,11 +106,10 @@ function assertUniqueImport(source, importStatement, message) {
 
 const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'tauri-creator-scaffold-'))
 const minimalTarget = path.join(tempRoot, 'minimal-demo')
-const essentialTarget = path.join(tempRoot, 'essential-demo')
-const desktopTarget = path.join(tempRoot, 'desktop-demo')
-const productionTarget = path.join(tempRoot, 'production-demo')
+const starterTarget = path.join(tempRoot, 'starter-demo')
+const fullTarget = path.join(tempRoot, 'full-demo')
 const featureTarget = path.join(tempRoot, 'feature-demo')
-const desktopRightTarget = path.join(tempRoot, 'desktop-right-demo')
+const fullRightTarget = path.join(tempRoot, 'full-right-demo')
 const legacyStateTarget = path.join(tempRoot, 'legacy-state-demo')
 
 try {
@@ -142,28 +141,28 @@ try {
     'root package should verify generated apps through the recipe catalog for npm'
   )
   assert(
-    rootPackage.scripts['check:generated:strict']?.includes('--recipe production') &&
-      rootPackage.scripts['check:generated:strict']?.includes('--strict'),
-    'root package should expose strict production generated-app verification'
+    rootPackage.scripts['check:generated:strict'] ===
+      'node scripts/verify-generated-app.js --recipe full --package-manager npm --strict',
+    'root package should expose strict full generated-app verification'
   )
   assert(
-    rootPackage.scripts['check:generated:pnpm']?.includes('--package-manager pnpm'),
-    'root package should verify at least one generated app through pnpm'
+    rootPackage.scripts['check:generated:pnpm'] ===
+      'node scripts/verify-generated-app.js --recipe starter --package-manager pnpm',
+    'root package should verify the starter app through pnpm'
   )
   assert(
-    rootPackage.scripts['check:generated:tauri-build:npm']?.includes('--recipe production') &&
-      rootPackage.scripts['check:generated:tauri-build:npm']?.includes('--tauri-build'),
-    'root package should expose npm production Tauri bundle verification'
+    rootPackage.scripts['check:generated:tauri-build:starter'] ===
+      'node scripts/verify-generated-app.js --recipe starter --package-manager npm --tauri-build',
+    'root package should expose starter Tauri bundle verification'
   )
   assert(
-    rootPackage.scripts['check:generated:tauri-build:pnpm']?.includes('--recipe desktop') &&
-      rootPackage.scripts['check:generated:tauri-build:pnpm']?.includes('--package-manager pnpm') &&
-      rootPackage.scripts['check:generated:tauri-build:pnpm']?.includes('--tauri-build'),
-    'root package should expose pnpm desktop Tauri bundle verification'
+    rootPackage.scripts['check:generated:tauri-build:full'] ===
+      'node scripts/verify-generated-app.js --recipe full --package-manager npm --tauri-build',
+    'root package should expose full Tauri bundle verification'
   )
   assert(
-    rootPackage.scripts['check:release']?.includes('check:generated:tauri-build:npm') &&
-      rootPackage.scripts['check:release']?.includes('check:generated:tauri-build:pnpm'),
+    rootPackage.scripts['check:release'] ===
+      'npm run check:generated:tauri-build:starter && npm run check:generated:tauri-build:full',
     'root package should compose release-oriented Tauri bundle checks'
   )
   const pnpmGeneratedCheckIndex = ciWorkflow.indexOf('npm run check:generated:pnpm')
@@ -216,115 +215,74 @@ try {
 
   createApp([
     '--name',
-    'essential-demo',
+    'starter-demo',
     '--target',
-    essentialTarget,
+    starterTarget,
     '--recipe',
-    'essential',
+    'starter',
   ])
-  const essentialState = await readJson(path.join(essentialTarget, '.tauri-creator.json'))
+  const starterState = await readJson(path.join(starterTarget, '.tauri-creator.json'))
   assertFeatures(
-    essentialState,
+    starterState,
     ['specta-bindings', 'preferences', 'logging', 'diagnostics'],
-    'essential should enable typed production foundation features'
+    'starter should enable exactly the typed production foundation features'
   )
-  assert(await pathExists(path.join(essentialTarget, 'src', 'lib', 'logger.ts')), 'essential should include logging')
-  assert(await pathExists(path.join(essentialTarget, 'src', 'features', 'diagnostics', 'index.ts')), 'essential should include diagnostics')
+  for (const excludedFeature of ['dx-tools', 'quick-pane', 'sqlite', 'updater', 'project-governance']) {
+    assert(!starterState.enabledFeatures.includes(excludedFeature), `starter should exclude ${excludedFeature}`)
+  }
+  assert(await pathExists(path.join(starterTarget, 'src', 'lib', 'logger.ts')), 'starter should include logging')
+  assert(await pathExists(path.join(starterTarget, 'src', 'features', 'diagnostics', 'index.ts')), 'starter should include diagnostics')
   assert(
-    await pathExists(path.join(essentialTarget, 'src-tauri', 'src', 'bindings.rs')),
-    'essential should include generated Specta binding source'
+    await pathExists(path.join(starterTarget, 'src-tauri', 'src', 'bindings.rs')),
+    'starter should include generated Specta binding source'
   )
-  const essentialPackage = await readJson(path.join(essentialTarget, 'package.json'))
+  const starterPackage = await readJson(path.join(starterTarget, 'package.json'))
   assert(
-    essentialPackage.scripts['rust:bindings'] === 'cd src-tauri && cargo test export_bindings -- --ignored --nocapture',
-    'essential should document TypeScript binding generation through npm run rust:bindings'
+    starterPackage.scripts['rust:bindings'] === 'cd src-tauri && cargo test export_bindings -- --ignored --nocapture',
+    'starter should document TypeScript binding generation through npm run rust:bindings'
   )
-  const essentialRustLib = await readFile(path.join(essentialTarget, 'src-tauri', 'src', 'lib.rs'), 'utf8')
+  const starterRustLib = await readFile(path.join(starterTarget, 'src-tauri', 'src', 'lib.rs'), 'utf8')
   assert(
-    essentialRustLib.includes('builder.invoke_handler()'),
-    'essential should route Tauri commands through the Specta invoke handler'
+    starterRustLib.includes('builder.invoke_handler()'),
+    'starter should route Tauri commands through the Specta invoke handler'
   )
-  const essentialBindings = await readFile(path.join(essentialTarget, 'src-tauri', 'src', 'bindings.rs'), 'utf8')
+  const starterBindings = await readFile(path.join(starterTarget, 'src-tauri', 'src', 'bindings.rs'), 'utf8')
   assert(
-    essentialBindings.includes('preferences::load_preferences') &&
-      essentialBindings.includes('diagnostics::collect_diagnostics'),
-    'essential bindings should export typed commands from foundation features'
+    starterBindings.includes('preferences::load_preferences') &&
+      starterBindings.includes('diagnostics::collect_diagnostics'),
+    'starter bindings should export typed commands from foundation features'
   )
-  const essentialPreferencesRust = await readFile(
-    path.join(essentialTarget, 'src-tauri', 'src', 'features', 'preferences.rs'),
+  const starterPreferencesRust = await readFile(
+    path.join(starterTarget, 'src-tauri', 'src', 'features', 'preferences.rs'),
     'utf8'
   )
   assert(
-    essentialPreferencesRust.includes('#[specta::specta]') &&
-      essentialPreferencesRust.includes('specta::Type'),
-    'essential should inject Specta command and type attributes into preferences'
+    starterPreferencesRust.includes('#[specta::specta]') &&
+      starterPreferencesRust.includes('specta::Type'),
+    'starter should inject Specta command and type attributes into preferences'
   )
-  const essentialDiagnosticsRust = await readFile(
-    path.join(essentialTarget, 'src-tauri', 'src', 'features', 'diagnostics.rs'),
+  const starterDiagnosticsRust = await readFile(
+    path.join(starterTarget, 'src-tauri', 'src', 'features', 'diagnostics.rs'),
     'utf8'
   )
   assert(
-    essentialDiagnosticsRust.includes('#[specta::specta]') &&
-      essentialDiagnosticsRust.includes('specta::Type'),
-    'essential should inject Specta command and type attributes into diagnostics'
+    starterDiagnosticsRust.includes('#[specta::specta]') &&
+      starterDiagnosticsRust.includes('specta::Type'),
+    'starter should inject Specta command and type attributes into diagnostics'
   )
-  await assertNoUnresolvedPlaceholders(essentialTarget)
+  await assertNoUnresolvedPlaceholders(starterTarget)
 
   createApp([
     '--name',
-    'desktop-demo',
+    'full-demo',
     '--target',
-    desktopTarget,
+    fullTarget,
     '--recipe',
-    'desktop',
+    'full',
   ])
-  const desktopState = await readJson(path.join(desktopTarget, '.tauri-creator.json'))
+  const fullState = await readJson(path.join(fullTarget, '.tauri-creator.json'))
   assertFeatures(
-    desktopState,
-    [
-      'specta-bindings',
-      'preferences',
-      'logging',
-      'diagnostics',
-      'app-lifecycle',
-      'command-palette',
-      'native-menu',
-      'ui-tailwind',
-      'ui-shadcn',
-      'app-state',
-      'i18n',
-      'quick-pane',
-      'ui-preferences',
-      'ui-layout',
-      'sqlite',
-      'project-governance',
-      'updater',
-    ],
-    'desktop should enable the complete stable production feature set'
-  )
-  assert(await pathExists(path.join(desktopTarget, 'src', 'components', 'layout', 'MainWindow.tsx')), 'desktop should include the layout shell')
-  assert(await pathExists(path.join(desktopTarget, 'src', 'features', 'sqlite', 'index.ts')), 'desktop should include sqlite')
-  assert(await pathExists(path.join(desktopTarget, 'src', 'features', 'updater', 'index.ts')), 'desktop should include updater')
-  assert(await pathExists(path.join(desktopTarget, 'src', 'features', 'quick-pane', 'index.tsx')), 'desktop should include quick-pane through layout dependencies')
-  const desktopApp = await readFile(path.join(desktopTarget, 'src', 'App.tsx'), 'utf8')
-  assertUniqueImport(
-    desktopApp,
-    "import { useEffect } from 'react'",
-    'desktop should not generate duplicate React hook imports'
-  )
-  await assertNoUnresolvedPlaceholders(desktopTarget)
-
-  createApp([
-    '--name',
-    'production-demo',
-    '--target',
-    productionTarget,
-    '--recipe',
-    'production',
-  ])
-  const productionState = await readJson(path.join(productionTarget, '.tauri-creator.json'))
-  assertFeatures(
-    productionState,
+    fullState,
     [
       'specta-bindings',
       'preferences',
@@ -345,61 +303,71 @@ try {
       'updater',
       'dx-tools',
     ],
-    'production should enable the complete verified app foundation'
+    'full should enable the complete manifest-resolved reference feature set'
+  )
+  assert(await pathExists(path.join(fullTarget, 'src', 'components', 'layout', 'MainWindow.tsx')), 'full should include the layout shell')
+  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'sqlite', 'index.ts')), 'full should include sqlite')
+  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'updater', 'index.ts')), 'full should include updater')
+  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'quick-pane', 'index.tsx')), 'full should include quick-pane through layout dependencies')
+  const fullApp = await readFile(path.join(fullTarget, 'src', 'App.tsx'), 'utf8')
+  assertUniqueImport(
+    fullApp,
+    "import { useEffect } from 'react'",
+    'full should not generate duplicate React hook imports'
+  )
+  await assertNoUnresolvedPlaceholders(fullTarget)
+  assert(
+    await pathExists(path.join(fullTarget, '.github', 'workflows', 'release.yml')),
+    'full should include a release workflow'
   )
   assert(
-    await pathExists(path.join(productionTarget, '.github', 'workflows', 'release.yml')),
-    'production should include a release workflow'
+    await pathExists(path.join(fullTarget, 'docs', 'CONTRIBUTING.md')),
+    'full should include contributing docs'
   )
   assert(
-    await pathExists(path.join(productionTarget, 'docs', 'CONTRIBUTING.md')),
-    'production should include contributing docs'
+    await pathExists(path.join(fullTarget, 'docs', 'SECURITY.md')),
+    'full should include security docs'
   )
   assert(
-    await pathExists(path.join(productionTarget, 'docs', 'SECURITY.md')),
-    'production should include security docs'
+    await pathExists(path.join(fullTarget, 'LICENSE.md')),
+    'full should include a generated license note'
   )
   assert(
-    await pathExists(path.join(productionTarget, 'LICENSE.md')),
-    'production should include a generated license note'
+    await pathExists(path.join(fullTarget, '.ast-grep', 'rules')),
+    'full should include strict dx tooling'
   )
-  assert(
-    await pathExists(path.join(productionTarget, '.ast-grep', 'rules')),
-    'production should include strict dx tooling'
-  )
-  const productionPackageJson = await readJson(path.join(productionTarget, 'package.json'))
-  for (const [scriptName, command] of Object.entries(productionPackageJson.scripts)) {
+  const fullPackageJson = await readJson(path.join(fullTarget, 'package.json'))
+  for (const [scriptName, command] of Object.entries(fullPackageJson.scripts)) {
     assert(
       !command.includes('source ~/.cargo/env'),
-      `production ${scriptName} should not depend on source or ~/.cargo/env`
+      `full ${scriptName} should not depend on source or ~/.cargo/env`
     )
   }
   assert(
-    productionPackageJson.scripts['check:all'].includes(
+    fullPackageJson.scripts['check:all'].includes(
       'cargo clippy --manifest-path src-tauri/Cargo.toml'
     ),
-    'production check:all should retain the Rust clippy gate'
+    'full check:all should retain the Rust clippy gate'
   )
   assert(
-    await pathExists(path.join(productionTarget, 'src-tauri', 'src', 'bindings.rs')),
-    'production should include Specta bindings'
+    await pathExists(path.join(fullTarget, 'src-tauri', 'src', 'bindings.rs')),
+    'full should include Specta bindings'
   )
-  await assertNoUnresolvedPlaceholders(productionTarget)
 
   runNode(removeFeatureScript, [
     '--target',
-    desktopTarget,
+    fullTarget,
     '--feature',
     'diagnostics',
   ])
 
   assert(
-    !(await pathExists(path.join(desktopTarget, 'src-tauri', 'src', 'features', 'diagnostics.rs'))),
+    !(await pathExists(path.join(fullTarget, 'src-tauri', 'src', 'features', 'diagnostics.rs'))),
     'remove-feature should delete diagnostics Rust file in scaffold smoke'
   )
-  const desktopMapAfterRemoval = await readFile(path.join(desktopTarget, 'PROJECT_MAP.md'), 'utf8')
+  const fullMapAfterRemoval = await readFile(path.join(fullTarget, 'PROJECT_MAP.md'), 'utf8')
   assert(
-    !desktopMapAfterRemoval.includes('collect_diagnostics'),
+    !fullMapAfterRemoval.includes('collect_diagnostics'),
     'remove-feature should remove deleted feature commands from PROJECT_MAP.md'
   )
 
@@ -419,22 +387,22 @@ try {
 
   createApp([
     '--name',
-    'desktop-right-demo',
+    'full-right-demo',
     '--target',
-    desktopRightTarget,
+    fullRightTarget,
     '--recipe',
-    'desktop',
+    'full',
     '--sidebar',
     'right',
   ])
-  const desktopRightState = await readJson(path.join(desktopRightTarget, '.tauri-creator.json'))
-  assert(desktopRightState.options.layout.sidebar === 'right', 'desktop should record right sidebar generation option')
-  const desktopRightMainWindow = await readFile(
-    path.join(desktopRightTarget, 'src', 'components', 'layout', 'MainWindow.tsx'),
+  const fullRightState = await readJson(path.join(fullRightTarget, '.tauri-creator.json'))
+  assert(fullRightState.options.layout.sidebar === 'right', 'full should record right sidebar generation option')
+  const fullRightMainWindow = await readFile(
+    path.join(fullRightTarget, 'src', 'components', 'layout', 'MainWindow.tsx'),
     'utf8'
   )
-  assert(!desktopRightMainWindow.includes('LeftSideBar'), 'right sidebar generation should remove left sidebar code')
-  assert(desktopRightMainWindow.includes('RightSideBar'), 'right sidebar generation should keep right sidebar code')
+  assert(!fullRightMainWindow.includes('LeftSideBar'), 'right sidebar generation should remove left sidebar code')
+  assert(fullRightMainWindow.includes('RightSideBar'), 'right sidebar generation should keep right sidebar code')
 
   runNode(applyFeatureScript, [
     '--target',

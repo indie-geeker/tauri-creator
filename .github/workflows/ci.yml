@@ -29,7 +29,7 @@ jobs:
         run: npm run check:fast
       - name: Verify generated npm apps
         run: npm run check:generated:npm
-      - name: Verify generated pnpm desktop app
+      - name: Verify generated pnpm starter app
         run: npm run check:generated:pnpm
-      - name: Verify strict production app
+      - name: Verify strict full app
         run: npm run check:generated:strict

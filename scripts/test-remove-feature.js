@@ -35,7 +35,7 @@ function runNode(script, args) {
 
 const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'tauri-creator-remove-feature-'))
 const target = path.join(tempRoot, 'demo')
-const desktopTarget = path.join(tempRoot, 'desktop-demo')
+const fullTarget = path.join(tempRoot, 'full-demo')
 const spectaTarget = path.join(tempRoot, 'specta-demo')
 
 try {
@@ -339,25 +339,25 @@ try {
 
   runNode(createAppScript, [
     '--name',
-    'desktop-demo',
+    'full-demo',
     '--target',
-    desktopTarget,
+    fullTarget,
     '--recipe',
-    'desktop',
+    'full',
   ])
 
   runNode(removeFeatureScript, [
     '--target',
-    desktopTarget,
+    fullTarget,
     '--feature',
     'ui-layout',
   ])
 
   assert(
-    !(await pathExists(path.join(desktopTarget, 'src', 'components', 'layout'))),
+    !(await pathExists(path.join(fullTarget, 'src', 'components', 'layout'))),
     'remove-feature should delete ui-layout component files'
   )
-  const appContentAfterLayoutRemoval = await readFile(path.join(desktopTarget, 'src', 'AppContent.tsx'), 'utf8')
+  const appContentAfterLayoutRemoval = await readFile(path.join(fullTarget, 'src', 'AppContent.tsx'), 'utf8')
   assert(
     !appContentAfterLayoutRemoval.includes("from './components/layout/MainWindow'"),
     'remove-feature should not leave AppContent importing the removed layout shell'
@@ -369,20 +369,20 @@ try {
 
   runNode(removeFeatureScript, [
     '--target',
-    desktopTarget,
+    fullTarget,
     '--feature',
     'diagnostics',
   ])
 
-  const desktopProjectMap = await readFile(path.join(desktopTarget, 'PROJECT_MAP.md'), 'utf8')
+  const fullProjectMap = await readFile(path.join(fullTarget, 'PROJECT_MAP.md'), 'utf8')
   assert(
-    desktopProjectMap.includes('Enabled features: specta-bindings, preferences, logging') &&
-      desktopProjectMap.includes('command-palette') &&
-      desktopProjectMap.includes('project-governance'),
+    fullProjectMap.includes('Enabled features: specta-bindings, preferences, logging') &&
+      fullProjectMap.includes('command-palette') &&
+      fullProjectMap.includes('project-governance'),
     'PROJECT_MAP.md should keep remaining enabled features'
   )
   assert(
-    !desktopProjectMap.includes('`diagnostics`:'),
+    !fullProjectMap.includes('`diagnostics`:'),
     'PROJECT_MAP.md feature details should omit removed features'
   )
 } finally {

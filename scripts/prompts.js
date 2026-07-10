@@ -110,7 +110,7 @@ export async function promptForCreateApp({
         ? await prompt.chooseMany('Feature', features)
         : []
     const includesLayout =
-      recipe === 'desktop' || optionalFeatures.includes('ui-layout')
+      recipe === 'full' || optionalFeatures.includes('ui-layout')
     const sidebar = includesLayout
       ? await prompt.choose('Sidebar layout', ['left', 'right', 'both'], 'both')
       : 'both'

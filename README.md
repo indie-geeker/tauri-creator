@@ -18,7 +18,7 @@ new apps from a small base plus optional feature packages.
 ```text
 base/                  # Minimal app template
 features/              # Optional feature packages
-recipes/               # Recipe ladder from minimal through production
+recipes/               # Recipe ladder from minimal through full
 scripts/               # Scaffold/apply/remove scripts
 docs/plans/            # Local private plans
 docs/features/         # Generated feature docs
@@ -34,9 +34,8 @@ The current working version supports:
 Generated from the `recipes/*.json` ladder. Do not edit this list by hand.
 
 - `minimal`: Base Tauri React app with no optional feature packages. Features: base only.
-- `essential`: Minimal app plus typed production foundations: Specta bindings, preferences, logging, and diagnostics. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`.
-- `desktop`: Essential app plus the stable, non-conflicting desktop production feature set. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`, `app-lifecycle`, `command-palette`, `native-menu`, `ui-tailwind`, `ui-shadcn`, `app-state`, `i18n`, `quick-pane`, `ui-preferences`, `ui-layout`, `sqlite`, `project-governance`, `updater`.
-- `production`: Desktop app plus persistence, updater, release workflow, project governance, and strict quality gates. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`, `app-lifecycle`, `command-palette`, `native-menu`, `ui-tailwind`, `ui-shadcn`, `app-state`, `i18n`, `quick-pane`, `ui-preferences`, `ui-layout`, `sqlite`, `project-governance`, `updater`, `dx-tools`.
+- `starter`: Recommended production foundation for a new solo Tauri product. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`.
+- `full`: Reference and strict verification app containing the complete stable production feature set. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`, `app-lifecycle`, `command-palette`, `native-menu`, `ui-tailwind`, `ui-shadcn`, `app-state`, `i18n`, `quick-pane`, `ui-preferences`, `ui-layout`, `sqlite`, `project-governance`, `updater`, `dx-tools`.
 <!-- TAURI_CREATOR:README_RECIPES_END -->
 
 - Feature manifests with dependencies, files, permissions, and checks
@@ -62,15 +61,15 @@ npm run create-app
 ```
 
 It asks for the app name, target path, integration mode, feature or recipe
-selection, optional desktop sidebar layout, author, bundle identifier prefix,
+selection, optional sidebar layout, author, bundle identifier prefix,
 main window size, license, and package manager. Choose feature integration to
 assemble features manually, or recipe integration to use the `minimal`,
-`essential`, `desktop`, or `production` ladder.
+`starter`, or `full` ladder.
 
 Use recipe integration for a preset ladder level:
 
 ```bash
-npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe desktop --sidebar left
+npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe full --sidebar left
 ```
 
 Use feature integration for a manual feature set:
@@ -82,13 +81,13 @@ npm run create-app -- --name demo-tool --target /tmp/demo-tool --features loggin
 Generate a pnpm-based app explicitly:
 
 ```bash
-npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe desktop --package-manager pnpm
+npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe starter --package-manager pnpm
 ```
 
 When running scaffold scripts through npm, insert `--` before script options:
 
 ```bash
-npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe desktop
+npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe starter
 ```
 
 ## Verification
@@ -141,4 +140,4 @@ npm run check:all
 ```
 
 The full gate validates scaffold metadata, docs generation, create/apply/remove
-flows, all npm recipe outputs, pnpm desktop output, and strict production output.
+flows, all npm recipe outputs, pnpm starter output, and strict full output.

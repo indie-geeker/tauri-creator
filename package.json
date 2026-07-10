@@ -24,12 +24,12 @@
     "check:manifest-tests": "node scripts/test-check-manifests.js",
     "check:fast": "node scripts/check-manifests.js && node scripts/test-check-manifests.js && node scripts/test-generate-docs.js && node scripts/test-verify-generated-app.js && node scripts/test-generated-output-boundary.js && node scripts/test-branding.js && node scripts/test-create-app.js && node scripts/test-apply-feature.js && node scripts/test-remove-feature.js && node scripts/test-scaffold.js",
     "check:generated:npm": "node scripts/verify-generated-app.js --package-manager npm",
-    "check:generated:pnpm": "node scripts/verify-generated-app.js --recipe desktop --package-manager pnpm",
-    "check:generated:strict": "node scripts/verify-generated-app.js --recipe production --package-manager npm --strict",
-    "check:generated:tauri-build:npm": "node scripts/verify-generated-app.js --recipe production --package-manager npm --tauri-build",
-    "check:generated:tauri-build:pnpm": "node scripts/verify-generated-app.js --recipe desktop --package-manager pnpm --tauri-build",
+    "check:generated:pnpm": "node scripts/verify-generated-app.js --recipe starter --package-manager pnpm",
+    "check:generated:strict": "node scripts/verify-generated-app.js --recipe full --package-manager npm --strict",
+    "check:generated:tauri-build:starter": "node scripts/verify-generated-app.js --recipe starter --package-manager npm --tauri-build",
+    "check:generated:tauri-build:full": "node scripts/verify-generated-app.js --recipe full --package-manager npm --tauri-build",
     "check:generated": "npm run check:generated:npm && npm run check:generated:pnpm && npm run check:generated:strict",
-    "check:release": "npm run check:generated:tauri-build:npm && npm run check:generated:tauri-build:pnpm",
+    "check:release": "npm run check:generated:tauri-build:starter && npm run check:generated:tauri-build:full",
     "check:all": "npm run check:fast && npm run check:generated"
   },
   "engines": {

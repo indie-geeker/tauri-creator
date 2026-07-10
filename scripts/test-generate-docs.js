@@ -24,9 +24,8 @@ const readme = await readFile(path.join(root, 'README.md'), 'utf8')
 assert(featureIndex.includes('| `quick-pane` |'), 'feature index should include quick-pane')
 assert(featureIndex.includes('| `preferences` |'), 'feature index should include preferences')
 assert(recipeIndex.includes('| `minimal` |'), 'recipe index should include minimal')
-assert(recipeIndex.includes('| `essential` |'), 'recipe index should include essential')
-assert(recipeIndex.includes('| `desktop` |'), 'recipe index should include desktop')
-assert(recipeIndex.includes('| `production` |'), 'recipe index should include production')
+assert(recipeIndex.includes('| `starter` |'), 'recipe index should include starter')
+assert(recipeIndex.includes('| `full` |'), 'recipe index should include full')
 
 const readmeRecipeStart = '<!-- TAURI_CREATOR:README_RECIPES_START -->'
 const readmeRecipeEnd = '<!-- TAURI_CREATOR:README_RECIPES_END -->'
@@ -43,11 +42,11 @@ assert(
 const readmeRecipeBlock = readme.slice(readmeRecipeStartIndex, readmeRecipeEndIndex)
 const indexedRecipeNames = [...recipeIndex.matchAll(/^\| `([^`]+)` \|/gm)]
   .map((match) => match[1])
-const expectedRecipeNames = ['minimal', 'essential', 'desktop', 'production']
+const expectedRecipeNames = ['minimal', 'starter', 'full']
 
 assert(
   indexedRecipeNames.join(',') === expectedRecipeNames.join(','),
-  'recipe index should contain only minimal, essential, and desktop in ladder order'
+  'recipe index should contain only minimal, starter, and full in ladder order'
 )
 
 for (const recipeName of indexedRecipeNames) {
@@ -58,6 +57,9 @@ for (const recipeName of indexedRecipeNames) {
 }
 
 for (const oldRecipeName of [
+  'essential',
+  'desktop',
+  'production',
   'desktop-tool',
   'productivity',
   'quick-capture',

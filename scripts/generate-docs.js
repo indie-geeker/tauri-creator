@@ -55,9 +55,8 @@ async function loadRecipes() {
   const recipes = []
   const preferredOrder = new Map([
     ['minimal', 0],
-    ['essential', 1],
-    ['desktop', 2],
-    ['production', 3],
+    ['starter', 1],
+    ['full', 2],
   ])
 
   for (const entry of entries) {

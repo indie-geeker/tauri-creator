@@ -32,10 +32,9 @@ const output = execFileSync(process.execPath, [
 })
 
 const expectedDefaultRecipes = [
-  'desktop',
-  'essential',
+  'full',
   'minimal',
-  'production',
+  'starter',
 ]
 
 for (const recipeName of expectedDefaultRecipes) {
@@ -45,6 +44,9 @@ for (const recipeName of expectedDefaultRecipes) {
 }
 
 for (const oldRecipeName of [
+  'essential',
+  'desktop',
+  'production',
   'desktop-tool',
   'productivity',
   'quick-capture',
@@ -61,7 +63,7 @@ for (const sidebar of ['left', 'right', 'both']) {
     verifyGeneratedAppScript,
     '--quick',
     '--recipe',
-    'desktop',
+    'full',
     '--sidebar',
     sidebar,
   ], {
@@ -70,8 +72,8 @@ for (const sidebar of ['left', 'right', 'both']) {
     stdio: 'pipe',
   })
 
-  if (!sidebarOutput.includes(`Verified generated app recipe desktop with sidebar ${sidebar} using npm`)) {
-    throw new Error(`verify-generated-app should pass --sidebar ${sidebar} into desktop quick verification`)
+  if (!sidebarOutput.includes(`Verified generated app recipe full with sidebar ${sidebar} using npm`)) {
+    throw new Error(`verify-generated-app should pass --sidebar ${sidebar} into full quick verification`)
   }
 }
 
@@ -116,7 +118,7 @@ try {
   execFileSync(process.execPath, [
     verifyGeneratedAppScript,
     '--recipe',
-    'production',
+    'full',
     '--package-manager',
     'npm',
     '--tauri-build',

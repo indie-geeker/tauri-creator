@@ -1,0 +1,5 @@
+{
+  "name": "starter",
+  "description": "Recommended production foundation for a new solo Tauri product.",
+  "features": ["specta-bindings", "preferences", "logging", "diagnostics"]
+}

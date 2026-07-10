@@ -30,7 +30,7 @@ Options:
   --interactive        Prompt for app settings. Default when no options are passed.
   --name               App package name. Example: demo-tool
   --target             Output directory. Must be empty or not exist.
-  --recipe             Recipe preset from recipes/*.json. Example: desktop
+  --recipe             Recipe preset from recipes/*.json. Example: starter
   --features           Comma-separated features. Without --recipe, this uses feature integration mode.
   --sidebar            Desktop layout sidebar: left, right, or both. Defaults to both.
   --package-manager    Generated app package manager: npm or pnpm. Defaults to npm.
@@ -153,8 +153,8 @@ async function listRecipeNames() {
   const entries = await readdir(recipesDir, { withFileTypes: true })
   const preferredOrder = new Map([
     ['minimal', 0],
-    ['essential', 1],
-    ['desktop', 2],
+    ['starter', 1],
+    ['full', 2],
   ])
   return entries
     .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))

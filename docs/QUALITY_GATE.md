@@ -8,7 +8,7 @@
 - `npm run check:generated:strict`
 - `npm audit --omit=dev`
 
-Generated production apps must also pass their own:
+Generated apps must also pass their own:
 
 - `<package-manager> run check:all`
 - `<package-manager> run build`
