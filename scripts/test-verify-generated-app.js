@@ -92,6 +92,25 @@ if (!packageManagerOutput.includes('Verified generated app recipe minimal using 
   throw new Error('verify-generated-app should pass the selected package manager into generated apps')
 }
 
+const postCreateUpdaterOutput = execFileSync(process.execPath, [
+  verifyGeneratedAppScript,
+  '--quick',
+  '--recipe',
+  'minimal',
+  '--feature',
+  'updater',
+  '--package-manager',
+  'npm',
+], {
+  cwd: root,
+  encoding: 'utf8',
+  stdio: 'pipe',
+})
+
+if (!postCreateUpdaterOutput.includes('Verified generated app recipe minimal with feature updater using npm')) {
+  throw new Error('verify-generated-app should verify post-create updater application')
+}
+
 let missingSigningKeyFailed = false
 try {
   execFileSync(process.execPath, [

@@ -34,3 +34,15 @@ export function packageManagerVersion(packageManager) {
 export function packageManagerSpec(packageManager) {
   return `${packageManager}@${packageManagerVersion(packageManager)}`
 }
+
+export function packageManagerInstallCommand(packageManager) {
+  return packageManager === 'pnpm' ? 'pnpm install --frozen-lockfile' : 'npm ci'
+}
+
+export function packageManagerSetupCommand(packageManager, packageManagerPinnedSpec) {
+  if (packageManager === 'pnpm') {
+    return `corepack enable\n          corepack prepare ${packageManagerPinnedSpec} --activate`
+  }
+
+  return 'npm --version'
+}

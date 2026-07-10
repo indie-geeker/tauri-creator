@@ -44,6 +44,9 @@ function runNode(script, args) {
 const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'tauri-creator-apply-feature-'))
 const target = path.join(tempRoot, 'demo')
 const conflictTarget = path.join(tempRoot, 'conflict-demo')
+const templateTarget = path.join(tempRoot, 'template-demo')
+const pnpmTemplateTarget = path.join(tempRoot, 'pnpm-template-demo')
+const invalidStateTarget = path.join(tempRoot, 'invalid-state-demo')
 
 try {
   runNode(createAppScript, [
@@ -85,6 +88,137 @@ try {
   assert(
     conflictError.includes("would overwrite existing file 'src/features/preferences/index.ts'"),
     'apply-feature should report the conflicting file path'
+  )
+
+  runNode(createAppScript, [
+    '--name',
+    'Template Demo',
+    '--target',
+    templateTarget,
+    '--recipe',
+    'minimal',
+  ])
+  const businessTemplatePath = path.join(templateTarget, 'src', 'business-template.txt')
+  const businessTemplate = "const literal = '{{APP_NAME}}'\n"
+  await writeFile(businessTemplatePath, businessTemplate)
+
+  runNode(applyFeatureScript, [
+    '--target',
+    templateTarget,
+    '--feature',
+    'updater',
+  ])
+
+  const appliedUpdaterConfig = await readFile(
+    path.join(templateTarget, 'src-tauri', 'tauri.conf.json'),
+    'utf8'
+  )
+  const appliedReleaseWorkflow = await readFile(
+    path.join(templateTarget, '.github', 'workflows', 'release.yml'),
+    'utf8'
+  )
+  assert(
+    !appliedUpdaterConfig.includes('{{APP_NAME}}') &&
+      appliedUpdaterConfig.includes(
+        'https://github.com/template-demo/template-demo/releases/latest/download/latest.json'
+      ),
+    'post-create updater application should render the generated package name'
+  )
+  assert(
+    !appliedReleaseWorkflow.includes('{{APP_TITLE}}') &&
+      !appliedReleaseWorkflow.includes('{{PACKAGE_MANAGER}}') &&
+      !appliedReleaseWorkflow.includes('{{PACKAGE_MANAGER_INSTALL_COMMAND}}'),
+    'post-create updater application should render release workflow placeholders'
+  )
+  assert(
+    appliedReleaseWorkflow.includes('name: Release Template Demo') &&
+      appliedReleaseWorkflow.includes('run: npm ci') &&
+      appliedReleaseWorkflow.includes('run: npm run check:all'),
+    'post-create updater application should render npm release commands'
+  )
+  assert(
+    await readFile(businessTemplatePath, 'utf8') === businessTemplate,
+    'applying a feature should not render placeholders in unrelated business files'
+  )
+
+  runNode(createAppScript, [
+    '--name',
+    'Pnpm Template Demo',
+    '--target',
+    pnpmTemplateTarget,
+    '--recipe',
+    'minimal',
+    '--package-manager',
+    'pnpm',
+  ])
+  runNode(applyFeatureScript, [
+    '--target',
+    pnpmTemplateTarget,
+    '--feature',
+    'updater',
+  ])
+  const appliedPnpmWorkflow = await readFile(
+    path.join(pnpmTemplateTarget, '.github', 'workflows', 'release.yml'),
+    'utf8'
+  )
+  assert(
+    appliedPnpmWorkflow.includes('corepack prepare pnpm@') &&
+      appliedPnpmWorkflow.includes('pnpm install --frozen-lockfile') &&
+      appliedPnpmWorkflow.includes('pnpm run check:all'),
+    'post-create updater application should render pinned pnpm release commands'
+  )
+
+  runNode(createAppScript, [
+    '--name',
+    'Invalid State Demo',
+    '--target',
+    invalidStateTarget,
+    '--recipe',
+    'minimal',
+  ])
+  const invalidStatePath = path.join(invalidStateTarget, '.tauri-creator.json')
+  const invalidState = JSON.parse(await readFile(invalidStatePath, 'utf8'))
+  delete invalidState.packageManagerSpec
+  await writeFile(invalidStatePath, `${JSON.stringify(invalidState, null, 2)}\n`)
+  const projectMapBeforeInvalidApply = await readFile(
+    path.join(invalidStateTarget, 'PROJECT_MAP.md'),
+    'utf8'
+  )
+  let invalidStateFailed = false
+  let invalidStateError = ''
+  try {
+    runNode(applyFeatureScript, [
+      '--target',
+      invalidStateTarget,
+      '--feature',
+      'updater',
+    ])
+  } catch (error) {
+    invalidStateFailed = true
+    invalidStateError = error.stderr?.toString('utf8') ?? ''
+  }
+  assert(invalidStateFailed, 'apply-feature should reject missing template state before mutation')
+  assert(
+    invalidStateError.includes('packageManagerSpec'),
+    'apply-feature should name the missing template state field'
+  )
+  assert(
+    !(await pathExists(path.join(invalidStateTarget, 'src', 'features', 'updater', 'index.ts'))),
+    'invalid template state should fail before copying updater files'
+  )
+  assert(
+    !(await pathExists(path.join(invalidStateTarget, '.github', 'workflows', 'release.yml'))),
+    'invalid template state should fail before copying dependency feature files'
+  )
+  const invalidStateAfterApply = JSON.parse(await readFile(invalidStatePath, 'utf8'))
+  assert(
+    invalidStateAfterApply.enabledFeatures.length === 0,
+    'invalid template state should fail before updating enabled features'
+  )
+  assert(
+    await readFile(path.join(invalidStateTarget, 'PROJECT_MAP.md'), 'utf8') ===
+      projectMapBeforeInvalidApply,
+    'invalid template state should fail before updating PROJECT_MAP.md'
   )
 
   const dryRunOutput = runNode(applyFeatureScript, [

@@ -3,6 +3,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { renderProjectMap } from './project-map.js'
 import { syncSpectaBindings } from './specta-bindings.js'
+import {
+  renderTemplateBuffer,
+  replaceTemplateText,
+  replaceTemplatesInFiles,
+  templateValuesFromState,
+} from './template-renderer.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const baseDir = path.join(root, 'base')
@@ -138,7 +144,7 @@ async function loadState(targetDir) {
   return readJson(statePath)
 }
 
-async function copyFeatureFiles(featureEntry, targetDir) {
+async function copyFeatureFiles(featureEntry, targetDir, templateValues) {
   const sourceDir = path.join(featureEntry.dir, 'files')
   if (!(await pathExists(sourceDir))) {
     fail(`feature '${featureEntry.manifest.name}' has no files/ directory`)
@@ -149,12 +155,17 @@ async function copyFeatureFiles(featureEntry, targetDir) {
     force: true,
   })
 
+  const copiedFiles = await listFiles(sourceDir)
+  await replaceTemplatesInFiles(targetDir, copiedFiles, templateValues)
+
   for (const relativePath of featureEntry.manifest.files ?? []) {
     const targetPath = path.join(targetDir, relativePath)
     if (!(await pathExists(targetPath))) {
       fail(`feature '${featureEntry.manifest.name}' did not create declared path '${relativePath}'`)
     }
   }
+
+  return copiedFiles
 }
 
 async function listFiles(dir, prefix = '') {
@@ -177,7 +188,7 @@ async function listFiles(dir, prefix = '') {
   return files.sort()
 }
 
-async function assertFeatureFilesCanBeCopied(featureEntry, targetDir) {
+async function assertFeatureFilesCanBeCopied(featureEntry, targetDir, templateValues) {
   const sourceDir = path.join(featureEntry.dir, 'files')
   const files = await listFiles(sourceDir)
 
@@ -187,7 +198,7 @@ async function assertFeatureFilesCanBeCopied(featureEntry, targetDir) {
     if (!(await pathExists(targetPath))) continue
     if (await pathExists(path.join(baseDir, file))) continue
 
-    const source = await readFile(sourcePath)
+    const source = renderTemplateBuffer(await readFile(sourcePath), templateValues)
     const target = await readFile(targetPath)
     if (!source.equals(target)) {
       fail(`feature '${featureEntry.manifest.name}' would overwrite existing file '${file}'`)
@@ -266,14 +277,20 @@ async function listJsonFiles(dir, prefix = '') {
   return files.sort()
 }
 
-async function mergeJsonPatches(featureEntry, targetDir) {
+async function mergeJsonPatches(featureEntry, targetDir, templateValues) {
   const jsonDir = path.join(featureEntry.dir, 'json')
   const patchFiles = await listJsonFiles(jsonDir)
 
   for (const relativePath of patchFiles) {
     const patchPath = path.join(jsonDir, relativePath)
     const targetPath = path.join(targetDir, relativePath)
-    const patch = await readJson(patchPath)
+    const rawPatch = await readFile(patchPath, 'utf8')
+    let patch
+    try {
+      patch = JSON.parse(replaceTemplateText(rawPatch, templateValues))
+    } catch (error) {
+      throw new Error(`${patchPath}: invalid rendered JSON (${error.message})`)
+    }
     const base = (await pathExists(targetPath)) ? await readJson(targetPath) : {}
     await writeJson(targetPath, mergeJsonValue(base, patch))
   }
@@ -484,14 +501,31 @@ function validateMarkerOperation(markerPath, operation) {
   }
 }
 
-async function applyMarkerInsertions(featureEntry, targetDir, state) {
-  const markerPath = path.join(featureEntry.dir, 'markers.json')
-  if (!(await pathExists(markerPath))) return
+function renderMarkerOperations(operations, templateValues) {
+  return operations.map((operation) => ({
+    ...operation,
+    insert:
+      typeof operation.insert === 'string'
+        ? replaceTemplateText(operation.insert, templateValues)
+        : operation.insert,
+  }))
+}
 
-  const operations = await readJson(markerPath)
-  if (!Array.isArray(operations)) {
+async function loadMarkerOperations(featureEntry, templateValues) {
+  const markerPath = path.join(featureEntry.dir, 'markers.json')
+  if (!(await pathExists(markerPath))) return { markerPath, operations: [] }
+
+  const rawOperations = await readJson(markerPath)
+  if (!Array.isArray(rawOperations)) {
     fail(`${markerPath}: expected an array`)
   }
+  const operations = renderMarkerOperations(rawOperations, templateValues)
+
+  return { markerPath, operations }
+}
+
+async function applyMarkerInsertions(featureEntry, targetDir, state, templateValues) {
+  const { markerPath, operations } = await loadMarkerOperations(featureEntry, templateValues)
 
   for (const operation of operations) {
     if (shouldSkipMarkerInsertionForSpecta(operation, state)) continue
@@ -543,14 +577,8 @@ function shouldSkipMarkerInsertionForSpecta(operation, state) {
   )
 }
 
-async function preflightMarkerInsertions(featureEntry, targetDir, state) {
-  const markerPath = path.join(featureEntry.dir, 'markers.json')
-  if (!(await pathExists(markerPath))) return
-
-  const operations = await readJson(markerPath)
-  if (!Array.isArray(operations)) {
-    fail(`${markerPath}: expected an array`)
-  }
+async function preflightMarkerInsertions(featureEntry, targetDir, state, templateValues) {
+  const { markerPath, operations } = await loadMarkerOperations(featureEntry, templateValues)
 
   for (const operation of operations) {
     if (shouldSkipMarkerInsertionForSpecta(operation, state)) continue
@@ -603,21 +631,21 @@ function formatFeatureList(featureNames) {
   return featureNames.length === 0 ? 'none' : featureNames.join(', ')
 }
 
-async function applyFeature(featureEntry, targetDir, state, manifests) {
+async function applyFeature(featureEntry, targetDir, state, manifests, templateValues) {
   const featureName = featureEntry.manifest.name
 
   if (state.enabledFeatures.includes(featureName)) {
     return false
   }
 
-  await assertFeatureFilesCanBeCopied(featureEntry, targetDir)
-  await preflightMarkerInsertions(featureEntry, targetDir, state)
+  await assertFeatureFilesCanBeCopied(featureEntry, targetDir, templateValues)
+  await preflightMarkerInsertions(featureEntry, targetDir, state, templateValues)
 
-  await copyFeatureFiles(featureEntry, targetDir)
-  await mergeJsonPatches(featureEntry, targetDir)
+  await copyFeatureFiles(featureEntry, targetDir, templateValues)
+  await mergeJsonPatches(featureEntry, targetDir, templateValues)
   await mergeCargoDependencies(featureEntry, targetDir)
   await mergeCapabilities(featureEntry, targetDir)
-  await applyMarkerInsertions(featureEntry, targetDir, state)
+  await applyMarkerInsertions(featureEntry, targetDir, state, templateValues)
 
   state.enabledFeatures = [...new Set([...state.enabledFeatures, featureName])]
   await writeJson(path.join(targetDir, '.tauri-creator.json'), state)
@@ -644,14 +672,20 @@ async function main() {
   const manifests = await loadFeatureManifests()
   const state = await loadState(targetDir)
   state.enabledFeatures = Array.isArray(state.enabledFeatures) ? state.enabledFeatures : []
+  let templateValues
+  try {
+    templateValues = templateValuesFromState(state)
+  } catch (error) {
+    fail(error.message)
+  }
 
   const features = resolveFeatureOrder(args.feature, manifests)
   const applied = []
 
   for (const featureEntry of features) {
     if (!state.enabledFeatures.includes(featureEntry.manifest.name)) {
-      await assertFeatureFilesCanBeCopied(featureEntry, targetDir)
-      await preflightMarkerInsertions(featureEntry, targetDir, state)
+      await assertFeatureFilesCanBeCopied(featureEntry, targetDir, templateValues)
+      await preflightMarkerInsertions(featureEntry, targetDir, state, templateValues)
     }
   }
 
@@ -666,7 +700,7 @@ async function main() {
   }
 
   for (const featureEntry of features) {
-    if (await applyFeature(featureEntry, targetDir, state, manifests)) {
+    if (await applyFeature(featureEntry, targetDir, state, manifests, templateValues)) {
       applied.push(featureEntry.manifest.name)
     }
   }

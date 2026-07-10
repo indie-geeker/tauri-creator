@@ -7,9 +7,12 @@ import { parseCommaList, promptForCreateApp } from './prompts.js'
 import {
   defaultPackageManager,
   normalizePackageManager,
+  packageManagerInstallCommand,
+  packageManagerSetupCommand,
   packageManagerSpec,
   supportedPackageManagers,
 } from './package-managers.js'
+import { replaceTemplatesInTree } from './template-renderer.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const baseDir = path.join(root, 'base')
@@ -258,18 +261,6 @@ function normalizePackageManagerOption(value) {
   }
 }
 
-function packageManagerInstallCommand(packageManager) {
-  return packageManager === 'pnpm' ? 'pnpm install --frozen-lockfile' : 'npm ci'
-}
-
-function packageManagerSetupCommand(packageManager, packageManagerPinnedSpec) {
-  if (packageManager === 'pnpm') {
-    return `corepack enable\n          corepack prepare ${packageManagerPinnedSpec} --activate`
-  }
-
-  return 'npm --version'
-}
-
 function normalizeWindowDimension(value, optionName, fallback) {
   const raw = String(value ?? fallback).trim()
   const parsed = Number.parseInt(raw, 10)
@@ -317,37 +308,6 @@ function buildTemplateValues(rawName, options = {}) {
     PACKAGE_MANAGER_INSTALL_COMMAND: packageManagerInstallCommand(packageManager),
     PACKAGE_MANAGER_SPEC: packageManagerPinnedSpec,
     PACKAGE_MANAGER_SETUP_COMMAND: packageManagerSetupCommand(packageManager, packageManagerPinnedSpec),
-  }
-}
-
-function replaceTemplateText(text, values) {
-  return Object.entries(values).reduce(
-    (updated, [key, value]) => updated.replaceAll(`{{${key}}}`, value),
-    text
-  )
-}
-
-async function replaceTemplatesInTree(dir, values) {
-  const entries = await readdir(dir, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name)
-
-    if (entry.isDirectory()) {
-      await replaceTemplatesInTree(fullPath, values)
-      continue
-    }
-
-    if (!entry.isFile()) continue
-
-    const raw = await readFile(fullPath)
-    if (raw.includes(0)) continue
-
-    const original = raw.toString('utf8')
-    const updated = replaceTemplateText(original, values)
-    if (updated !== original) {
-      await writeFile(fullPath, updated)
-    }
   }
 }
 
