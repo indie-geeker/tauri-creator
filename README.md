@@ -54,17 +54,25 @@ npm run docs:generate
 
 ## Create An App
 
-Use the interactive flow when starting a real app:
+The recommended way to start a real project is the quick interactive flow:
 
 ```bash
 npm run create-app
 ```
 
-It asks for the app name, target path, integration mode, feature or recipe
-selection, optional sidebar layout, author, bundle identifier prefix,
-main window size, license, and package manager. Choose feature integration to
-assemble features manually, or recipe integration to use the `minimal`,
-`starter`, or `full` ladder.
+It asks four questions: app name, target path, bundle identifier prefix, and
+package manager. It creates the `starter` recipe with production foundations
+and conservative defaults.
+
+Use advanced mode when you need manual feature composition, a different recipe,
+sidebar selection, or metadata and window overrides:
+
+```bash
+npm run create-app -- --advanced
+```
+
+The `full` recipe is a reference and regression target, not the normal project
+starting point.
 
 Use recipe integration for a preset ladder level:
 
@@ -89,6 +97,22 @@ When running scaffold scripts through npm, insert `--` before script options:
 ```bash
 npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe starter
 ```
+
+Add product features before customizing the files they own:
+
+```bash
+npm run apply-feature -- --target /tmp/demo-tool --feature updater
+```
+
+Preview removals before applying them:
+
+```bash
+npm run remove-feature -- --target /tmp/demo-tool --feature updater --dry-run
+npm run remove-feature -- --target /tmp/demo-tool --feature updater
+```
+
+Do not hand-delete cross-cutting feature files; use the feature scripts so state,
+dependencies, registrations, and `PROJECT_MAP.md` remain synchronized.
 
 ## Verification
 

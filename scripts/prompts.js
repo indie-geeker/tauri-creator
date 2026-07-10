@@ -79,7 +79,44 @@ export function createPromptSession({
   }
 }
 
-export async function promptForCreateApp({
+export async function promptForQuickCreateApp({
+  packageManagers,
+  defaultPackageManager,
+  defaultTargetForName,
+  input = defaultInput,
+  output = defaultOutput,
+} = {}) {
+  const prompt = createPromptSession({ input, output })
+
+  try {
+    const name = await prompt.ask('App name')
+    const target = await prompt.ask('Target path', defaultTargetForName(name))
+    const bundleIdentifierPrefix = await prompt.ask('Bundle identifier prefix', 'com.local')
+    const packageManager = await prompt.choose(
+      'Package manager',
+      packageManagers,
+      defaultPackageManager
+    )
+
+    return {
+      name,
+      target,
+      recipe: 'starter',
+      optionalFeatures: [],
+      sidebar: 'both',
+      author: 'you',
+      bundleIdentifierPrefix,
+      windowWidth: '1000',
+      windowHeight: '700',
+      license: 'UNLICENSED',
+      packageManager,
+    }
+  } finally {
+    prompt.close()
+  }
+}
+
+export async function promptForAdvancedCreateApp({
   recipes,
   features,
   packageManagers,

@@ -3,7 +3,11 @@ import { cp, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { renderProjectMap } from './project-map.js'
-import { parseCommaList, promptForCreateApp } from './prompts.js'
+import {
+  parseCommaList,
+  promptForAdvancedCreateApp,
+  promptForQuickCreateApp,
+} from './prompts.js'
 import {
   defaultPackageManager,
   normalizePackageManager,
@@ -22,12 +26,12 @@ const applyFeatureScript = path.join(root, 'scripts', 'apply-feature.js')
 
 function printUsage() {
   console.log(`Usage: node scripts/create-app.js
+       node scripts/create-app.js --advanced
        node scripts/create-app.js --name <app-name> --target <path> --recipe <recipe>
        node scripts/create-app.js --name <app-name> --target <path> --features <feature-a,feature-b>
-       node scripts/create-app.js --interactive
 
 Options:
-  --interactive        Prompt for app settings. Default when no options are passed.
+  --advanced           Open the full interactive feature and recipe configuration flow.
   --name               App package name. Example: demo-tool
   --target             Output directory. Must be empty or not exist.
   --recipe             Recipe preset from recipes/*.json. Example: starter
@@ -49,7 +53,7 @@ function fail(message) {
 
 function parseArgs(argv) {
   const args = {}
-  const booleanFlags = new Set(['interactive'])
+  const booleanFlags = new Set(['advanced'])
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]
@@ -333,32 +337,39 @@ function optionFromArgs(args, dashedKey, camelKey) {
 }
 
 async function resolveCreateOptions(args, featureManifests) {
-  const shouldPrompt = args.interactive || Object.keys(args).length === 0
-  if (!shouldPrompt) {
-    return {
-      name: args.name,
-      target: args.target,
-      recipe: args.recipe,
-      optionalFeatures: parseOptionalFeatureArgs(args),
-      sidebar: args.sidebar,
-      packageManager: optionFromArgs(args, 'package-manager', 'packageManager'),
-      author: args.author,
-      bundleIdentifierPrefix: optionFromArgs(args, 'bundle-prefix', 'bundlePrefix'),
-      windowWidth: optionFromArgs(args, 'window-width', 'windowWidth'),
-      windowHeight: optionFromArgs(args, 'window-height', 'windowHeight'),
-      license: args.license,
-    }
-  }
-
-  return promptForCreateApp({
-    recipes: await listRecipeNames(),
-    features: [...featureManifests.keys()].sort(),
+  const promptOptions = {
     packageManagers: supportedPackageManagers,
     defaultPackageManager,
     defaultTargetForName(name) {
       return path.join(process.cwd(), toPackageName(name))
     },
-  })
+  }
+
+  if (Object.keys(args).length === 0) {
+    return promptForQuickCreateApp(promptOptions)
+  }
+
+  if (args.advanced) {
+    return promptForAdvancedCreateApp({
+      ...promptOptions,
+      recipes: await listRecipeNames(),
+      features: [...featureManifests.keys()].sort(),
+    })
+  }
+
+  return {
+    name: args.name,
+    target: args.target,
+    recipe: args.recipe,
+    optionalFeatures: parseOptionalFeatureArgs(args),
+    sidebar: args.sidebar,
+    packageManager: optionFromArgs(args, 'package-manager', 'packageManager'),
+    author: args.author,
+    bundleIdentifierPrefix: optionFromArgs(args, 'bundle-prefix', 'bundlePrefix'),
+    windowWidth: optionFromArgs(args, 'window-width', 'windowWidth'),
+    windowHeight: optionFromArgs(args, 'window-height', 'windowHeight'),
+    license: args.license,
+  }
 }
 
 async function writeTextIfChanged(filePath, content) {
@@ -504,10 +515,18 @@ async function main() {
     return
   }
 
+  if (args.advanced) {
+    const combinedOptions = Object.keys(args).filter((key) => key !== 'advanced')
+    if (combinedOptions.length > 0) {
+      fail(`--advanced cannot be combined with ${combinedOptions.map((key) => `--${key}`).join(', ')}`)
+    }
+  }
+
   const featureManifests = await loadFeatureManifests()
   const options = await resolveCreateOptions(args, featureManifests)
 
-  if (!options.name) fail(args.interactive ? 'app name is required' : 'missing required --name')
+  const isPrompted = args.advanced || Object.keys(args).length === 0
+  if (!options.name) fail(isPrompted ? 'app name is required' : 'missing required --name')
 
   const values = buildTemplateValues(options.name, options)
   const targetDir = path.resolve(options.target ?? path.join(process.cwd(), values.APP_NAME))
@@ -524,7 +543,7 @@ async function main() {
     ...(recipe?.features ?? []),
     ...optionalFeatureNames,
   ]
-  if (!recipe && requestedFeatureNames.length === 0 && !args.interactive) {
+  if (!recipe && requestedFeatureNames.length === 0 && !args.advanced) {
     fail('missing required --recipe or --features')
   }
   const allFeatures = resolveFeatureOrder({
@@ -533,7 +552,7 @@ async function main() {
   }, featureManifests)
   const resolvedFeatureNames = allFeatures.map((feature) => feature.name)
   const sidebar = normalizeSidebarOption(options.sidebar)
-  if (options.sidebar && !resolvedFeatureNames.includes('ui-layout')) {
+  if (args.sidebar && !resolvedFeatureNames.includes('ui-layout')) {
     fail('--sidebar can only be used when ui-layout is enabled')
   }
 

@@ -196,6 +196,24 @@ try {
     readme.includes('npm run create-app -- --name demo-tool'),
     'README should show npm -- forwarding for create-app options'
   )
+  assert(
+    readme.includes('asks four questions') && readme.includes('creates the `starter` recipe'),
+    'README should explain the recommended four-question starter flow'
+  )
+  assert(
+    readme.includes('npm run create-app -- --advanced'),
+    'README should document the explicit advanced creation flow'
+  )
+  assert(
+    readme.includes('reference and regression target'),
+    'README should distinguish full from the normal project starting point'
+  )
+  assert(
+    readme.includes('npm run apply-feature -- --target') &&
+      readme.includes('npm run remove-feature -- --target') &&
+      readme.includes('--dry-run'),
+    'README should document safe feature application and removal commands'
+  )
 
   createApp([
     '--name',

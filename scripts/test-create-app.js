@@ -48,7 +48,9 @@ const featureTarget = path.join(tempRoot, 'feature-demo')
 const leftSidebarTarget = path.join(tempRoot, 'left-sidebar-demo')
 const rightSidebarTarget = path.join(tempRoot, 'right-sidebar-demo')
 const bothSidebarTarget = path.join(tempRoot, 'both-sidebar-demo')
-const interactiveTarget = path.join(tempRoot, 'interactive-demo')
+const quickTarget = path.join(tempRoot, 'quick-demo')
+const advancedRecipeTarget = path.join(tempRoot, 'advanced-recipe-demo')
+const advancedFeatureTarget = path.join(tempRoot, 'advanced-feature-demo')
 const pnpmManagerTarget = path.join(tempRoot, 'pnpm-manager-demo')
 const pnpmFullTarget = path.join(tempRoot, 'pnpm-full-demo')
 const brokenFeatureDir = path.join(root, 'features', 'broken-readiness-test')
@@ -293,11 +295,38 @@ try {
   assert(bothUIStore.includes('leftSidebarVisible'), 'both sidebar layout should keep left sidebar store state')
   assert(bothUIStore.includes('rightSidebarVisible'), 'both sidebar layout should keep right sidebar store state')
 
-  const interactiveOutput = runCreateApp([], {
+  const quickOutput = runCreateApp([], {
     encoding: 'utf8',
     input: [
       'Interactive Demo',
-      interactiveTarget,
+      quickTarget,
+      'com.example',
+      '1',
+      '',
+    ].join('\n'),
+  })
+
+  assert(!quickOutput.includes('Integration mode options:'), 'quick mode should not ask for integration mode')
+  assert(!quickOutput.includes('Recipe options:'), 'quick mode should not ask for a recipe')
+  assert(!quickOutput.includes('Sidebar layout options:'), 'quick mode should not ask for sidebar layout')
+
+  const quickState = await readState(quickTarget)
+  assert(quickState.integrationMode === 'recipe', 'quick mode should use recipe integration')
+  assert(quickState.recipe === 'starter', 'quick mode should create the starter recipe')
+  assert(
+    quickState.requestedFeatures.join(',') === 'specta-bindings,preferences,logging,diagnostics',
+    'quick mode should request exactly the starter foundation features'
+  )
+  assert(quickState.author === 'you', 'quick mode should use the default author')
+  assert(quickState.license === 'UNLICENSED', 'quick mode should use the default license')
+  assert(quickState.window.width === 1000, 'quick mode should use the default window width')
+  assert(quickState.window.height === 700, 'quick mode should use the default window height')
+
+  const advancedRecipeOutput = runCreateApp(['--advanced'], {
+    encoding: 'utf8',
+    input: [
+      'Advanced Recipe Demo',
+      advancedRecipeTarget,
       '2',
       '3',
       '1',
@@ -311,17 +340,73 @@ try {
     ].join('\n'),
   })
 
-  assert(interactiveOutput.includes('Integration mode options:'), 'interactive mode should present integration mode choices')
-  assert(interactiveOutput.includes('Recipe options:'), 'interactive recipe mode should present recipe choices')
-  assert(interactiveOutput.includes('Sidebar layout options:'), 'interactive full recipe should present sidebar choices')
+  assert(
+    advancedRecipeOutput.includes('Integration mode options:'),
+    'advanced mode should present integration mode choices'
+  )
+  assert(advancedRecipeOutput.includes('Recipe options:'), 'advanced mode should present recipe choices')
+  assert(
+    advancedRecipeOutput.includes('Sidebar layout options:'),
+    'advanced full recipe should present sidebar choices'
+  )
 
-  const interactiveState = await readState(interactiveTarget)
-  assert(interactiveState.integrationMode === 'recipe', 'interactive recipe mode should be recorded')
-  assert(interactiveState.recipe === 'full', 'interactive should record the selected full recipe')
-  assert(interactiveState.options.layout.sidebar === 'left', 'interactive should record the selected sidebar layout')
-  const interactivePackage = await readJson(path.join(interactiveTarget, 'package.json'))
-  assert(interactivePackage.name === 'interactive-demo', 'interactive mode should normalize the app package name')
-  assert(interactivePackage.license === 'MIT', 'interactive mode should write the selected package license')
+  const advancedRecipeState = await readState(advancedRecipeTarget)
+  assert(advancedRecipeState.integrationMode === 'recipe', 'advanced recipe mode should be recorded')
+  assert(advancedRecipeState.recipe === 'full', 'advanced mode should support the full recipe')
+  assert(advancedRecipeState.options.layout.sidebar === 'left', 'advanced mode should record sidebar layout')
+  assert(advancedRecipeState.author === 'Wen', 'advanced mode should record author overrides')
+  assert(advancedRecipeState.license === 'MIT', 'advanced mode should record license overrides')
+  assert(advancedRecipeState.window.width === 1200, 'advanced mode should record window width overrides')
+  assert(advancedRecipeState.window.height === 760, 'advanced mode should record window height overrides')
+
+  runCreateApp(['--advanced'], {
+    encoding: 'utf8',
+    input: [
+      'Advanced Feature Demo',
+      advancedFeatureTarget,
+      '1',
+      '8,5',
+      'Feature Author',
+      'org.example',
+      '1100',
+      '720',
+      'Apache-2.0',
+      '1',
+      '',
+    ].join('\n'),
+  })
+
+  const advancedFeatureState = await readState(advancedFeatureTarget)
+  assert(advancedFeatureState.integrationMode === 'features', 'advanced mode should support feature integration')
+  assert(advancedFeatureState.recipe === null, 'advanced feature integration should not record a recipe')
+  assert(
+    advancedFeatureState.requestedFeatures.join(',') === 'logging,diagnostics',
+    'advanced mode should preserve manual feature selection order'
+  )
+
+  for (const [caseName, extraArgs] of [
+    ['recipe', ['--recipe', 'starter']],
+    ['features', ['--features', 'logging']],
+    ['identity', ['--name', 'ambiguous-demo']],
+    ['configuration', ['--author', 'Wen']],
+  ]) {
+    const ambiguousTarget = path.join(tempRoot, `advanced-${caseName}-ambiguity`)
+    let ambiguityFailed = false
+    try {
+      runCreateApp(['--advanced', '--target', ambiguousTarget, ...extraArgs], {
+        encoding: 'utf8',
+        input: '',
+      })
+    } catch (error) {
+      ambiguityFailed = true
+      assert(
+        error.stderr?.includes('--advanced cannot be combined'),
+        `advanced ${caseName} ambiguity should explain the invalid combination`
+      )
+    }
+    assert(ambiguityFailed, `advanced should reject ${caseName} options`)
+    assert(!(await pathExists(ambiguousTarget)), `advanced ${caseName} ambiguity should not create a target`)
+  }
 
   runCreateApp([
     '--name',
