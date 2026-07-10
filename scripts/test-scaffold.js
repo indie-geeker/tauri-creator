@@ -367,6 +367,19 @@ try {
     await pathExists(path.join(productionTarget, '.ast-grep', 'rules')),
     'production should include strict dx tooling'
   )
+  const productionPackageJson = await readJson(path.join(productionTarget, 'package.json'))
+  for (const [scriptName, command] of Object.entries(productionPackageJson.scripts)) {
+    assert(
+      !command.includes('source ~/.cargo/env'),
+      `production ${scriptName} should not depend on source or ~/.cargo/env`
+    )
+  }
+  assert(
+    productionPackageJson.scripts['check:all'].includes(
+      'cargo clippy --manifest-path src-tauri/Cargo.toml'
+    ),
+    'production check:all should retain the Rust clippy gate'
+  )
   assert(
     await pathExists(path.join(productionTarget, 'src-tauri', 'src', 'bindings.rs')),
     'production should include Specta bindings'

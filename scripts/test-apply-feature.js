@@ -708,6 +708,28 @@ try {
     packageJsonAfterDxTools.scripts['check:all'] !== undefined,
     'dx-tools should inject check:all script'
   )
+  assert(
+    packageJsonAfterDxTools.scripts['rust:fmt'] ===
+      'cargo fmt --manifest-path src-tauri/Cargo.toml',
+    'dx-tools rust:fmt should work without a POSIX shell profile'
+  )
+  assert(
+    packageJsonAfterDxTools.scripts['rust:clippy'] ===
+      'cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings',
+    'dx-tools rust:clippy should work without a POSIX shell profile'
+  )
+  for (const [scriptName, command] of Object.entries(packageJsonAfterDxTools.scripts)) {
+    assert(
+      !command.includes('source ~/.cargo/env'),
+      `dx-tools ${scriptName} should not depend on source or ~/.cargo/env`
+    )
+  }
+  assert(
+    packageJsonAfterDxTools.scripts['check:all'].includes(
+      'cargo clippy --manifest-path src-tauri/Cargo.toml'
+    ),
+    'dx-tools check:all should retain the Rust clippy gate'
+  )
 
   runNode(applyFeatureScript, [
     '--target',
