@@ -2,6 +2,11 @@
   "name": "ui-layout",
   "description": "Three-pane resizable desktop layout.",
   "stage": "v1",
+  "wizard": {
+    "visible": true,
+    "label": "Desktop layout",
+    "category": "Product"
+  },
   "dependsOn": [
     "ui-shadcn",
     "app-state",

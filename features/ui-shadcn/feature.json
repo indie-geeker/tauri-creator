@@ -2,6 +2,9 @@
   "name": "ui-shadcn",
   "description": "Base UI component library using shadcn/ui and Radix.",
   "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
   "dependsOn": [
     "ui-tailwind"
   ],

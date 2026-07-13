@@ -21,6 +21,7 @@ const requiredManifestFields = [
   'capabilities',
   'qualityChecks',
   'removeHints',
+  'wizard',
 ]
 
 function fail(errors) {
@@ -89,6 +90,28 @@ function validateManifestShape(manifestPath, manifest) {
       if (typeof value !== 'string') {
         errors.push(`${manifestPath}: '${field}' values must be strings`)
       }
+    }
+  }
+
+  if ('wizard' in manifest) {
+    const wizard = manifest.wizard
+    if (!wizard || Array.isArray(wizard) || typeof wizard !== 'object') {
+      errors.push(`${manifestPath}: 'wizard' must be an object`)
+    } else if (typeof wizard.visible !== 'boolean') {
+      errors.push(`${manifestPath}: 'wizard.visible' must be a boolean`)
+    } else if (wizard.visible) {
+      if (typeof wizard.label !== 'string' || wizard.label.trim().length === 0) {
+        errors.push(
+          `${manifestPath}: visible wizard feature requires non-empty 'wizard.label'`
+        )
+      }
+      if (typeof wizard.category !== 'string' || wizard.category.trim().length === 0) {
+        errors.push(
+          `${manifestPath}: visible wizard feature requires non-empty 'wizard.category'`
+        )
+      }
+    } else if (Object.keys(wizard).some((field) => field !== 'visible')) {
+      errors.push(`${manifestPath}: hidden wizard metadata may only contain 'visible'`)
     }
   }
 

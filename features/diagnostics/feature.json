@@ -2,6 +2,9 @@
   "name": "diagnostics",
   "description": "Export app diagnostics for debugging production issues.",
   "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
   "dependsOn": [],
   "conflictsWith": [],
   "npmDependencies": [],

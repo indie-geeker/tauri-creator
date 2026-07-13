@@ -2,6 +2,11 @@
   "name": "quick-pane",
   "description": "Floating quick-entry window with global shortcut support.",
   "stage": "v2",
+  "wizard": {
+    "visible": true,
+    "label": "Quick pane",
+    "category": "Desktop"
+  },
   "dependsOn": [
     "preferences"
   ],

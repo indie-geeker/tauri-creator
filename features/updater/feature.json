@@ -2,6 +2,11 @@
   "name": "updater",
   "description": "Tauri updater integration with release configuration checks.",
   "stage": "v1",
+  "wizard": {
+    "visible": true,
+    "label": "Updater",
+    "category": "Delivery"
+  },
   "dependsOn": [
     "project-governance"
   ],

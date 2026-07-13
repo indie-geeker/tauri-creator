@@ -2,6 +2,11 @@
   "name": "command-palette",
   "description": "Unified command registry and searchable command palette.",
   "stage": "v1",
+  "wizard": {
+    "visible": true,
+    "label": "Command palette",
+    "category": "Desktop"
+  },
   "dependsOn": [],
   "conflictsWith": [],
   "npmDependencies": [

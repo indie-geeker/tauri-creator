@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const checkManifestsScript = path.join(root, 'scripts', 'check-manifests.js')
 const invalidFeatureDir = path.join(root, 'features', 'zz-invalid-docs')
 const invalidMarkerFeatureDir = path.join(root, 'features', 'zz-invalid-marker')
+const invalidWizardFeatureDir = path.join(root, 'features', 'zz-invalid-wizard')
 
 function assert(condition, message) {
   if (!condition) {
@@ -30,25 +31,83 @@ function runCheckManifests() {
   return { failed, stderr }
 }
 
+function createManifest(name, overrides = {}) {
+  return {
+    name,
+    description: `Test fixture for ${name}.`,
+    stage: 'v1',
+    dependsOn: [],
+    conflictsWith: [],
+    npmDependencies: [],
+    cargoDependencies: [],
+    files: [],
+    tauriCommands: [],
+    spectaExports: [],
+    capabilities: [],
+    qualityChecks: [],
+    removeHints: [],
+    wizard: { visible: false },
+    ...overrides,
+  }
+}
+
+async function assertInvalidWizard(manifest, expectedMessage) {
+  await mkdir(invalidWizardFeatureDir, { recursive: true })
+  await writeFile(
+    path.join(invalidWizardFeatureDir, 'feature.json'),
+    `${JSON.stringify(manifest, null, 2)}\n`
+  )
+
+  const { failed, stderr } = runCheckManifests()
+  assert(failed, `check-manifests should fail: ${expectedMessage}`)
+  assert(
+    stderr.includes(expectedMessage),
+    `check-manifests should report '${expectedMessage}', received:\n${stderr}`
+  )
+}
+
+try {
+  const { wizard: _wizard, ...withoutWizard } = createManifest('zz-invalid-wizard')
+  await assertInvalidWizard(withoutWizard, "missing required field 'wizard'")
+
+  await assertInvalidWizard(
+    createManifest('zz-invalid-wizard', { wizard: null }),
+    "'wizard' must be an object"
+  )
+  await assertInvalidWizard(
+    createManifest('zz-invalid-wizard', { wizard: { visible: 'yes' } }),
+    "'wizard.visible' must be a boolean"
+  )
+  await assertInvalidWizard(
+    createManifest('zz-invalid-wizard', {
+      wizard: { visible: true, label: '', category: 'Desktop' },
+    }),
+    "visible wizard feature requires non-empty 'wizard.label'"
+  )
+  await assertInvalidWizard(
+    createManifest('zz-invalid-wizard', {
+      wizard: { visible: true, label: 'Invalid wizard fixture', category: '' },
+    }),
+    "visible wizard feature requires non-empty 'wizard.category'"
+  )
+  await assertInvalidWizard(
+    createManifest('zz-invalid-wizard', {
+      wizard: { visible: false, label: 'Hidden implementation detail' },
+    }),
+    "hidden wizard metadata may only contain 'visible'"
+  )
+} finally {
+  await rm(invalidWizardFeatureDir, { recursive: true, force: true })
+}
+
 try {
   await mkdir(invalidFeatureDir, { recursive: true })
   await writeFile(
     path.join(invalidFeatureDir, 'feature.json'),
-    `${JSON.stringify({
-      name: 'zz-invalid-docs',
+    `${JSON.stringify(createManifest('zz-invalid-docs', {
       description: 'Invalid fixture with missing declared docs.',
-      stage: 'v1',
-      dependsOn: [],
-      conflictsWith: [],
-      npmDependencies: [],
-      cargoDependencies: [],
       files: ['docs/features/zz-invalid-docs.md'],
-      tauriCommands: [],
-      spectaExports: [],
-      capabilities: [],
-      qualityChecks: [],
-      removeHints: [],
-    }, null, 2)}\n`
+    }), null, 2)}\n`
   )
 
   const { failed, stderr } = runCheckManifests()
@@ -65,21 +124,9 @@ try {
   await mkdir(invalidMarkerFeatureDir, { recursive: true })
   await writeFile(
     path.join(invalidMarkerFeatureDir, 'feature.json'),
-    `${JSON.stringify({
-      name: 'zz-invalid-marker',
+    `${JSON.stringify(createManifest('zz-invalid-marker', {
       description: 'Invalid fixture with a marker that does not exist in the base app.',
-      stage: 'v1',
-      dependsOn: [],
-      conflictsWith: [],
-      npmDependencies: [],
-      cargoDependencies: [],
-      files: [],
-      tauriCommands: [],
-      spectaExports: [],
-      capabilities: [],
-      qualityChecks: [],
-      removeHints: [],
-    }, null, 2)}\n`
+    }), null, 2)}\n`
   )
   await writeFile(
     path.join(invalidMarkerFeatureDir, 'markers.json'),

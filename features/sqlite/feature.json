@@ -2,6 +2,11 @@
   "name": "sqlite",
   "description": "SQLite persistence with Rust repositories and frontend query hooks.",
   "stage": "v1",
+  "wizard": {
+    "visible": true,
+    "label": "SQLite",
+    "category": "Data"
+  },
   "dependsOn": [],
   "conflictsWith": [],
   "npmDependencies": [

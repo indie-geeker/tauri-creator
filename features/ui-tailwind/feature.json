@@ -2,6 +2,9 @@
   "name": "ui-tailwind",
   "description": "Tailwind CSS v4 and Shadcn-compatible utility base.",
   "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
   "dependsOn": [],
   "conflictsWith": [],
   "npmDependencies": [

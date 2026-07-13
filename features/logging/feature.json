@@ -2,6 +2,9 @@
   "name": "logging",
   "description": "Rust and frontend logging through tauri-plugin-log.",
   "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
   "dependsOn": [],
   "conflictsWith": [],
   "npmDependencies": [

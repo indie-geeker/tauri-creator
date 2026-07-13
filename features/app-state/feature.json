@@ -2,6 +2,9 @@
   "name": "app-state",
   "description": "Application state utilities using Zustand and TanStack Query.",
   "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
   "dependsOn": [
     "preferences"
   ],

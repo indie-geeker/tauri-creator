@@ -2,6 +2,9 @@
   "name": "ui-preferences",
   "description": "Generic settings panel for app-wide shortcuts and appearance preferences.",
   "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
   "dependsOn": [
     "preferences",
     "ui-shadcn",
