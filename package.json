@@ -5,6 +5,7 @@
   "packageManager": "npm@11.6.2",
   "type": "module",
   "scripts": {
+    "create": "node scripts/create-app.js",
     "create-app": "node scripts/create-app.js",
     "apply-feature": "node scripts/apply-feature.js",
     "remove-feature": "node scripts/remove-feature.js",

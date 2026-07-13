@@ -54,48 +54,47 @@ npm run docs:generate
 
 ## Create An App
 
-The recommended way to start a real project is the quick interactive flow:
+Use one command for normal project creation:
 
 ```bash
-npm run create-app
+npm run create
 ```
 
-It asks four questions: app name, target path, bundle identifier prefix, and
-package manager. It creates the `starter` recipe with production foundations
-and conservative defaults.
+The wizard asks for a project name and target, then offers three templates:
 
-Use advanced mode when you need manual feature composition, a different recipe,
-sidebar selection, or metadata and window overrides:
+- Starter is the recommended production foundation for a new product.
+- Minimal is the smallest runnable Tauri React app.
+- Full is the complete reference and regression template.
+
+After choosing a template, you can add optional capabilities such as SQLite,
+Updater, or Quick pane. The menu hides infrastructure details, resolves their
+dependencies automatically, and shows the complete result before creating any
+files. Advanced author, license, window, and layout settings are available only
+when you choose to customize them.
+
+The `full` recipe remains a reference and regression target, not the normal
+project starting point.
+
+### Automation
+
+Explicit flags remain available for scripts and CI; they are not commands you
+need to memorize for normal use:
 
 ```bash
-npm run create-app -- --advanced
+node scripts/create-app.js --name demo-tool --target /tmp/demo-tool --recipe starter
+node scripts/create-app.js --name demo-tool --target /tmp/demo-tool --recipe full --sidebar left
 ```
 
-The `full` recipe is a reference and regression target, not the normal project
-starting point.
-
-Use recipe integration for a preset ladder level:
+Automation can also request an exact feature set:
 
 ```bash
-npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe full --sidebar left
-```
-
-Use feature integration for a manual feature set:
-
-```bash
-npm run create-app -- --name demo-tool --target /tmp/demo-tool --features logging,diagnostics
+node scripts/create-app.js --name demo-tool --target /tmp/demo-tool --features logging,diagnostics
 ```
 
 Generate a pnpm-based app explicitly:
 
 ```bash
-npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe starter --package-manager pnpm
-```
-
-When running scaffold scripts through npm, insert `--` before script options:
-
-```bash
-npm run create-app -- --name demo-tool --target /tmp/demo-tool --recipe starter
+node scripts/create-app.js --name demo-tool --target /tmp/demo-tool --recipe starter --package-manager pnpm
 ```
 
 Add product features before customizing the files they own:

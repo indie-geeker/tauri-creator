@@ -126,6 +126,14 @@ try {
   )
   assert(defaultPackageManager === 'npm', 'create-app should default generated apps to npm')
   assert(
+    rootPackage.scripts.create === 'node scripts/create-app.js',
+    'root package should expose npm run create as the daily wizard entry'
+  )
+  assert(
+    rootPackage.scripts['create-app'] === rootPackage.scripts.create,
+    'create-app should remain as a compatibility alias'
+  )
+  assert(
     !Object.values(rootPackage.scripts).some((script) => script.includes('pnpm run')),
     'root package scripts should not hard-code pnpm run internally'
   )
@@ -193,16 +201,24 @@ try {
     'README should not use pnpm commands in npm-first examples'
   )
   assert(
-    readme.includes('npm run create-app -- --name demo-tool'),
-    'README should show npm -- forwarding for create-app options'
+    (readme.match(/^npm run create$/gm) ?? []).length === 1,
+    'README should recommend npm run create exactly once as the daily command'
+  )
+  assert(!readme.includes('npm run create-app'), 'README should not ask users to remember the compatibility alias')
+  assert(!readme.includes('--advanced'), 'README should not document the obsolete advanced entry')
+  assert(
+    readme.includes('Starter') && readme.includes('Minimal') && readme.includes('Full'),
+    'README should explain all three wizard templates'
   )
   assert(
-    readme.includes('asks four questions') && readme.includes('creates the `starter` recipe'),
-    'README should explain the recommended four-question starter flow'
+    readme.includes('optional capabilities') && readme.includes('dependencies automatically'),
+    'README should explain optional capabilities and automatic dependency resolution'
   )
   assert(
-    readme.includes('npm run create-app -- --advanced'),
-    'README should document the explicit advanced creation flow'
+    readme.includes('node scripts/create-app.js --name demo-tool') &&
+      readme.includes('--recipe starter') &&
+      readme.includes('--features logging,diagnostics'),
+    'README should retain explicit flags under automation guidance'
   )
   assert(
     readme.includes('reference and regression target'),
