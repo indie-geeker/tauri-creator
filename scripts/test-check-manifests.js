@@ -8,6 +8,7 @@ const checkManifestsScript = path.join(root, 'scripts', 'check-manifests.js')
 const invalidFeatureDir = path.join(root, 'features', 'zz-invalid-docs')
 const invalidMarkerFeatureDir = path.join(root, 'features', 'zz-invalid-marker')
 const invalidWizardFeatureDir = path.join(root, 'features', 'zz-invalid-wizard')
+const invalidRecipePath = path.join(root, 'recipes', 'zz-invalid-wizard-recipe.json')
 
 function assert(condition, message) {
   if (!condition) {
@@ -66,6 +67,16 @@ async function assertInvalidWizard(manifest, expectedMessage) {
   )
 }
 
+async function assertInvalidRecipe(recipe, expectedMessage) {
+  await writeFile(invalidRecipePath, `${JSON.stringify(recipe, null, 2)}\n`)
+  const { failed, stderr } = runCheckManifests()
+  assert(failed, `check-manifests should fail: ${expectedMessage}`)
+  assert(
+    stderr.includes(expectedMessage),
+    `check-manifests should report '${expectedMessage}', received:\n${stderr}`
+  )
+}
+
 try {
   const { wizard: _wizard, ...withoutWizard } = createManifest('zz-invalid-wizard')
   await assertInvalidWizard(withoutWizard, "missing required field 'wizard'")
@@ -112,11 +123,27 @@ try {
   await rm(invalidWizardFeatureDir, { recursive: true, force: true })
 }
 
+try {
+  await assertInvalidRecipe(
+    { name: 'wrong-name', description: 'Invalid name fixture.', features: [] },
+    "name 'wrong-name' must match filename 'zz-invalid-wizard-recipe'"
+  )
+  await assertInvalidRecipe(
+    { name: 'zz-invalid-wizard-recipe', description: '', features: [] },
+    "requires non-empty 'description'"
+  )
+  await assertInvalidRecipe(
+    { name: 'starter', description: 'Duplicate recipe fixture.', features: [] },
+    "duplicate recipe name 'starter'"
+  )
+} finally {
+  await rm(invalidRecipePath, { force: true })
+}
+
 {
   const expectedVisible = [
     'app-lifecycle',
     'command-palette',
-    'custom-titlebar',
     'dx-tools',
     'i18n',
     'native-menu',
@@ -128,6 +155,7 @@ try {
   ]
   const expectedHidden = [
     'app-state',
+    'custom-titlebar',
     'diagnostics',
     'logging',
     'preferences',

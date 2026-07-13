@@ -7,7 +7,9 @@
     "label": "SQLite",
     "category": "Data"
   },
-  "dependsOn": [],
+  "dependsOn": [
+    "app-state"
+  ],
   "conflictsWith": [],
   "npmDependencies": [
     "@tanstack/react-query"

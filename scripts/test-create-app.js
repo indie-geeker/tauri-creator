@@ -1,7 +1,8 @@
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -20,6 +21,56 @@ function runCreateApp(args, options = {}) {
     input: options.input === undefined ? undefined : `${options.input}\n`,
     stdio: 'pipe',
   })
+}
+
+function spawnCreateApp(args, { detached = false } = {}) {
+  const child = spawn(process.execPath, [createAppScript, ...args], {
+    cwd: root,
+    detached,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  let stdout = ''
+  let stderr = ''
+  child.stdout.setEncoding('utf8')
+  child.stderr.setEncoding('utf8')
+  child.stdout.on('data', (chunk) => { stdout += chunk })
+  child.stderr.on('data', (chunk) => { stderr += chunk })
+
+  const completed = new Promise((resolve, reject) => {
+    child.once('error', reject)
+    child.once('close', (code, signal) => resolve({ code, signal, stdout, stderr }))
+  })
+  return { child, completed }
+}
+
+async function waitForStagingDirectory(appName, timeoutMs = 10000) {
+  const prefix = `.tauri-creator-${appName}-`
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if ((await readdir(tempRoot)).some((entry) => entry.startsWith(prefix))) return prefix
+    await delay(2)
+  }
+  throw new Error(`timed out waiting for staging directory '${prefix}'`)
+}
+
+async function waitForEnabledFeatures(appName, minimumCount, timeoutMs = 10000) {
+  const prefix = `.tauri-creator-${appName}-`
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const stagingEntry = (await readdir(tempRoot)).find((entry) => entry.startsWith(prefix))
+    if (stagingEntry) {
+      try {
+        const state = await readJson(
+          path.join(tempRoot, stagingEntry, '.tauri-creator.json')
+        )
+        if ((state.enabledFeatures?.length ?? 0) >= minimumCount) return prefix
+      } catch (error) {
+        if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error
+      }
+    }
+    await delay(2)
+  }
+  throw new Error(`timed out waiting for ${minimumCount} enabled features in '${prefix}'`)
 }
 
 async function pathExists(filePath) {
@@ -59,6 +110,9 @@ const wizardBackTarget = path.join(tempRoot, 'wizard-back-demo')
 const wizardCancelTarget = path.join(tempRoot, 'wizard-cancel-demo')
 const wizardEofTarget = path.join(tempRoot, 'wizard-eof-demo')
 const advancedAliasTarget = path.join(tempRoot, 'advanced-alias-demo')
+const targetRaceTarget = path.join(tempRoot, 'target-race-demo')
+const generationInterruptTarget = path.join(tempRoot, 'generation-interrupt-demo')
+const invalidMetadataTarget = path.join(tempRoot, 'invalid-metadata-demo')
 const pnpmManagerTarget = path.join(tempRoot, 'pnpm-manager-demo')
 const pnpmFullTarget = path.join(tempRoot, 'pnpm-full-demo')
 const brokenFeatureDir = path.join(root, 'features', 'broken-readiness-test')
@@ -319,6 +373,10 @@ try {
 
   assert(wizardStarterOutput.includes('Template options:'), 'wizard should present template choices')
   assert(!wizardStarterOutput.includes('Integration mode options:'), 'wizard should not expose integration modes')
+  assert(
+    !wizardStarterOutput.includes('] Custom titlebar —'),
+    'wizard should hide capabilities that do not pass generated-app verification'
+  )
   assert(!wizardStarterOutput.includes('] Preferences —'), 'wizard should hide preferences from the capability menu')
   assert(!wizardStarterOutput.includes('] Logging —'), 'wizard should hide logging from the capability menu')
 
@@ -359,7 +417,6 @@ try {
       wizardFullTarget,
       '3',
       '',
-      '',
       'com.example',
       '2',
       'Wen',
@@ -386,7 +443,7 @@ try {
       wizardExtrasTarget,
       '',
       '2',
-      '8,11',
+      '7,10',
       '',
       '',
       '',
@@ -403,7 +460,7 @@ try {
     'Updater should automatically resolve Project governance'
   )
   assert(
-    wizardExtrasOutput.includes('Automatic dependencies: project-governance'),
+    wizardExtrasOutput.includes('Automatic dependencies: app-state, project-governance'),
     'wizard summary should disclose automatically resolved dependencies'
   )
 
@@ -414,7 +471,7 @@ try {
       wizardHiddenDependencyTarget,
       '1',
       '2',
-      '5',
+      '4',
       '',
       '',
       '',
@@ -454,8 +511,10 @@ try {
       'not valid',
       'org.example',
       '2',
-      '',
-      '',
+      'Wen\\q',
+      'Wen',
+      'MIT\\q',
+      'MIT',
       '100',
       '1200',
       '760',
@@ -468,7 +527,42 @@ try {
   assert(wizardRetryOutput.includes('integer between 320 and 10000'), 'invalid dimensions should be retried')
   assert(await pathExists(path.join(wizardOccupiedTarget, 'keep.txt')), 'target retry must preserve existing content')
   const wizardRetryState = await readState(wizardRetryTarget)
+  assert(wizardRetryState.author === 'Wen', 'corrected author values should be used')
+  assert(wizardRetryState.license === 'MIT', 'corrected license values should be used')
   assert(wizardRetryState.window.width === 1200, 'corrected advanced values should be used')
+  assert(
+    wizardRetryOutput.includes('cannot contain control characters, quotes, or backslashes'),
+    'unsafe metadata should be explained and retried'
+  )
+
+  for (const [option, value] of [
+    ['--author', 'Wen\\q'],
+    ['--license', 'MIT\\q'],
+    ['--license', 'MIT\tOR'],
+    ['--license', 'MIT\u007fOR'],
+  ]) {
+    let invalidMetadataFailed = false
+    try {
+      runCreateApp([
+        '--name',
+        'invalid-metadata-demo',
+        '--target',
+        invalidMetadataTarget,
+        '--recipe',
+        'minimal',
+        option,
+        value,
+      ], { encoding: 'utf8' })
+    } catch (error) {
+      invalidMetadataFailed = true
+      assert(
+        error.stderr?.includes('cannot contain control characters, quotes, or backslashes'),
+        `${option} should explain unsafe template metadata`
+      )
+    }
+    assert(invalidMetadataFailed, `${option} should reject unsafe template metadata`)
+    assert(!(await pathExists(invalidMetadataTarget)), `${option} failure should not create a target`)
+  }
 
   const wizardBackOutput = runCreateApp([], {
     encoding: 'utf8',
@@ -476,7 +570,6 @@ try {
       'Wizard Back Demo',
       wizardBackTarget,
       '3',
-      '',
       '',
       '',
       '',
@@ -614,6 +707,59 @@ try {
     !/^\s*run: npm ci\s*$/m.test(pnpmFullWorkflow) &&
       !/^\s*run: npm run check:all\s*$/m.test(pnpmFullWorkflow),
     'pnpm generated release workflow should not leave npm release commands behind'
+  )
+
+  await mkdir(targetRaceTarget, { recursive: true })
+  const targetRaceRun = spawnCreateApp([
+    '--name',
+    'target-race-demo',
+    '--target',
+    targetRaceTarget,
+    '--recipe',
+    'full',
+  ])
+  const targetRaceStagingPrefix = await waitForStagingDirectory('target-race-demo')
+  const targetRaceSentinel = path.join(targetRaceTarget, 'keep.txt')
+  await writeFile(targetRaceSentinel, 'do not delete\n')
+  const targetRaceResult = await targetRaceRun.completed
+  assert(targetRaceResult.code !== 0, 'create-app should fail if an empty target changes during generation')
+  assert(
+    await pathExists(targetRaceSentinel),
+    'create-app must preserve files concurrently added to the target'
+  )
+  assert(
+    !(await readdir(tempRoot)).some((entry) => entry.startsWith(targetRaceStagingPrefix)),
+    'a target publication race should still clean its staging directory'
+  )
+
+  const generationInterruptRun = spawnCreateApp([
+    '--name',
+    'generation-interrupt-demo',
+    '--target',
+    generationInterruptTarget,
+    '--recipe',
+    'full',
+  ], { detached: true })
+  const generationInterruptStagingPrefix = await waitForEnabledFeatures(
+    'generation-interrupt-demo',
+    5
+  )
+  process.kill(-generationInterruptRun.child.pid, 'SIGINT')
+  const generationInterruptResult = await generationInterruptRun.completed
+  assert(
+    generationInterruptResult.code === 130,
+    'SIGINT should stop generation with exit code 130'
+  )
+  assert(
+    generationInterruptResult.stderr.includes('generation interrupted by SIGINT'),
+    'SIGINT should report a concise interruption message instead of a child-process failure'
+  )
+  assert(!(await pathExists(generationInterruptTarget)), 'SIGINT should not publish the target')
+  assert(
+    !(await readdir(tempRoot)).some(
+      (entry) => entry.startsWith(generationInterruptStagingPrefix)
+    ),
+    'SIGINT during generation should clean its staging directory'
   )
 
   await mkdir(path.join(brokenFeatureDir, 'files'), { recursive: true })

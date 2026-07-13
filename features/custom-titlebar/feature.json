@@ -3,9 +3,7 @@
   "description": "Custom frameless titlebar with window controls.",
   "stage": "v1",
   "wizard": {
-    "visible": true,
-    "label": "Custom titlebar",
-    "category": "Desktop"
+    "visible": false
   },
   "dependsOn": [
     "ui-tailwind"

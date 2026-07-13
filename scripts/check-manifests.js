@@ -447,6 +447,7 @@ async function validateRecipes(featureNames) {
     if (!entry.isFile() || !entry.name.endsWith('.json')) continue
 
     const recipePath = path.join(recipesDir, entry.name)
+    const expectedName = path.basename(entry.name, '.json')
     let recipe
     try {
       recipe = await readJson(recipePath)
@@ -455,10 +456,23 @@ async function validateRecipes(featureNames) {
       continue
     }
 
-    if (!recipe.name) {
+    if (typeof recipe.name !== 'string' || recipe.name.trim().length === 0) {
       errors.push(`${recipePath}: missing required field 'name'`)
     } else {
-      recipeNames.add(recipe.name)
+      if (recipe.name !== expectedName) {
+        errors.push(
+          `${recipePath}: name '${recipe.name}' must match filename '${expectedName}'`
+        )
+      }
+      if (recipeNames.has(recipe.name)) {
+        errors.push(`${recipePath}: duplicate recipe name '${recipe.name}'`)
+      } else {
+        recipeNames.add(recipe.name)
+      }
+    }
+
+    if (typeof recipe.description !== 'string' || recipe.description.trim().length === 0) {
+      errors.push(`${recipePath}: requires non-empty 'description'`)
     }
 
     if (!Array.isArray(recipe.features)) {

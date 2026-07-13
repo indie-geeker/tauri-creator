@@ -43,6 +43,7 @@ function runNode(script, args) {
 
 const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'tauri-creator-apply-feature-'))
 const target = path.join(tempRoot, 'demo')
+const standaloneSqliteTarget = path.join(tempRoot, 'standalone-sqlite-demo')
 const conflictTarget = path.join(tempRoot, 'conflict-demo')
 const templateTarget = path.join(tempRoot, 'template-demo')
 const pnpmTemplateTarget = path.join(tempRoot, 'pnpm-template-demo')
@@ -57,6 +58,43 @@ try {
     '--recipe',
     'minimal',
   ])
+
+  runNode(createAppScript, [
+    '--name',
+    'standalone-sqlite-demo',
+    '--target',
+    standaloneSqliteTarget,
+    '--recipe',
+    'minimal',
+  ])
+  runNode(applyFeatureScript, [
+    '--target',
+    standaloneSqliteTarget,
+    '--feature',
+    'sqlite',
+  ])
+  const standaloneSqlitePackage = JSON.parse(
+    await readFile(path.join(standaloneSqliteTarget, 'package.json'), 'utf8')
+  )
+  assert(
+    standaloneSqlitePackage.dependencies['@tanstack/react-query'] === '^5.90.12',
+    'standalone SQLite should merge its frontend query dependency'
+  )
+  const standaloneSqliteState = JSON.parse(
+    await readFile(path.join(standaloneSqliteTarget, '.tauri-creator.json'), 'utf8')
+  )
+  assert(
+    standaloneSqliteState.enabledFeatures.join(',') === 'preferences,app-state,sqlite',
+    'standalone SQLite should resolve the app-state provider foundation'
+  )
+  const standaloneSqliteMain = await readFile(
+    path.join(standaloneSqliteTarget, 'src', 'main.tsx'),
+    'utf8'
+  )
+  assert(
+    standaloneSqliteMain.includes('<QueryClientProvider client={queryClient}>'),
+    'standalone SQLite should install a QueryClientProvider before exposing query hooks'
+  )
 
   runNode(createAppScript, [
     '--name',
@@ -805,7 +843,7 @@ try {
   const state = JSON.parse(await readFile(path.join(target, '.tauri-creator.json'), 'utf8'))
   assert(state.enabledFeatures.includes('preferences'), 'state file should record applied feature')
   assert(
-    state.enabledFeatures.join(',') === 'preferences,app-lifecycle,logging,sqlite,quick-pane,specta-bindings,dx-tools,ui-tailwind,app-state,custom-titlebar,native-menu',
+    state.enabledFeatures.join(',') === 'preferences,app-lifecycle,logging,app-state,sqlite,quick-pane,specta-bindings,dx-tools,ui-tailwind,custom-titlebar,native-menu',
     'state file should record dependency-ordered feature application'
   )
   // Test ui-shadcn

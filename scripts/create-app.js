@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { cp, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { cp, mkdir, readFile, readdir, rename, rm, rmdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { renderProjectMap } from './project-map.js'
@@ -49,6 +49,32 @@ Options:
 function fail(message) {
   console.error(`create-app: ${message}`)
   process.exit(1)
+}
+
+class GenerationInterruptedError extends Error {
+  constructor(signal) {
+    super(`generation interrupted by ${signal}; temporary files were removed`)
+    this.name = 'GenerationInterruptedError'
+    this.signal = signal
+  }
+}
+
+function createGenerationInterruptGuard() {
+  let interruptedSignal = null
+  const handleSigint = () => { interruptedSignal ??= 'SIGINT' }
+  const handleSigterm = () => { interruptedSignal ??= 'SIGTERM' }
+  process.on('SIGINT', handleSigint)
+  process.on('SIGTERM', handleSigterm)
+
+  return {
+    throwIfInterrupted() {
+      if (interruptedSignal) throw new GenerationInterruptedError(interruptedSignal)
+    },
+    close() {
+      process.off('SIGINT', handleSigint)
+      process.off('SIGTERM', handleSigterm)
+    },
+  }
 }
 
 function parseArgs(argv) {
@@ -315,8 +341,10 @@ function toTitle(name) {
 function normalizeTomlString(value, optionName, fallback) {
   const normalized = String(value ?? fallback).trim()
   if (!normalized) return fallback
-  if (/["\r\n]/.test(normalized)) {
-    throw new Error(`${optionName} cannot contain quotes or newlines`)
+  if (/[\u0000-\u001f\u007f"\\]/.test(normalized)) {
+    throw new Error(
+      `${optionName} cannot contain control characters, quotes, or backslashes`
+    )
   }
   return normalized
 }
@@ -497,7 +525,7 @@ async function prepareGenerationTarget(targetDir, appName) {
   if (await pathExists(targetDir)) {
     const entries = await readdir(targetDir)
     if (entries.length > 0) {
-      fail(`target directory must be empty: ${targetDir}`)
+      throw new Error(`target directory must be empty: ${targetDir}`)
     }
   }
 
@@ -509,10 +537,20 @@ async function prepareGenerationTarget(targetDir, appName) {
   return stagingDir
 }
 
-async function publishGeneratedTarget(stagingDir, targetDir) {
+async function publishGeneratedTarget(stagingDir, targetDir, throwIfInterrupted) {
   if (await pathExists(targetDir)) {
-    await rm(targetDir, { recursive: true, force: true })
+    try {
+      await rmdir(targetDir)
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw new Error(
+          `target directory changed during generation and is no longer empty: ${targetDir}`,
+          { cause: error }
+        )
+      }
+    }
   }
+  throwIfInterrupted()
   await rename(stagingDir, targetDir)
 }
 
@@ -689,14 +727,19 @@ async function main() {
     baseFiles,
   }
 
-  const stagingDir = await prepareGenerationTarget(targetDir, values.APP_NAME)
+  const generationInterrupt = createGenerationInterruptGuard()
+  let stagingDir = null
   let published = false
 
   try {
+    stagingDir = await prepareGenerationTarget(targetDir, values.APP_NAME)
+    generationInterrupt.throwIfInterrupted()
+
     await cp(baseDir, stagingDir, {
       recursive: true,
       filter: (source) => path.basename(source) !== '.gitkeep',
     })
+    generationInterrupt.throwIfInterrupted()
 
     await replaceTemplatesInTree(stagingDir, values)
     await writeFile(
@@ -719,6 +762,7 @@ async function main() {
         cwd: root,
         stdio: 'pipe',
       })
+      generationInterrupt.throwIfInterrupted()
     }
 
     const statePath = path.join(stagingDir, '.tauri-creator.json')
@@ -735,11 +779,26 @@ async function main() {
       renderProjectMap(finalState, featureManifests)
     )
 
-    await publishGeneratedTarget(stagingDir, targetDir)
+    generationInterrupt.throwIfInterrupted()
+    await publishGeneratedTarget(
+      stagingDir,
+      targetDir,
+      generationInterrupt.throwIfInterrupted
+    )
     published = true
+  } catch (error) {
+    if (error?.signal === 'SIGINT' || error?.signal === 'SIGTERM') {
+      throw new GenerationInterruptedError(error.signal)
+    }
+    generationInterrupt.throwIfInterrupted()
+    throw error
   } finally {
-    if (!published) {
-      await rm(stagingDir, { recursive: true, force: true })
+    try {
+      if (stagingDir && !published) {
+        await rm(stagingDir, { recursive: true, force: true })
+      }
+    } finally {
+      generationInterrupt.close()
     }
   }
 
@@ -761,6 +820,9 @@ try {
 } catch (error) {
   if (error instanceof PromptCancelledError) {
     console.log('Creation cancelled. No files were written.')
+  } else if (error instanceof GenerationInterruptedError) {
+    console.error(`create-app: ${error.message}`)
+    process.exitCode = error.signal === 'SIGTERM' ? 143 : 130
   } else {
     fail(error.message)
   }
