@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -17,7 +17,7 @@ function runCreateApp(args, options = {}) {
   return execFileSync(process.execPath, [createAppScript, ...args], {
     cwd: root,
     encoding: options.encoding,
-    input: options.input,
+    input: options.input === undefined ? undefined : `${options.input}\n`,
     stdio: 'pipe',
   })
 }
@@ -48,9 +48,17 @@ const featureTarget = path.join(tempRoot, 'feature-demo')
 const leftSidebarTarget = path.join(tempRoot, 'left-sidebar-demo')
 const rightSidebarTarget = path.join(tempRoot, 'right-sidebar-demo')
 const bothSidebarTarget = path.join(tempRoot, 'both-sidebar-demo')
-const quickTarget = path.join(tempRoot, 'quick-demo')
-const advancedRecipeTarget = path.join(tempRoot, 'advanced-recipe-demo')
-const advancedFeatureTarget = path.join(tempRoot, 'advanced-feature-demo')
+const wizardStarterTarget = path.join(tempRoot, 'wizard-starter-demo')
+const wizardMinimalTarget = path.join(tempRoot, 'wizard minimal demo')
+const wizardFullTarget = path.join(tempRoot, 'wizard-full-demo')
+const wizardExtrasTarget = path.join(tempRoot, 'wizard-extras-demo')
+const wizardHiddenDependencyTarget = path.join(tempRoot, 'wizard-hidden-dependency-demo')
+const wizardRetryTarget = path.join(tempRoot, 'wizard-retry-demo')
+const wizardOccupiedTarget = path.join(tempRoot, 'wizard-occupied-demo')
+const wizardBackTarget = path.join(tempRoot, 'wizard-back-demo')
+const wizardCancelTarget = path.join(tempRoot, 'wizard-cancel-demo')
+const wizardEofTarget = path.join(tempRoot, 'wizard-eof-demo')
+const advancedAliasTarget = path.join(tempRoot, 'advanced-alias-demo')
 const pnpmManagerTarget = path.join(tempRoot, 'pnpm-manager-demo')
 const pnpmFullTarget = path.join(tempRoot, 'pnpm-full-demo')
 const brokenFeatureDir = path.join(root, 'features', 'broken-readiness-test')
@@ -295,94 +303,241 @@ try {
   assert(bothUIStore.includes('leftSidebarVisible'), 'both sidebar layout should keep left sidebar store state')
   assert(bothUIStore.includes('rightSidebarVisible'), 'both sidebar layout should keep right sidebar store state')
 
-  const quickOutput = runCreateApp([], {
+  const wizardStarterOutput = runCreateApp([], {
     encoding: 'utf8',
     input: [
-      'Interactive Demo',
-      quickTarget,
+      'Wizard Starter Demo',
+      wizardStarterTarget,
+      '',
+      '',
+      '',
       'com.example',
-      '1',
+      '',
       '',
     ].join('\n'),
   })
 
-  assert(!quickOutput.includes('Integration mode options:'), 'quick mode should not ask for integration mode')
-  assert(!quickOutput.includes('Recipe options:'), 'quick mode should not ask for a recipe')
-  assert(!quickOutput.includes('Sidebar layout options:'), 'quick mode should not ask for sidebar layout')
+  assert(wizardStarterOutput.includes('Template options:'), 'wizard should present template choices')
+  assert(!wizardStarterOutput.includes('Integration mode options:'), 'wizard should not expose integration modes')
+  assert(!wizardStarterOutput.includes('] Preferences —'), 'wizard should hide preferences from the capability menu')
+  assert(!wizardStarterOutput.includes('] Logging —'), 'wizard should hide logging from the capability menu')
 
-  const quickState = await readState(quickTarget)
-  assert(quickState.integrationMode === 'recipe', 'quick mode should use recipe integration')
-  assert(quickState.recipe === 'starter', 'quick mode should create the starter recipe')
-  assert(
-    quickState.requestedFeatures.join(',') === 'specta-bindings,preferences,logging,diagnostics',
-    'quick mode should request exactly the starter foundation features'
-  )
-  assert(quickState.author === 'you', 'quick mode should use the default author')
-  assert(quickState.license === 'UNLICENSED', 'quick mode should use the default license')
-  assert(quickState.window.width === 1000, 'quick mode should use the default window width')
-  assert(quickState.window.height === 700, 'quick mode should use the default window height')
+  const wizardStarterState = await readState(wizardStarterTarget)
+  assert(wizardStarterState.integrationMode === 'recipe', 'wizard should use recipe integration')
+  assert(wizardStarterState.recipe === 'starter', 'Starter should be the default wizard template')
+  assert(wizardStarterState.optionalFeatures.length === 0, 'Starter defaults should add no optional capability')
+  assert(wizardStarterState.author === 'you', 'wizard defaults should use the default author')
+  assert(wizardStarterState.license === 'UNLICENSED', 'wizard defaults should use the default license')
+  assert(wizardStarterState.window.width === 1000, 'wizard defaults should use the default width')
+  assert(wizardStarterState.window.height === 700, 'wizard defaults should use the default height')
 
-  const advancedRecipeOutput = runCreateApp(['--advanced'], {
+  const wizardMinimalOutput = runCreateApp([], {
     encoding: 'utf8',
     input: [
-      'Advanced Recipe Demo',
-      advancedRecipeTarget,
-      '2',
-      '3',
+      'Wizard Minimal Demo',
+      wizardMinimalTarget,
       '1',
-      'Wen',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ].join('\n'),
+  })
+  const wizardMinimalState = await readState(wizardMinimalTarget)
+  assert(wizardMinimalState.recipe === 'minimal', 'wizard should generate the Minimal template')
+  assert(wizardMinimalState.resolvedFeatures.length === 0, 'Minimal should resolve no features by default')
+  assert(
+    wizardMinimalOutput.includes(`Next: cd '${wizardMinimalTarget}' && npm install`),
+    'next-step command should quote target paths that contain spaces'
+  )
+
+  const wizardFullOutput = runCreateApp([], {
+    encoding: 'utf8',
+    input: [
+      'Wizard Full Demo',
+      wizardFullTarget,
+      '3',
+      '',
+      '',
       'com.example',
+      '2',
+      'Wen',
+      'MIT',
       '1200',
       '760',
-      'MIT',
       '1',
       '',
     ].join('\n'),
   })
+  assert(wizardFullOutput.includes('Sidebar layout options:'), 'Full advanced settings should offer sidebar layout')
+  const wizardFullState = await readState(wizardFullTarget)
+  assert(wizardFullState.recipe === 'full', 'wizard should generate the Full reference template')
+  assert(wizardFullState.options.layout.sidebar === 'left', 'wizard should record an advanced sidebar override')
+  assert(wizardFullState.author === 'Wen', 'wizard should record an advanced author override')
+  assert(wizardFullState.license === 'MIT', 'wizard should record an advanced license override')
+  assert(wizardFullState.window.width === 1200, 'wizard should record an advanced width override')
+  assert(wizardFullState.window.height === 760, 'wizard should record an advanced height override')
 
-  assert(
-    advancedRecipeOutput.includes('Integration mode options:'),
-    'advanced mode should present integration mode choices'
-  )
-  assert(advancedRecipeOutput.includes('Recipe options:'), 'advanced mode should present recipe choices')
-  assert(
-    advancedRecipeOutput.includes('Sidebar layout options:'),
-    'advanced full recipe should present sidebar choices'
-  )
-
-  const advancedRecipeState = await readState(advancedRecipeTarget)
-  assert(advancedRecipeState.integrationMode === 'recipe', 'advanced recipe mode should be recorded')
-  assert(advancedRecipeState.recipe === 'full', 'advanced mode should support the full recipe')
-  assert(advancedRecipeState.options.layout.sidebar === 'left', 'advanced mode should record sidebar layout')
-  assert(advancedRecipeState.author === 'Wen', 'advanced mode should record author overrides')
-  assert(advancedRecipeState.license === 'MIT', 'advanced mode should record license overrides')
-  assert(advancedRecipeState.window.width === 1200, 'advanced mode should record window width overrides')
-  assert(advancedRecipeState.window.height === 760, 'advanced mode should record window height overrides')
-
-  runCreateApp(['--advanced'], {
+  const wizardExtrasOutput = runCreateApp([], {
     encoding: 'utf8',
     input: [
-      'Advanced Feature Demo',
-      advancedFeatureTarget,
-      '1',
-      '8,5',
-      'Feature Author',
-      'org.example',
-      '1100',
-      '720',
-      'Apache-2.0',
-      '1',
+      'Wizard Extras Demo',
+      wizardExtrasTarget,
+      '',
+      '2',
+      '8,11',
+      '',
+      '',
+      '',
       '',
     ].join('\n'),
   })
-
-  const advancedFeatureState = await readState(advancedFeatureTarget)
-  assert(advancedFeatureState.integrationMode === 'features', 'advanced mode should support feature integration')
-  assert(advancedFeatureState.recipe === null, 'advanced feature integration should not record a recipe')
+  const wizardExtrasState = await readState(wizardExtrasTarget)
   assert(
-    advancedFeatureState.requestedFeatures.join(',') === 'logging,diagnostics',
-    'advanced mode should preserve manual feature selection order'
+    wizardExtrasState.optionalFeatures.join(',') === 'sqlite,updater',
+    'wizard should record SQLite and Updater as optional capabilities'
   )
+  assert(
+    wizardExtrasState.resolvedFeatures.includes('project-governance'),
+    'Updater should automatically resolve Project governance'
+  )
+  assert(
+    wizardExtrasOutput.includes('Automatic dependencies: project-governance'),
+    'wizard summary should disclose automatically resolved dependencies'
+  )
+
+  const wizardHiddenDependencyOutput = runCreateApp([], {
+    encoding: 'utf8',
+    input: [
+      'Wizard Hidden Dependency Demo',
+      wizardHiddenDependencyTarget,
+      '1',
+      '2',
+      '5',
+      '',
+      '',
+      '',
+      '',
+    ].join('\n'),
+  })
+  const wizardHiddenDependencyState = await readState(wizardHiddenDependencyTarget)
+  assert(
+    wizardHiddenDependencyState.optionalFeatures.join(',') === 'quick-pane',
+    'wizard should record Quick pane as the requested capability'
+  )
+  assert(
+    wizardHiddenDependencyState.resolvedFeatures.join(',') === 'preferences,quick-pane',
+    'wizard should automatically resolve hidden Preferences for Quick pane'
+  )
+  assert(
+    wizardHiddenDependencyOutput.includes('Automatic dependencies: preferences'),
+    'summary should disclose a hidden automatically resolved dependency'
+  )
+  assert(
+    !wizardHiddenDependencyOutput.includes('] Preferences —'),
+    'hidden dependencies should never appear as selectable capabilities'
+  )
+
+  await mkdir(wizardOccupiedTarget, { recursive: true })
+  await writeFile(path.join(wizardOccupiedTarget, 'keep.txt'), 'preserve me\n')
+  const wizardRetryOutput = runCreateApp([], {
+    encoding: 'utf8',
+    input: [
+      '---',
+      'Wizard Retry Demo',
+      wizardOccupiedTarget,
+      wizardRetryTarget,
+      '',
+      '',
+      '',
+      'not valid',
+      'org.example',
+      '2',
+      '',
+      '',
+      '100',
+      '1200',
+      '760',
+      '',
+    ].join('\n'),
+  })
+  assert(wizardRetryOutput.includes('Project name must contain'), 'invalid names should be retried')
+  assert(wizardRetryOutput.includes('Target directory must be empty'), 'non-empty targets should be retried')
+  assert(wizardRetryOutput.includes('reverse-DNS segments'), 'invalid bundle prefixes should be retried')
+  assert(wizardRetryOutput.includes('integer between 320 and 10000'), 'invalid dimensions should be retried')
+  assert(await pathExists(path.join(wizardOccupiedTarget, 'keep.txt')), 'target retry must preserve existing content')
+  const wizardRetryState = await readState(wizardRetryTarget)
+  assert(wizardRetryState.window.width === 1200, 'corrected advanced values should be used')
+
+  const wizardBackOutput = runCreateApp([], {
+    encoding: 'utf8',
+    input: [
+      'Wizard Back Demo',
+      wizardBackTarget,
+      '3',
+      '',
+      '',
+      '',
+      '',
+      '2',
+      '1',
+      '',
+      '',
+      '',
+      '',
+      '1',
+    ].join('\n'),
+  })
+  assert(
+    wizardBackOutput.match(/Template options:/g)?.length === 2,
+    'Back should return to template selection'
+  )
+  assert((await readState(wizardBackTarget)).recipe === 'minimal', 'Back should replace the first template choice')
+
+  const wizardCancelOutput = runCreateApp([], {
+    encoding: 'utf8',
+    input: [
+      'Wizard Cancel Demo',
+      wizardCancelTarget,
+      '',
+      '',
+      '',
+      '',
+      '',
+      '3',
+    ].join('\n'),
+  })
+  assert(wizardCancelOutput.includes('Creation cancelled.'), 'Cancel should produce a concise confirmation')
+  assert(!(await pathExists(wizardCancelTarget)), 'Cancel should not create the target')
+
+  const wizardEofOutput = runCreateApp([], {
+    encoding: 'utf8',
+    input: ['Wizard EOF Demo', wizardEofTarget].join('\n'),
+  })
+  assert(wizardEofOutput.includes('Creation cancelled.'), 'EOF should cancel cleanly')
+  assert(!(await pathExists(wizardEofTarget)), 'EOF should not create the target')
+  assert(
+    !(await readdir(tempRoot)).some((entry) => entry.startsWith('.tauri-creator-')),
+    'cancelled wizards should not leave staging directories'
+  )
+
+  const advancedAliasOutput = runCreateApp(['--advanced'], {
+    encoding: 'utf8',
+    input: [
+      'Advanced Alias Demo',
+      advancedAliasTarget,
+      '1',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ].join('\n'),
+  })
+  assert(advancedAliasOutput.includes('Template options:'), '--advanced should open the unified wizard')
+  assert(!advancedAliasOutput.includes('Integration mode options:'), '--advanced should not expose manual composition')
+  assert((await readState(advancedAliasTarget)).recipe === 'minimal', '--advanced should retain template selection')
 
   for (const [caseName, extraArgs] of [
     ['recipe', ['--recipe', 'starter']],
@@ -476,6 +631,7 @@ try {
     capabilities: [],
     qualityChecks: [],
     removeHints: [],
+    wizard: { visible: false },
   }, null, 2)}\n`)
   await writeFile(path.join(brokenFeatureDir, 'markers.json'), `${JSON.stringify([
     {

@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { renderProjectMap } from './project-map.js'
 import {
   parseCommaList,
-  promptForAdvancedCreateApp,
-  promptForQuickCreateApp,
+  PromptCancelledError,
+  promptForCreateAppWizard,
 } from './prompts.js'
 import {
   defaultPackageManager,
@@ -31,7 +31,7 @@ function printUsage() {
        node scripts/create-app.js --name <app-name> --target <path> --features <feature-a,feature-b>
 
 Options:
-  --advanced           Open the full interactive feature and recipe configuration flow.
+  --advanced           Compatibility alias for the interactive template wizard.
   --name               App package name. Example: demo-tool
   --target             Output directory. Must be empty or not exist.
   --recipe             Recipe preset from recipes/*.json. Example: starter
@@ -142,12 +142,12 @@ async function loadFeatureManifests() {
 async function loadRecipe(recipeName) {
   const recipePath = path.join(recipesDir, `${recipeName}.json`)
   if (!(await pathExists(recipePath))) {
-    fail(`unknown recipe '${recipeName}'`)
+    throw new Error(`unknown recipe '${recipeName}'`)
   }
 
   const recipe = await readJson(recipePath)
   if (!Array.isArray(recipe.features)) {
-    fail(`${recipePath}: 'features' must be an array`)
+    throw new Error(`${recipePath}: 'features' must be an array`)
   }
 
   return recipe
@@ -178,11 +178,11 @@ function resolveFeatureOrder(selection, featureManifests) {
   function visit(featureName, parent = selection.name) {
     const manifest = featureManifests.get(featureName)
     if (!manifest) {
-      fail(`selection '${parent}' references unknown feature '${featureName}'`)
+      throw new Error(`selection '${parent}' references unknown feature '${featureName}'`)
     }
 
     if (visiting.has(featureName)) {
-      fail(`cyclic feature dependency involving '${featureName}'`)
+      throw new Error(`cyclic feature dependency involving '${featureName}'`)
     }
 
     if (visited.has(featureName)) return
@@ -204,12 +204,95 @@ function resolveFeatureOrder(selection, featureManifests) {
   for (const feature of resolved) {
     for (const conflict of feature.conflictsWith ?? []) {
       if (visited.has(conflict)) {
-        fail(`feature '${feature.name}' conflicts with '${conflict}' in selection '${selection.name}'`)
+        throw new Error(
+          `feature '${feature.name}' conflicts with '${conflict}' in selection '${selection.name}'`
+        )
       }
     }
   }
 
   return resolved
+}
+
+async function listRecipeCatalog(featureManifests) {
+  const recipes = []
+  for (const recipeName of await listRecipeNames()) {
+    const recipe = await loadRecipe(recipeName)
+    recipes.push({
+      ...recipe,
+      resolvedFeatures: resolveFeatureOrder(recipe, featureManifests).map(
+        (feature) => feature.name
+      ),
+    })
+  }
+  return recipes
+}
+
+function listWizardFeatures(featureManifests) {
+  const categoryOrder = new Map([
+    ['Desktop', 0],
+    ['Product', 1],
+    ['Data', 2],
+    ['Delivery', 3],
+  ])
+
+  return [...featureManifests.values()]
+    .filter((manifest) => manifest.wizard?.visible)
+    .map((manifest) => ({
+      name: manifest.name,
+      label: manifest.wizard.label,
+      category: manifest.wizard.category,
+      description: manifest.description,
+    }))
+    .sort((left, right) => {
+      const categoryDifference =
+        (categoryOrder.get(left.category) ?? Number.MAX_SAFE_INTEGER) -
+        (categoryOrder.get(right.category) ?? Number.MAX_SAFE_INTEGER)
+      return categoryDifference === 0
+        ? left.label.localeCompare(right.label)
+        : categoryDifference
+    })
+}
+
+async function validateTargetDirectory(value) {
+  const targetDir = path.resolve(String(value).trim())
+  if (!(await pathExists(targetDir))) return targetDir
+
+  const targetStat = await stat(targetDir)
+  if (!targetStat.isDirectory()) {
+    throw new Error(`Target path must be an empty directory: ${targetDir}`)
+  }
+
+  const entries = await readdir(targetDir)
+  if (entries.length > 0) {
+    throw new Error(`Target directory must be empty: ${targetDir}`)
+  }
+  return targetDir
+}
+
+async function createSelectionPreview(recipeName, optionalFeatures, featureManifests) {
+  const recipe = await loadRecipe(recipeName)
+  const recipeFeatures = resolveFeatureOrder(recipe, featureManifests).map(
+    (feature) => feature.name
+  )
+  const selection = {
+    name: recipe.name,
+    features: [...recipe.features, ...optionalFeatures],
+  }
+  const resolvedFeatures = resolveFeatureOrder(selection, featureManifests).map(
+    (feature) => feature.name
+  )
+  const recipeFeatureSet = new Set(recipeFeatures)
+  const optionalFeatureSet = new Set(optionalFeatures)
+
+  return {
+    recipeFeatures,
+    requestedFeatures: optionalFeatures,
+    automaticFeatures: resolvedFeatures.filter(
+      (feature) => !recipeFeatureSet.has(feature) && !optionalFeatureSet.has(feature)
+    ),
+    resolvedFeatures,
+  }
 }
 
 function toPackageName(name) {
@@ -233,16 +316,16 @@ function normalizeTomlString(value, optionName, fallback) {
   const normalized = String(value ?? fallback).trim()
   if (!normalized) return fallback
   if (/["\r\n]/.test(normalized)) {
-    fail(`${optionName} cannot contain quotes or newlines`)
+    throw new Error(`${optionName} cannot contain quotes or newlines`)
   }
   return normalized
 }
 
-function normalizeLicense(value) {
-  return normalizeTomlString(value, '--license', 'UNLICENSED')
+function normalizeLicense(value, optionName = '--license') {
+  return normalizeTomlString(value, optionName, 'UNLICENSED')
 }
 
-function normalizeBundleIdentifierPrefix(value) {
+function normalizeBundleIdentifierPrefix(value, optionName = '--bundle-prefix') {
   const prefix = String(value ?? 'com.local')
     .trim()
     .toLowerCase()
@@ -251,18 +334,14 @@ function normalizeBundleIdentifierPrefix(value) {
   if (!prefix) return 'com.local'
 
   if (!/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/.test(prefix)) {
-    fail('--bundle-prefix must use reverse-DNS segments such as com.example')
+    throw new Error(`${optionName} must use reverse-DNS segments such as com.example`)
   }
 
   return prefix
 }
 
 function normalizePackageManagerOption(value) {
-  try {
-    return normalizePackageManager(value)
-  } catch (error) {
-    fail(error.message)
-  }
+  return normalizePackageManager(value)
 }
 
 function normalizeWindowDimension(value, optionName, fallback) {
@@ -270,21 +349,27 @@ function normalizeWindowDimension(value, optionName, fallback) {
   const parsed = Number.parseInt(raw, 10)
 
   if (!Number.isInteger(parsed) || String(parsed) !== raw || parsed < 320 || parsed > 10000) {
-    fail(`${optionName} must be an integer between 320 and 10000`)
+    throw new Error(`${optionName} must be an integer between 320 and 10000`)
   }
 
   return String(parsed)
 }
 
-function buildTemplateValues(rawName, options = {}) {
+function normalizeAppName(rawName, optionName = '--name') {
   const appName = toPackageName(rawName)
   if (!appName) {
-    fail('--name must contain at least one letter or number')
+    throw new Error(`${optionName} must contain at least one letter or number`)
   }
 
   if (!/^[a-z0-9][a-z0-9-]*$/.test(appName)) {
-    fail(`--name normalizes to invalid npm package name '${appName}'`)
+    throw new Error(`${optionName} normalizes to invalid npm package name '${appName}'`)
   }
+
+  return appName
+}
+
+function buildTemplateValues(rawName, options = {}) {
+  const appName = normalizeAppName(rawName)
 
   const cargoCrateName = appName.replaceAll('-', '_')
   const title = toTitle(appName)
@@ -320,6 +405,10 @@ function formatFeatureList(features) {
   return features.map((feature) => feature.name).join(', ')
 }
 
+function quoteShellArgument(value) {
+  return `'${String(value).replaceAll("'", "'\"'\"'")}'`
+}
+
 function parseOptionalFeatureArgs(args) {
   return parseCommaList(args.features ?? args['optional-features'])
 }
@@ -327,7 +416,7 @@ function parseOptionalFeatureArgs(args) {
 function normalizeSidebarOption(value) {
   const sidebar = String(value ?? 'both').trim().toLowerCase()
   if (!['left', 'right', 'both'].includes(sidebar)) {
-    fail('--sidebar must be one of: left, right, both')
+    throw new Error('--sidebar must be one of: left, right, both')
   }
   return sidebar
 }
@@ -337,23 +426,39 @@ function optionFromArgs(args, dashedKey, camelKey) {
 }
 
 async function resolveCreateOptions(args, featureManifests) {
-  const promptOptions = {
-    packageManagers: supportedPackageManagers,
-    defaultPackageManager,
-    defaultTargetForName(name) {
-      return path.join(process.cwd(), toPackageName(name))
-    },
-  }
-
-  if (Object.keys(args).length === 0) {
-    return promptForQuickCreateApp(promptOptions)
-  }
-
-  if (args.advanced) {
-    return promptForAdvancedCreateApp({
-      ...promptOptions,
-      recipes: await listRecipeNames(),
-      features: [...featureManifests.keys()].sort(),
+  if (Object.keys(args).length === 0 || args.advanced) {
+    return promptForCreateAppWizard({
+      packageManagers: supportedPackageManagers,
+      defaultPackageManager,
+      recipes: await listRecipeCatalog(featureManifests),
+      features: listWizardFeatures(featureManifests),
+      defaultTargetForName(name) {
+        return path.join(process.cwd(), name)
+      },
+      validators: {
+        name(value) {
+          return normalizeAppName(value, 'Project name')
+        },
+        target: validateTargetDirectory,
+        bundleIdentifierPrefix(value) {
+          return normalizeBundleIdentifierPrefix(value, 'Bundle identifier prefix')
+        },
+        author(value) {
+          return normalizeTomlString(value, 'Author', 'you')
+        },
+        license(value) {
+          return normalizeLicense(value, 'License')
+        },
+        windowWidth(value) {
+          return normalizeWindowDimension(value, 'Window width', '1000')
+        },
+        windowHeight(value) {
+          return normalizeWindowDimension(value, 'Window height', '700')
+        },
+      },
+      resolveSelection(recipeName, optionalFeatures) {
+        return createSelectionPreview(recipeName, optionalFeatures, featureManifests)
+      },
     })
   }
 
@@ -646,11 +751,17 @@ async function main() {
   console.log(`Enabled features: ${formatFeatureList(allFeatures)}`)
   console.log(`Sidebar layout: ${sidebar}`)
   console.log(`Package manager: ${values.PACKAGE_MANAGER}`)
-  console.log(`Next: cd ${targetDir} && ${values.PACKAGE_MANAGER} install && ${values.PACKAGE_MANAGER} run check:all`)
+  console.log(
+    `Next: cd ${quoteShellArgument(targetDir)} && ${values.PACKAGE_MANAGER} install && ${values.PACKAGE_MANAGER} run check:all`
+  )
 }
 
 try {
   await main()
 } catch (error) {
-  fail(error.message)
+  if (error instanceof PromptCancelledError) {
+    console.log('Creation cancelled. No files were written.')
+  } else {
+    fail(error.message)
+  }
 }
