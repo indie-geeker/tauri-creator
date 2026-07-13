@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -96,8 +96,80 @@ try {
     }),
     "hidden wizard metadata may only contain 'visible'"
   )
+  await assertInvalidWizard(
+    createManifest('zz-invalid-wizard', {
+      wizard: { visible: true, label: 'Misspelled category', category: 'Dleivery' },
+    }),
+    "'wizard.category' must be one of: Desktop, Product, Data, Delivery"
+  )
+  await assertInvalidWizard(
+    createManifest('zz-invalid-wizard', {
+      wizard: { visible: true, label: 'SQLite', category: 'Data' },
+    }),
+    "duplicate visible wizard label 'SQLite'"
+  )
 } finally {
   await rm(invalidWizardFeatureDir, { recursive: true, force: true })
+}
+
+{
+  const expectedVisible = [
+    'app-lifecycle',
+    'command-palette',
+    'custom-titlebar',
+    'dx-tools',
+    'i18n',
+    'native-menu',
+    'project-governance',
+    'quick-pane',
+    'sqlite',
+    'ui-layout',
+    'updater',
+  ]
+  const expectedHidden = [
+    'app-state',
+    'diagnostics',
+    'logging',
+    'preferences',
+    'specta-bindings',
+    'ui-preferences',
+    'ui-shadcn',
+    'ui-tailwind',
+  ]
+  const manifests = []
+
+  for (const entry of await readdir(path.join(root, 'features'), { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.name.startsWith('zz-invalid-')) continue
+    manifests.push(JSON.parse(await readFile(
+      path.join(root, 'features', entry.name, 'feature.json'),
+      'utf8'
+    )))
+  }
+
+  const visible = manifests
+    .filter((manifest) => manifest.wizard.visible)
+    .map((manifest) => manifest.name)
+    .sort()
+  const hidden = manifests
+    .filter((manifest) => !manifest.wizard.visible)
+    .map((manifest) => manifest.name)
+    .sort()
+  const labels = manifests
+    .filter((manifest) => manifest.wizard.visible)
+    .map((manifest) => manifest.wizard.label.toLowerCase())
+  const categories = new Set(
+    manifests
+      .filter((manifest) => manifest.wizard.visible)
+      .map((manifest) => manifest.wizard.category)
+  )
+
+  assert(visible.join(',') === expectedVisible.join(','), 'visible wizard feature set should stay intentional')
+  assert(hidden.join(',') === expectedHidden.join(','), 'hidden wizard feature set should stay intentional')
+  assert(new Set(labels).size === labels.length, 'visible wizard labels should be unique')
+  assert(
+    [...categories].sort().join(',') === ['Data', 'Delivery', 'Desktop', 'Product'].join(','),
+    'wizard catalog should use the four supported categories'
+  )
 }
 
 try {

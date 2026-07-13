@@ -6,6 +6,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const baseDir = path.join(root, 'base')
 const featuresDir = path.join(root, 'features')
 const recipesDir = path.join(root, 'recipes')
+const wizardCategories = ['Desktop', 'Product', 'Data', 'Delivery']
 
 const requiredManifestFields = [
   'name',
@@ -108,6 +109,10 @@ function validateManifestShape(manifestPath, manifest) {
       if (typeof wizard.category !== 'string' || wizard.category.trim().length === 0) {
         errors.push(
           `${manifestPath}: visible wizard feature requires non-empty 'wizard.category'`
+        )
+      } else if (!wizardCategories.includes(wizard.category)) {
+        errors.push(
+          `${manifestPath}: 'wizard.category' must be one of: ${wizardCategories.join(', ')}`
         )
       }
     } else if (Object.keys(wizard).some((field) => field !== 'visible')) {
@@ -348,6 +353,22 @@ async function loadFeatures() {
     ))
 
     manifests.push({ path: manifestPath, manifest })
+  }
+
+  const visibleLabels = new Map()
+  for (const { path: manifestPath, manifest } of manifests) {
+    const wizard = manifest.wizard
+    if (!wizard?.visible || typeof wizard.label !== 'string' || !wizard.label.trim()) continue
+
+    const normalizedLabel = wizard.label.trim().toLowerCase()
+    const existing = visibleLabels.get(normalizedLabel)
+    if (existing) {
+      errors.push(
+        `${manifestPath}: duplicate visible wizard label '${wizard.label.trim()}' (already used by '${existing}')`
+      )
+    } else {
+      visibleLabels.set(normalizedLabel, manifest.name)
+    }
   }
 
   for (const { path: manifestPath, manifest } of manifests) {
