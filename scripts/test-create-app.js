@@ -372,7 +372,7 @@ try {
   })
   assert(wizardFullOutput.includes('Sidebar layout options:'), 'Full advanced settings should offer sidebar layout')
   const wizardFullState = await readState(wizardFullTarget)
-  assert(wizardFullState.recipe === 'full', 'wizard should generate the Full reference template')
+  assert(wizardFullState.recipe === 'full', 'wizard should generate the Full regression recipe')
   assert(wizardFullState.options.layout.sidebar === 'left', 'wizard should record an advanced sidebar override')
   assert(wizardFullState.author === 'Wen', 'wizard should record an advanced author override')
   assert(wizardFullState.license === 'MIT', 'wizard should record an advanced license override')

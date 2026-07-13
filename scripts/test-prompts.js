@@ -342,7 +342,7 @@ async function runWizard(lines, overrides = {}) {
     '',
   ])
 
-  assert(result.recipe === 'full', 'wizard should allow the Full reference template')
+  assert(result.recipe === 'full', 'wizard should allow the Full regression recipe')
   assert(result.packageManager === 'pnpm', 'wizard should allow pnpm')
   assert(result.author === 'Wen', 'advanced settings should capture author')
   assert(result.license === 'MIT', 'advanced settings should capture license')
