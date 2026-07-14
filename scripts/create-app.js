@@ -512,6 +512,15 @@ async function writeTextIfChanged(filePath, content) {
   }
 }
 
+async function writePackageManagerConfig(targetDir, packageManager) {
+  if (packageManager !== 'pnpm') return
+
+  await writeFile(
+    path.join(targetDir, 'pnpm-workspace.yaml'),
+    "allowBuilds:\n  '@ast-grep/cli': true\n"
+  )
+}
+
 async function removePathIfExists(filePath) {
   if (await pathExists(filePath)) {
     await rm(filePath, { force: true, recursive: true })
@@ -739,6 +748,7 @@ async function main() {
       recursive: true,
       filter: (source) => path.basename(source) !== '.gitkeep',
     })
+    await writePackageManagerConfig(stagingDir, values.PACKAGE_MANAGER)
     generationInterrupt.throwIfInterrupted()
 
     await replaceTemplatesInTree(stagingDir, values)

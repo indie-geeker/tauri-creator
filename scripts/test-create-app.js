@@ -151,6 +151,10 @@ try {
   const minimalPackage = await readJson(path.join(minimalTarget, 'package.json'))
   assert(minimalPackage.name === 'minimal-demo', 'package.json should replace the app name')
   assert(minimalPackage.packageManager?.startsWith('npm@'), 'package.json should pin npm by default')
+  assert(
+    !(await pathExists(path.join(minimalTarget, 'pnpm-workspace.yaml'))),
+    'npm generated apps should not include pnpm project configuration'
+  )
 
   for (const oldRecipeName of ['essential', 'desktop', 'production']) {
     const oldRecipeTarget = path.join(tempRoot, `${oldRecipeName}-removed-demo`)
@@ -671,6 +675,14 @@ try {
   assert(pnpmManagerPackage.packageManager?.startsWith('pnpm@'), '--package-manager pnpm should pin pnpm')
   const pnpmManagerState = await readState(pnpmManagerTarget)
   assert(pnpmManagerState.packageManager === 'pnpm', '--package-manager pnpm should be recorded in scaffold state')
+  const pnpmWorkspace = await readFile(
+    path.join(pnpmManagerTarget, 'pnpm-workspace.yaml'),
+    'utf8'
+  )
+  assert(
+    pnpmWorkspace === "allowBuilds:\n  '@ast-grep/cli': true\n",
+    'pnpm generated apps should approve the required @ast-grep/cli build script'
+  )
 
   runCreateApp([
     '--name',
@@ -686,6 +698,14 @@ try {
   const pnpmFullWorkflow = await readFile(
     path.join(pnpmFullTarget, '.github', 'workflows', 'release.yml'),
     'utf8'
+  )
+  const pnpmFullPrettierIgnore = await readFile(
+    path.join(pnpmFullTarget, '.prettierignore'),
+    'utf8'
+  )
+  assert(
+    pnpmFullPrettierIgnore.split('\n').includes('pnpm-lock.yaml'),
+    'pnpm lockfiles should be excluded from generated Prettier checks'
   )
   assert(
     pnpmFullWorkflow.includes('cache: pnpm'),
