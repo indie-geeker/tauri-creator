@@ -58,3 +58,7 @@
 A01/A02/A04/A05/A06/A07/A11/A13 的本地自动项已覆盖；A03/A08/A09/A10/A12 的原生交互/拒绝项和 A14 的三系统实测、远程 Actions、签名发布保持待验证。数据库线程单元测试不证明真实窗口帧率；DOM mock 不证明系统控件；capability 编译不证明实际 IPC 拒绝。
 
 具体步骤见 [原生验收](NATIVE_ACCEPTANCE.md)。本轮没有把这些项目标记为全通过，也没有为验证修改真实应用数据。本地 main 集成不改变这些验收状态；发布前仍需补齐对应平台与签名证据。验证 JSON 中的 `uncommitted` 和 branch 字段描述记录生成时的快照状态。
+
+## 本地集成复验修正
+
+首次合并到 main 后，干净工作区的结构验证发现 `base/src/generated/application.tsx` 和 `providers.tsx` 被根 `generated/` 规则忽略，未进入首个提交；此前工作区验证使用了这两个实际文件。现为该模板输入目录添加显式例外，并将两文件纳入版本控制。补充 Git 归档验证，以检查提交内容本身，避免仅验证含忽略文件的工作区。原始失败日志：`/tmp/tauri-main-post-merge-fast.log`。

@@ -3,7 +3,7 @@
   "baselineCommit": "990bbb0cfdd9dc8e5df4cf7815e079c7adb7b55a",
   "branch": "codex/template-quality",
   "uncommitted": true,
-  "implementationFingerprintSha256": "3c6024c7e6e159afb3875613d29294b4409cf7effd70a89975ea8aaa68b07bf3",
+  "implementationFingerprintSha256": "dd427d060e5b24071de4b5a7f1330f65d6108ca371e5a7cb44a030d418721fda",
   "fingerprintScope": "Sorted existing tracked and untracked base/features/scripts/recipes/.github files plus package.json and package-lock.json, path NUL content NUL; excludes docs. Matrix items were verified incrementally during this implementation, not all at this final fingerprint.",
   "environment": {
     "os": "macOS",
@@ -3181,5 +3181,14 @@
     "Windows/Linux remote CI execution",
     "Actual signed update / publishing / installation",
     "Real window responsiveness under database load"
-  ]
+  ],
+  "previousFingerprintBeforeTrackingCorrection": "3c6024c7e6e159afb3875613d29294b4409cf7effd70a89975ea8aaa68b07bf3",
+  "trackingCorrection": {
+    "files": [
+      "base/src/generated/application.tsx",
+      "base/src/generated/providers.tsx"
+    ],
+    "reason": "Root generated/ ignore rule omitted these tested template inputs from the first commit. Explicit exception and tracking added during main integration.",
+    "contentChanged": false
+  }
 }

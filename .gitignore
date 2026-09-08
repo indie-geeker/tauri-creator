@@ -5,6 +5,9 @@ dist/
 .env
 .env.*
 generated/
+# These are generator inputs, required in every clean checkout.
+!base/src/generated/
+!base/src/generated/**
 test-run/
 tmp/
 tauri-tray/
