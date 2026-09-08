@@ -4,9 +4,8 @@ import { formatShortcutForDisplay, keyEventToShortcut } from './ShortcutPicker'
 import { settingsLanguageOptions } from './panes/AppearancePane'
 
 describe('PreferencesDialog configuration', () => {
-  it('keeps the generic settings dialog scoped to general and appearance settings', () => {
+  it('keeps the generic settings dialog scoped to appearance settings by default', () => {
     expect(preferenceNavigationItems.map(item => item.id)).toEqual([
-      'general',
       'appearance',
     ])
   })

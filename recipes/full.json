@@ -9,10 +9,12 @@
     "app-lifecycle",
     "command-palette",
     "native-menu",
+    "quick-pane",
     "ui-layout",
     "sqlite",
     "project-governance",
     "updater",
+    "updater-release-workflow",
     "dx-tools"
   ]
 }

@@ -1,0 +1,3185 @@
+{
+  "date": "2026-09-07",
+  "baselineCommit": "990bbb0cfdd9dc8e5df4cf7815e079c7adb7b55a",
+  "branch": "codex/template-quality",
+  "uncommitted": true,
+  "implementationFingerprintSha256": "3c6024c7e6e159afb3875613d29294b4409cf7effd70a89975ea8aaa68b07bf3",
+  "fingerprintScope": "Sorted existing tracked and untracked base/features/scripts/recipes/.github files plus package.json and package-lock.json, path NUL content NUL; excludes docs. Matrix items were verified incrementally during this implementation, not all at this final fingerprint.",
+  "environment": {
+    "os": "macOS",
+    "node": "24.11.1",
+    "npm": "11.6.2",
+    "pnpm": "11.7.0",
+    "rust": "1.92.0",
+    "additionalNode": "22.13.0 starter install/test/build"
+  },
+  "npmFeatureMatrix": [
+    {
+      "id": "app-lifecycle",
+      "features": [
+        "app-lifecycle"
+      ],
+      "closure": [
+        "app-lifecycle"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "546589d93b2e1763d1ba1aa7d3ffa1241d5caa283dcfc3d2e401ceb890692ea8",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/app-lifecycle/app-lifecycle",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-3ZV7IA/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "app-lifecycle"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-3ZV7IA/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-3ZV7IA/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-3ZV7IA/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-3ZV7IA/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-3ZV7IA/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-3ZV7IA/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "app-state",
+      "features": [
+        "app-state"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "app-state"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "4c145f7c42a642d7a4e79037eaddcde93520286ce3236eb2141ed69ea960a1fd",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/app-state/app-state",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "app-state"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-jsPmrE/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "command-palette",
+      "features": [
+        "command-palette"
+      ],
+      "closure": [
+        "command-palette"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "12f41bf1682b96943382d91cd49b11ca64e6e9b623753902fe550628013bc401",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/command-palette/command-palette",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VqFn1l/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "command-palette"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VqFn1l/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VqFn1l/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VqFn1l/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VqFn1l/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VqFn1l/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VqFn1l/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "custom-titlebar",
+      "features": [
+        "custom-titlebar"
+      ],
+      "closure": [
+        "ui-tailwind",
+        "os-runtime",
+        "custom-titlebar"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "1ba29335ce0a9a9c7600b32918b3ce48f62c5f247c80ebeb503275c64545daea",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/custom-titlebar/custom-titlebar",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GX43t9/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "custom-titlebar"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GX43t9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GX43t9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GX43t9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GX43t9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GX43t9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GX43t9/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "diagnostics",
+      "features": [
+        "diagnostics"
+      ],
+      "closure": [
+        "specta-bindings",
+        "diagnostics"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "457240faf023b40e67438cd2acaf709cc22867045a71efabf19f3ff18a39cc6d",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/diagnostics/diagnostics",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "diagnostics"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-wmlcRC/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "dx-tools",
+      "features": [
+        "dx-tools"
+      ],
+      "closure": [
+        "dx-tools"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "14ee950352e14e798101a4ff1f101abaa14e16cfee6375459ef78da75087d70d",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/dx-tools/dx-tools",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-YU3HSq/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "dx-tools"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-YU3HSq/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-YU3HSq/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-YU3HSq/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-YU3HSq/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-YU3HSq/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-YU3HSq/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "i18n",
+      "features": [
+        "i18n"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "os-runtime",
+        "i18n"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "743a569014f86bfac0c16eccb09743473e4544e82ed942ae0e8ff44b33310ca5",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/i18n/i18n",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "i18n"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-d6tXh9/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "logging",
+      "features": [
+        "logging"
+      ],
+      "closure": [
+        "logging"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "82d7c5c308aa030080086d5b9cc570e062f7116d580b2ff532b6fe066256a96b",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/logging/logging",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-tADQ5r/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "logging"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-tADQ5r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-tADQ5r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-tADQ5r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-tADQ5r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-tADQ5r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-tADQ5r/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "native-menu",
+      "features": [
+        "native-menu"
+      ],
+      "closure": [
+        "native-menu"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "546589d93b2e1763d1ba1aa7d3ffa1241d5caa283dcfc3d2e401ceb890692ea8",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/native-menu/native-menu",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-79Dn9N/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "native-menu"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-79Dn9N/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-79Dn9N/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-79Dn9N/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-79Dn9N/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-79Dn9N/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-79Dn9N/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "os-runtime",
+      "features": [
+        "os-runtime"
+      ],
+      "closure": [
+        "os-runtime"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "cbf646438e66374131941f615a12d756f16b3910fe9327b95ffebc262c05990d",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/os-runtime/os-runtime",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-QFD3jg/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "os-runtime"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-QFD3jg/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-QFD3jg/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-QFD3jg/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-QFD3jg/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-QFD3jg/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-QFD3jg/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "preferences",
+      "features": [
+        "preferences"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "be2d46c66d22387b1bc05bf7f38d35f898c11bfe8e30815494142fece648299c",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/preferences/preferences",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "preferences"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GGBTPj/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "project-governance",
+      "features": [
+        "project-governance"
+      ],
+      "closure": [
+        "project-governance"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "546589d93b2e1763d1ba1aa7d3ffa1241d5caa283dcfc3d2e401ceb890692ea8",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/project-governance/project-governance",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-f2mopL/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "project-governance"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-f2mopL/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-f2mopL/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-f2mopL/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-f2mopL/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-f2mopL/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-f2mopL/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "quick-pane",
+      "features": [
+        "quick-pane"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "quick-pane"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "34d1bfb87e717db3110c94a42f1b8130d627de509a12efcb8dd435d8b492876a",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/quick-pane/quick-pane",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "quick-pane"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bUDAGM/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "specta-bindings",
+      "features": [
+        "specta-bindings"
+      ],
+      "closure": [
+        "specta-bindings"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "457240faf023b40e67438cd2acaf709cc22867045a71efabf19f3ff18a39cc6d",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/specta-bindings/specta-bindings",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "specta-bindings"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-qjmL6p/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "sqlite",
+      "features": [
+        "sqlite"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "app-state",
+        "sqlite"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "4c145f7c42a642d7a4e79037eaddcde93520286ce3236eb2141ed69ea960a1fd",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/sqlite/sqlite",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "sqlite"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-LcDinH/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "ui-layout",
+      "features": [
+        "ui-layout"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "app-state",
+        "os-runtime",
+        "i18n",
+        "ui-tailwind",
+        "ui-shadcn",
+        "ui-preferences",
+        "ui-layout"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "510dcf17183ba63f6236055fb17bb14d38494111731b09a42eaa6f8a8aad2ca5",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/ui-layout/ui-layout",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "ui-layout"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-N9721Q/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "ui-preferences",
+      "features": [
+        "ui-preferences"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "app-state",
+        "os-runtime",
+        "i18n",
+        "ui-tailwind",
+        "ui-shadcn",
+        "ui-preferences"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "510dcf17183ba63f6236055fb17bb14d38494111731b09a42eaa6f8a8aad2ca5",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/ui-preferences/ui-preferences",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "ui-preferences"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-V7KKsh/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "ui-shadcn",
+      "features": [
+        "ui-shadcn"
+      ],
+      "closure": [
+        "ui-tailwind",
+        "ui-shadcn"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "59ade8de405aac45cd362fb532e1363c9ae62511cb109f21617bffe93d96869b",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/ui-shadcn/ui-shadcn",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-axAUWc/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "ui-shadcn"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-axAUWc/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-axAUWc/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-axAUWc/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-axAUWc/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-axAUWc/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-axAUWc/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "ui-tailwind",
+      "features": [
+        "ui-tailwind"
+      ],
+      "closure": [
+        "ui-tailwind"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "de93adff7f207b4cb3c60f6082a016e50c6f8dd66f5266a836b84b25caf1c819",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/ui-tailwind/ui-tailwind",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-34xtc2/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "ui-tailwind"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-34xtc2/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-34xtc2/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-34xtc2/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-34xtc2/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-34xtc2/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-34xtc2/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "updater",
+      "features": [
+        "updater"
+      ],
+      "closure": [
+        "specta-bindings",
+        "updater"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "c30728db9fb15f20b5b044c263710dfe5e542367f5ec1c918c7b7f1e892ad685",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/updater/updater",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-kdz6qx",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "updater"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-kDZ6Qx/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "updater-release-workflow",
+      "features": [
+        "updater-release-workflow"
+      ],
+      "closure": [
+        "specta-bindings",
+        "updater",
+        "updater-release-workflow"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "c6d87c814a9fca01d7cd9aa5a1d5603d652d61c87b4e8a6c40d9f686fd901abc",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/updater-release-workflow/updater-release-workflow",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-lek5w9",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "updater-release-workflow"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-lEk5w9/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "ui-tailwind+ui-shadcn",
+      "features": [
+        "ui-tailwind",
+        "ui-shadcn"
+      ],
+      "closure": [
+        "ui-tailwind",
+        "ui-shadcn"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "0eaada20d3d925295a8d1630040ec85c39e2dd462015d8c1550fac3c29200066",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/ui-tailwind+ui-shadcn/ui-tailwind+ui-shadcn",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-enpr0t",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-enpR0t/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "ui-tailwind,ui-shadcn"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-enpR0t/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-enpR0t/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-enpR0t/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-enpR0t/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-enpR0t/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-enpR0t/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "ui-layout+quick-pane",
+      "features": [
+        "ui-layout",
+        "quick-pane"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "app-state",
+        "os-runtime",
+        "i18n",
+        "quick-pane",
+        "ui-tailwind",
+        "ui-shadcn",
+        "ui-preferences",
+        "ui-layout"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "cf78eac60e4c89ff65a854a374b214f027aa3a6f871b559b5a6ae91835e3a9c4",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/ui-layout+quick-pane/ui-layout+quick-pane",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-uahato",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "ui-layout,quick-pane"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-UahAtO/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "custom-titlebar+i18n",
+      "features": [
+        "custom-titlebar",
+        "i18n"
+      ],
+      "closure": [
+        "ui-tailwind",
+        "os-runtime",
+        "custom-titlebar",
+        "specta-bindings",
+        "preferences",
+        "i18n"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "305dc82a4c351918930486d230b54c2ccf8e29ffd6a49a21c3ca4f8946e60f50",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/custom-titlebar+i18n/custom-titlebar+i18n",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-bzzm3r",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "custom-titlebar,i18n"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-BZZM3r/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "preferences+ui-shadcn",
+      "features": [
+        "preferences",
+        "ui-shadcn"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "ui-tailwind",
+        "ui-shadcn"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "c87b9b78ee6b04031784230454ed20f460e74ab450ea89b280505a6b26acc49a",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/preferences+ui-shadcn/preferences+ui-shadcn",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-bqbnfa",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "preferences,ui-shadcn"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-bqbNfa/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "updater+project-governance",
+      "features": [
+        "updater",
+        "project-governance"
+      ],
+      "closure": [
+        "project-governance",
+        "specta-bindings",
+        "updater"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "c62e3656f7324c6a4436f68a3f88f70a948b901c8352d1870171e276b5a2b972",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/updater+project-governance/updater+project-governance",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-ftunmm",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "updater,project-governance"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-FtUnmM/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "updater+updater-release-workflow",
+      "features": [
+        "updater",
+        "updater-release-workflow"
+      ],
+      "closure": [
+        "specta-bindings",
+        "updater",
+        "updater-release-workflow"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "029d6a611fd28304d77ddb9e455fe711b704381abc1621d7c9839d733563e13e",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/updater+updater-release-workflow/updater+updater-release-workflow",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-grxnyr",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "updater,updater-release-workflow"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-GRXnYR/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "full+custom-titlebar",
+      "features": [
+        "specta-bindings",
+        "preferences",
+        "logging",
+        "diagnostics",
+        "app-lifecycle",
+        "command-palette",
+        "native-menu",
+        "quick-pane",
+        "ui-layout",
+        "sqlite",
+        "project-governance",
+        "updater",
+        "updater-release-workflow",
+        "dx-tools",
+        "custom-titlebar"
+      ],
+      "closure": [
+        "app-lifecycle",
+        "specta-bindings",
+        "preferences",
+        "app-state",
+        "command-palette",
+        "ui-tailwind",
+        "os-runtime",
+        "custom-titlebar",
+        "diagnostics",
+        "dx-tools",
+        "i18n",
+        "logging",
+        "native-menu",
+        "project-governance",
+        "quick-pane",
+        "sqlite",
+        "ui-shadcn",
+        "ui-preferences",
+        "ui-layout",
+        "updater",
+        "updater-release-workflow"
+      ],
+      "supported": true,
+      "packageManager": "npm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "b7725a630f49773b1519e4f7a11c4baea8aaf1a7d1430734069c23ecb0cd4d7f",
+      "logDirectory": "/tmp/tauri-quality-matrix-npm/full+custom-titlebar/full+custom-titlebar",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-r4rtyq",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+            "--package-manager",
+            "npm",
+            "--features",
+            "specta-bindings,preferences,logging,diagnostics,app-lifecycle,command-palette,native-menu,quick-pane,ui-layout,sqlite,project-governance,updater,updater-release-workflow,dx-tools,custom-titlebar"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+          "exitCode": 0
+        },
+        {
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-r4rTyQ/app",
+          "exitCode": 0
+        }
+      ]
+    }
+  ],
+  "pnpmRiskMatrix": [
+    {
+      "id": "custom-titlebar+i18n",
+      "features": [
+        "custom-titlebar",
+        "i18n"
+      ],
+      "closure": [
+        "ui-tailwind",
+        "os-runtime",
+        "custom-titlebar",
+        "specta-bindings",
+        "preferences",
+        "i18n"
+      ],
+      "supported": true,
+      "packageManager": "pnpm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "e4bcb0d9522058aacdbcfa6258ab3fe8f44dbd0841d5617ae8af21dac20784b9",
+      "logDirectory": "/tmp/tauri-quality-matrix-pnpm/custom-titlebar+i18n",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+            "--package-manager",
+            "pnpm",
+            "--features",
+            "custom-titlebar,i18n"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-WkMvNz/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "preferences+ui-shadcn",
+      "features": [
+        "preferences",
+        "ui-shadcn"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "ui-tailwind",
+        "ui-shadcn"
+      ],
+      "supported": true,
+      "packageManager": "pnpm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "5dd23b058e054f89d93bade0d4071fb6c26d21cdd4fbf8bfd1d28929a3f4a98b",
+      "logDirectory": "/tmp/tauri-quality-matrix-pnpm/preferences+ui-shadcn",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-app",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+            "--package-manager",
+            "pnpm",
+            "--features",
+            "preferences,ui-shadcn"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-VRiCaT/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "ui-layout+quick-pane",
+      "features": [
+        "ui-layout",
+        "quick-pane"
+      ],
+      "closure": [
+        "specta-bindings",
+        "preferences",
+        "app-state",
+        "os-runtime",
+        "i18n",
+        "quick-pane",
+        "ui-tailwind",
+        "ui-shadcn",
+        "ui-preferences",
+        "ui-layout"
+      ],
+      "supported": true,
+      "packageManager": "pnpm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "e434efa1231c74ec5954c4d0c1a6eafd8dd63d9f8e6ef73e1dc825728508b6d4",
+      "logDirectory": "/tmp/tauri-quality-matrix-pnpm-recheck/ui-layout+quick-pane",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-twxkty",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+            "--package-manager",
+            "pnpm",
+            "--features",
+            "ui-layout,quick-pane"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-twxKTY/app",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "updater+updater-release-workflow",
+      "features": [
+        "updater",
+        "updater-release-workflow"
+      ],
+      "closure": [
+        "specta-bindings",
+        "updater",
+        "updater-release-workflow"
+      ],
+      "supported": true,
+      "packageManager": "pnpm",
+      "node": "v24.11.1",
+      "status": "passed",
+      "lockSha256": "c99be154dfe0765c2f0e1309fbddfc879e958eb21bc63d5060b6e0feb1934f91",
+      "logDirectory": "/tmp/tauri-quality-matrix-pnpm-recheck/updater+updater-release-workflow",
+      "commands": [
+        {
+          "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+          "args": [
+            "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+            "--name",
+            "contract-mchx6w",
+            "--target",
+            "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+            "--package-manager",
+            "pnpm",
+            "--features",
+            "updater,updater-release-workflow"
+          ],
+          "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "install"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "bindings:generate"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "typecheck"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "test:run"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:fmt:check"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "rust:test"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-contract-mCHX6w/app",
+          "exitCode": 0
+        }
+      ]
+    }
+  ],
+  "npmFullStrict": {
+    "status": "passed",
+    "frontendTests": 76,
+    "rustTests": 43,
+    "rustIgnored": 1,
+    "ignoredExplanation": "Binding export test is intentionally ignored in ordinary Rust tests, explicitly executed by bindings:generate/check.",
+    "fixture": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-creator-verify-jzgfzU",
+    "commands": [
+      {
+        "command": "/Users/wen/.local/share/mise/installs/node/24.11.1/bin/node",
+        "args": [
+          "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality/scripts/create-app.js",
+          "--name",
+          "verify-full",
+          "--target",
+          "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-creator-verify-jzgfzU/verify-full",
+          "--recipe",
+          "full",
+          "--package-manager",
+          "npm"
+        ],
+        "cwd": "/Users/wen/.config/superpowers/worktrees/tauri-creator/template-quality",
+        "exitCode": 0
+      },
+      {
+        "command": "npm",
+        "args": [
+          "install"
+        ],
+        "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-creator-verify-jzgfzU/verify-full",
+        "exitCode": 0
+      },
+      {
+        "command": "npm",
+        "args": [
+          "run",
+          "bindings:generate"
+        ],
+        "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-creator-verify-jzgfzU/verify-full",
+        "exitCode": 0
+      },
+      {
+        "command": "npm",
+        "args": [
+          "run",
+          "check:all"
+        ],
+        "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-creator-verify-jzgfzU/verify-full",
+        "exitCode": 0
+      },
+      {
+        "command": "npm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "cwd": "/var/folders/3q/236ky3sn2zxgqwn7mwznr6m00000gn/T/tauri-creator-verify-jzgfzU/verify-full",
+        "exitCode": 0
+      }
+    ],
+    "packageLockSha256": "88e17313843283c98b4435dd0ac5c8d020a810e2ec814208d45be37488853033"
+  },
+  "otherPassedChecks": [
+    {
+      "command": "npm run check:fast",
+      "exitCode": 0,
+      "log": "/tmp/tauri-fast-final-verified.log"
+    },
+    {
+      "command": "node scripts/test-feature-contracts.js --case repeat-check",
+      "exitCode": 0,
+      "log": "/tmp/tauri-repeat-final-v2.log"
+    },
+    {
+      "command": "verify-generated-app full pnpm --strict",
+      "exitCode": 0,
+      "log": "/tmp/tauri-pnpm-full-strict.log"
+    },
+    {
+      "command": "verify-generated-app starter npm on Node 22.13.0",
+      "exitCode": 0,
+      "log": "/tmp/tauri-node22-starter.log"
+    },
+    {
+      "command": "verify-generated-app minimal npm; starter pnpm",
+      "exitCode": 0,
+      "log": "/tmp/tauri-remaining-recipes.log"
+    }
+  ],
+  "contracts": {
+    "names": "passed",
+    "titlebar": "passed",
+    "bindings": "passed including read-only drift failure and regenerated TS mismatch",
+    "repeat-check": "passed after formatting correction",
+    "updater-configured": "passed",
+    "feature-roundtrip": "passed",
+    "initialLog": "/tmp/tauri-contracts-final.log",
+    "repeatCorrectionLog": "/tmp/tauri-repeat-final-v2.log"
+  },
+  "unverified": [
+    "Native window and OS shortcut interactions",
+    "Real Tauri IPC unauthorized-command rejection",
+    "Windows/Linux remote CI execution",
+    "Actual signed update / publishing / installation",
+    "Real window responsiveness under database load"
+  ]
+}

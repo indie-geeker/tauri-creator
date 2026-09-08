@@ -1,45 +1,23 @@
 import { cn } from '@/lib/utils'
-import {
-  TitleBarLeftActions,
-  TitleBarRightActions,
-  TitleBarTitle,
-} from './TitleBarContent'
+import { TitleBarTitle, type TitleBarContentProps } from './TitleBarContent'
 
-interface LinuxTitleBarProps {
-  className?: string
-  title?: string
-}
-
-/**
- * Linux title bar / toolbar.
- *
- * On Linux, native window decorations are used (decorations: true in config).
- * This component renders only the toolbar content without any window controls.
- * The native decorations provide close/minimize/maximize buttons.
- *
- * The toolbar sits below the native title bar and contains app-specific
- * toolbar buttons and the title.
- */
-export function LinuxTitleBar({ className, title }: LinuxTitleBarProps) {
+/** Linux retains system decorations and their window controls. */
+export function LinuxTitleBar({
+  className,
+  title,
+  leading,
+  trailing,
+}: TitleBarContentProps & { className?: string }) {
   return (
     <div
       className={cn(
-        'relative flex h-8 w-full shrink-0 items-center justify-between border-b bg-background',
+        'flex h-8 shrink-0 items-center gap-2 border-b bg-background px-2',
         className
       )}
     >
-      {/* Left side - Actions */}
-      <div className="flex items-center pl-2">
-        <TitleBarLeftActions />
-      </div>
-
-      {/* Center - Title */}
+      {leading}
       <TitleBarTitle title={title} />
-
-      {/* Right side - Actions */}
-      <div className="flex items-center pr-2">
-        <TitleBarRightActions />
-      </div>
+      {trailing}
     </div>
   )
 }

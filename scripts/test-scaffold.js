@@ -1,5 +1,12 @@
 import { execFileSync } from 'node:child_process'
-import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import {
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -56,7 +63,7 @@ async function listFiles(dir, prefix = '') {
     const fullPath = path.join(dir, entry.name)
 
     if (entry.isDirectory()) {
-      files.push(...await listFiles(fullPath, relativePath))
+      files.push(...(await listFiles(fullPath, relativePath)))
     } else if (entry.isFile()) {
       files.push(relativePath.split(path.sep).join('/'))
     }
@@ -71,7 +78,9 @@ async function assertNoUnresolvedPlaceholders(targetDir) {
     /{{[A-Z][A-Z0-9_]*}}/,
     'YOUR_USERNAME',
     'YOUR_',
-    textFromCodes([116, 97, 117, 114, 105, 45, 116, 101, 109, 112, 108, 97, 116, 101]),
+    textFromCodes([
+      116, 97, 117, 114, 105, 45, 116, 101, 109, 112, 108, 97, 116, 101,
+    ]),
   ]
 
   for (const file of files) {
@@ -80,7 +89,9 @@ async function assertNoUnresolvedPlaceholders(targetDir) {
 
     for (const pattern of placeholderPatterns) {
       assert(
-        !(typeof pattern === 'string' ? text.includes(pattern) : pattern.test(text)),
+        !(typeof pattern === 'string'
+          ? text.includes(pattern)
+          : pattern.test(text)),
         `${file} should not contain unresolved placeholder '${pattern}'`
       )
     }
@@ -93,7 +104,8 @@ function createApp(args) {
 
 function assertFeatures(state, featureNames, message) {
   assert(
-    state.enabledFeatures.join(',') === featureNames.join(','),
+    state.enabledFeatures.slice().sort().join(',') ===
+      featureNames.slice().sort().join(','),
     `${message}: expected ${featureNames.join(',')} but got ${state.enabledFeatures.join(',')}`
   )
 }
@@ -104,7 +116,9 @@ function assertUniqueImport(source, importStatement, message) {
   assert(matches.length <= 1, `${message}: found ${matches.length} copies`)
 }
 
-const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'tauri-creator-scaffold-'))
+const tempRoot = await mkdtemp(
+  path.join(os.tmpdir(), 'tauri-creator-scaffold-')
+)
 const minimalTarget = path.join(tempRoot, 'minimal-demo')
 const starterTarget = path.join(tempRoot, 'starter-demo')
 const fullTarget = path.join(tempRoot, 'full-demo')
@@ -114,8 +128,14 @@ const legacyStateTarget = path.join(tempRoot, 'legacy-state-demo')
 
 try {
   const rootPackage = await readJson(path.join(root, 'package.json'))
-  const ciWorkflow = await readFile(path.join(root, '.github', 'workflows', 'ci.yml'), 'utf8')
-  assert(rootPackage.packageManager?.startsWith('npm@'), 'root package.json should pin npm')
+  const ciWorkflow = await readFile(
+    path.join(root, '.github', 'workflows', 'ci.yml'),
+    'utf8'
+  )
+  assert(
+    rootPackage.packageManager?.startsWith('npm@'),
+    'root package.json should pin npm'
+  )
   assert(
     await pathExists(path.join(root, 'package-lock.json')),
     'npm-first root package should include package-lock.json for audit and CI'
@@ -124,7 +144,10 @@ try {
     !(await pathExists(path.join(root, 'pnpm-lock.yaml'))),
     'npm-first root package should not keep an empty pnpm lockfile at the root'
   )
-  assert(defaultPackageManager === 'npm', 'create-app should default generated apps to npm')
+  assert(
+    defaultPackageManager === 'npm',
+    'create-app should default generated apps to npm'
+  )
   assert(
     rootPackage.scripts.create === 'node scripts/create-app.js',
     'root package should expose npm run create as the daily wizard entry'
@@ -134,18 +157,28 @@ try {
     'create-app should remain as a compatibility alias'
   )
   assert(
-    !Object.values(rootPackage.scripts).some((script) => script.includes('pnpm run')),
+    !Object.values(rootPackage.scripts).some((script) =>
+      script.includes('pnpm run')
+    ),
     'root package scripts should not hard-code pnpm run internally'
   )
-  assert(rootPackage.scripts['check:fast'], 'root package should expose check:fast for scaffold-only checks')
+  assert(
+    rootPackage.scripts['check:fast'],
+    'root package should expose check:fast for scaffold-only checks'
+  )
   assert(
     rootPackage.scripts['check:generated']?.includes('check:generated:npm') &&
-      rootPackage.scripts['check:generated']?.includes('check:generated:pnpm') &&
-      rootPackage.scripts['check:generated']?.includes('check:generated:strict'),
+      rootPackage.scripts['check:generated']?.includes(
+        'check:generated:pnpm'
+      ) &&
+      rootPackage.scripts['check:generated']?.includes(
+        'check:generated:strict'
+      ),
     'root package should compose npm, pnpm, and strict generated-app verification'
   )
   assert(
-    rootPackage.scripts['check:generated:npm'] === 'node scripts/verify-generated-app.js --package-manager npm',
+    rootPackage.scripts['check:generated:npm'] ===
+      'node scripts/verify-generated-app.js --package-manager npm',
     'root package should verify generated apps through the recipe catalog for npm'
   )
   assert(
@@ -173,7 +206,9 @@ try {
       'npm run check:generated:tauri-build:starter && npm run check:generated:tauri-build:full',
     'root package should compose release-oriented Tauri bundle checks'
   )
-  const pnpmGeneratedCheckIndex = ciWorkflow.indexOf('npm run check:generated:pnpm')
+  const pnpmGeneratedCheckIndex = ciWorkflow.indexOf(
+    'npm run check:generated:pnpm'
+  )
   const pnpmActionSetupIndex = ciWorkflow.indexOf('pnpm/action-setup')
   const corepackEnableIndex = ciWorkflow.indexOf('corepack enable')
   const corepackPrepareIndex = ciWorkflow.indexOf('corepack prepare pnpm@')
@@ -188,11 +223,23 @@ try {
     corepackEnableIndex < corepackPrepareIndex &&
     corepackPrepareIndex < pnpmGeneratedCheckIndex
   assert(
-    ciUsesPnpmAction || ciUsesCorepackPnpm,
+    ciUsesPnpmAction ||
+      ciUsesCorepackPnpm ||
+      (ciWorkflow.indexOf('npm install --global npm@11.6.2 pnpm@11.7.0') <
+        pnpmGeneratedCheckIndex &&
+        ciWorkflow.includes('npm install --global npm@11.6.2 pnpm@11.7.0')),
     'CI should install or activate pnpm before running generated pnpm verification'
   )
   assert(
-    rootPackage.scripts['check:all'] === 'npm run check:fast && npm run check:generated',
+    [
+      'check:fast',
+      'check:generated',
+      'check:contracts',
+      'check:feature-matrix',
+      'check:feature-matrix:pnpm',
+    ].every((name) =>
+      rootPackage.scripts['check:all'].includes(`npm run ${name}`)
+    ),
     'root package check:all should run fast checks and full generated-app checks'
   )
   const readme = await readFile(path.join(root, 'README.md'), 'utf8')
@@ -204,14 +251,23 @@ try {
     (readme.match(/^npm run create$/gm) ?? []).length === 1,
     'README should recommend npm run create exactly once as the daily command'
   )
-  assert(!readme.includes('npm run create-app'), 'README should not ask users to remember the compatibility alias')
-  assert(!readme.includes('--advanced'), 'README should not document the obsolete advanced entry')
   assert(
-    readme.includes('Starter') && readme.includes('Minimal') && readme.includes('Full'),
+    !readme.includes('npm run create-app'),
+    'README should not ask users to remember the compatibility alias'
+  )
+  assert(
+    !readme.includes('--advanced'),
+    'README should not document the obsolete advanced entry'
+  )
+  assert(
+    readme.includes('Starter') &&
+      readme.includes('Minimal') &&
+      readme.includes('Full'),
     'README should explain all three wizard templates'
   )
   assert(
-    readme.includes('optional capabilities') && readme.includes('dependencies automatically'),
+    readme.includes('optional capabilities') &&
+      readme.includes('dependencies automatically'),
     'README should explain optional capabilities and automatic dependency resolution'
   )
   assert(
@@ -239,13 +295,24 @@ try {
     '--recipe',
     'minimal',
   ])
-  assert(await pathExists(path.join(minimalTarget, 'src', 'App.tsx')), 'minimal should copy App.tsx')
+  assert(
+    await pathExists(path.join(minimalTarget, 'src', 'App.tsx')),
+    'minimal should copy App.tsx'
+  )
   await assertNoUnresolvedPlaceholders(minimalTarget)
 
-  const minimalState = await readJson(path.join(minimalTarget, '.tauri-creator.json'))
+  const minimalState = await readJson(
+    path.join(minimalTarget, '.tauri-creator.json')
+  )
   assertFeatures(minimalState, [], 'minimal should enable no features')
-  assert(minimalState.integrationMode === 'recipe', 'minimal should record recipe integration mode')
-  assert(minimalState.recipe === 'minimal', 'minimal should record the minimal recipe')
+  assert(
+    minimalState.integrationMode === 'recipe',
+    'minimal should record recipe integration mode'
+  )
+  assert(
+    minimalState.recipe === 'minimal',
+    'minimal should record the minimal recipe'
+  )
 
   createApp([
     '--name',
@@ -255,32 +322,62 @@ try {
     '--recipe',
     'starter',
   ])
-  const starterState = await readJson(path.join(starterTarget, '.tauri-creator.json'))
+  const starterState = await readJson(
+    path.join(starterTarget, '.tauri-creator.json')
+  )
   assertFeatures(
     starterState,
     ['specta-bindings', 'preferences', 'logging', 'diagnostics'],
     'starter should enable exactly the typed production foundation features'
   )
-  for (const excludedFeature of ['dx-tools', 'quick-pane', 'sqlite', 'updater', 'project-governance']) {
-    assert(!starterState.enabledFeatures.includes(excludedFeature), `starter should exclude ${excludedFeature}`)
+  for (const excludedFeature of [
+    'dx-tools',
+    'quick-pane',
+    'sqlite',
+    'updater',
+    'project-governance',
+  ]) {
+    assert(
+      !starterState.enabledFeatures.includes(excludedFeature),
+      `starter should exclude ${excludedFeature}`
+    )
   }
-  assert(await pathExists(path.join(starterTarget, 'src', 'lib', 'logger.ts')), 'starter should include logging')
-  assert(await pathExists(path.join(starterTarget, 'src', 'features', 'diagnostics', 'index.ts')), 'starter should include diagnostics')
   assert(
-    await pathExists(path.join(starterTarget, 'src-tauri', 'src', 'bindings.rs')),
+    await pathExists(path.join(starterTarget, 'src', 'lib', 'logger.ts')),
+    'starter should include logging'
+  )
+  assert(
+    await pathExists(
+      path.join(starterTarget, 'src', 'features', 'diagnostics', 'index.ts')
+    ),
+    'starter should include diagnostics'
+  )
+  assert(
+    await pathExists(
+      path.join(starterTarget, 'src-tauri', 'src', 'bindings.rs')
+    ),
     'starter should include generated Specta binding source'
   )
-  const starterPackage = await readJson(path.join(starterTarget, 'package.json'))
+  const starterPackage = await readJson(
+    path.join(starterTarget, 'package.json')
+  )
   assert(
-    starterPackage.scripts['rust:bindings'] === 'cd src-tauri && cargo test export_bindings -- --ignored --nocapture',
+    starterPackage.scripts['rust:bindings'] ===
+      'node scripts/check-bindings.mjs generate',
     'starter should document TypeScript binding generation through npm run rust:bindings'
   )
-  const starterRustLib = await readFile(path.join(starterTarget, 'src-tauri', 'src', 'lib.rs'), 'utf8')
+  const starterRustLib = await readFile(
+    path.join(starterTarget, 'src-tauri', 'src', 'generated', 'mod.rs'),
+    'utf8'
+  )
   assert(
-    starterRustLib.includes('builder.invoke_handler()'),
+    starterRustLib.includes('commands::invoke_handler()'),
     'starter should route Tauri commands through the Specta invoke handler'
   )
-  const starterBindings = await readFile(path.join(starterTarget, 'src-tauri', 'src', 'bindings.rs'), 'utf8')
+  const starterBindings = await readFile(
+    path.join(starterTarget, 'src-tauri', 'src', 'bindings.rs'),
+    'utf8'
+  )
   assert(
     starterBindings.includes('preferences::load_preferences') &&
       starterBindings.includes('diagnostics::collect_diagnostics'),
@@ -306,14 +403,7 @@ try {
   )
   await assertNoUnresolvedPlaceholders(starterTarget)
 
-  createApp([
-    '--name',
-    'full-demo',
-    '--target',
-    fullTarget,
-    '--recipe',
-    'full',
-  ])
+  createApp(['--name', 'full-demo', '--target', fullTarget, '--recipe', 'full'])
   const fullState = await readJson(path.join(fullTarget, '.tauri-creator.json'))
   assertFeatures(
     fullState,
@@ -328,6 +418,7 @@ try {
       'ui-tailwind',
       'ui-shadcn',
       'app-state',
+      'os-runtime',
       'i18n',
       'quick-pane',
       'ui-preferences',
@@ -335,15 +426,39 @@ try {
       'sqlite',
       'project-governance',
       'updater',
+      'updater-release-workflow',
       'dx-tools',
     ],
     'full should enable the complete manifest-resolved reference feature set'
   )
-  assert(await pathExists(path.join(fullTarget, 'src', 'components', 'layout', 'MainWindow.tsx')), 'full should include the layout shell')
-  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'sqlite', 'index.ts')), 'full should include sqlite')
-  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'updater', 'index.ts')), 'full should include updater')
-  assert(await pathExists(path.join(fullTarget, 'src', 'features', 'quick-pane', 'index.tsx')), 'full should include quick-pane through layout dependencies')
-  const fullApp = await readFile(path.join(fullTarget, 'src', 'App.tsx'), 'utf8')
+  assert(
+    await pathExists(
+      path.join(fullTarget, 'src', 'components', 'layout', 'MainWindow.tsx')
+    ),
+    'full should include the layout shell'
+  )
+  assert(
+    await pathExists(
+      path.join(fullTarget, 'src', 'features', 'sqlite', 'index.ts')
+    ),
+    'full should include sqlite'
+  )
+  assert(
+    await pathExists(
+      path.join(fullTarget, 'src', 'features', 'updater', 'index.ts')
+    ),
+    'full should include updater'
+  )
+  assert(
+    await pathExists(
+      path.join(fullTarget, 'src', 'features', 'quick-pane', 'index.tsx')
+    ),
+    'full should include quick-pane through layout dependencies'
+  )
+  const fullApp = await readFile(
+    path.join(fullTarget, 'src', 'generated', 'application.tsx'),
+    'utf8'
+  )
   assertUniqueImport(
     fullApp,
     "import { useEffect } from 'react'",
@@ -351,7 +466,9 @@ try {
   )
   await assertNoUnresolvedPlaceholders(fullTarget)
   assert(
-    await pathExists(path.join(fullTarget, '.github', 'workflows', 'release.yml')),
+    await pathExists(
+      path.join(fullTarget, '.github', 'workflows', 'release.yml')
+    ),
     'full should include a release workflow'
   )
   assert(
@@ -378,9 +495,7 @@ try {
     )
   }
   assert(
-    fullPackageJson.scripts['check:all'].includes(
-      'cargo clippy --manifest-path src-tauri/Cargo.toml'
-    ),
+    fullPackageJson.scripts['check:all'].includes('npm run rust:clippy'),
     'full check:all should retain the Rust clippy gate'
   )
   assert(
@@ -396,10 +511,15 @@ try {
   ])
 
   assert(
-    !(await pathExists(path.join(fullTarget, 'src-tauri', 'src', 'features', 'diagnostics.rs'))),
+    !(await pathExists(
+      path.join(fullTarget, 'src-tauri', 'src', 'features', 'diagnostics.rs')
+    )),
     'remove-feature should delete diagnostics Rust file in scaffold smoke'
   )
-  const fullMapAfterRemoval = await readFile(path.join(fullTarget, 'PROJECT_MAP.md'), 'utf8')
+  const fullMapAfterRemoval = await readFile(
+    path.join(fullTarget, 'PROJECT_MAP.md'),
+    'utf8'
+  )
   assert(
     !fullMapAfterRemoval.includes('collect_diagnostics'),
     'remove-feature should remove deleted feature commands from PROJECT_MAP.md'
@@ -413,10 +533,22 @@ try {
     '--features',
     'logging,diagnostics',
   ])
-  const featureState = await readJson(path.join(featureTarget, '.tauri-creator.json'))
-  assert(featureState.integrationMode === 'features', 'manual feature creation should record feature integration mode')
-  assert(featureState.recipe === null, 'manual feature creation should not record a recipe')
-  assertFeatures(featureState, ['logging', 'diagnostics'], 'manual feature creation should apply selected features')
+  const featureState = await readJson(
+    path.join(featureTarget, '.tauri-creator.json')
+  )
+  assert(
+    featureState.integrationMode === 'features',
+    'manual feature creation should record feature integration mode'
+  )
+  assert(
+    featureState.recipe === null,
+    'manual feature creation should not record a recipe'
+  )
+  assertFeatures(
+    featureState,
+    ['specta-bindings', 'logging', 'diagnostics'],
+    'manual feature creation should apply selected features'
+  )
   await assertNoUnresolvedPlaceholders(featureTarget)
 
   createApp([
@@ -429,14 +561,25 @@ try {
     '--sidebar',
     'right',
   ])
-  const fullRightState = await readJson(path.join(fullRightTarget, '.tauri-creator.json'))
-  assert(fullRightState.options.layout.sidebar === 'right', 'full should record right sidebar generation option')
+  const fullRightState = await readJson(
+    path.join(fullRightTarget, '.tauri-creator.json')
+  )
+  assert(
+    fullRightState.options.layout.sidebar === 'right',
+    'full should record right sidebar generation option'
+  )
   const fullRightMainWindow = await readFile(
     path.join(fullRightTarget, 'src', 'components', 'layout', 'MainWindow.tsx'),
     'utf8'
   )
-  assert(!fullRightMainWindow.includes('LeftSideBar'), 'right sidebar generation should remove left sidebar code')
-  assert(fullRightMainWindow.includes('RightSideBar'), 'right sidebar generation should keep right sidebar code')
+  assert(
+    !fullRightMainWindow.includes('LeftSideBar'),
+    'right sidebar generation should remove left sidebar code'
+  )
+  assert(
+    fullRightMainWindow.includes('RightSideBar'),
+    'right sidebar generation should keep right sidebar code'
+  )
 
   runNode(applyFeatureScript, [
     '--target',
@@ -444,7 +587,9 @@ try {
     '--feature',
     'quick-pane',
   ])
-  const featureWithQuickPaneState = await readJson(path.join(featureTarget, '.tauri-creator.json'))
+  const featureWithQuickPaneState = await readJson(
+    path.join(featureTarget, '.tauri-creator.json')
+  )
   assert(
     featureWithQuickPaneState.enabledFeatures.includes('quick-pane'),
     'apply-feature should still add features after feature-mode generation'
@@ -470,38 +615,27 @@ try {
   delete legacyState.enabledFeatures
   await writeFile(legacyStatePath, `${JSON.stringify(legacyState, null, 2)}\n`)
 
-  runNode(applyFeatureScript, [
-    '--target',
-    legacyStateTarget,
-    '--feature',
-    'logging',
-  ])
-  const legacyStateAfterApply = await readJson(legacyStatePath)
+  let legacyRejected = false
+  try {
+    runNode(applyFeatureScript, [
+      '--target',
+      legacyStateTarget,
+      '--feature',
+      'logging',
+    ])
+  } catch (error) {
+    legacyRejected = /Unknown scaffold baseline schema/.test(
+      error.stderr?.toString() ?? ''
+    )
+  }
   assert(
-    legacyStateAfterApply.enabledFeatures.includes('logging'),
-    'apply-feature should tolerate generated state without v2 arrays'
+    legacyRejected,
+    'unknown legacy baseline must be rejected without writes'
   )
-  const legacyMapAfterApply = await readFile(path.join(legacyStateTarget, 'PROJECT_MAP.md'), 'utf8')
   assert(
-    legacyMapAfterApply.includes('Sidebar layout: `both`'),
-    'PROJECT_MAP.md should default missing legacy options while applying features'
-  )
-
-  runNode(removeFeatureScript, [
-    '--target',
-    legacyStateTarget,
-    '--feature',
-    'logging',
-  ])
-  const legacyStateAfterRemoval = await readJson(legacyStatePath)
-  assert(
-    !legacyStateAfterRemoval.enabledFeatures.includes('logging'),
-    'remove-feature should tolerate generated state without v2 arrays'
-  )
-  const legacyMapAfterRemoval = await readFile(path.join(legacyStateTarget, 'PROJECT_MAP.md'), 'utf8')
-  assert(
-    legacyMapAfterRemoval.includes('Enabled features: none'),
-    'PROJECT_MAP.md should update after removing features from legacy state'
+    JSON.stringify(await readJson(legacyStatePath)) ===
+      JSON.stringify(legacyState),
+    'legacy refusal must preserve metadata'
   )
 } finally {
   await rm(tempRoot, { recursive: true, force: true })

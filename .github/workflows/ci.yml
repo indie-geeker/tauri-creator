@@ -3,33 +3,63 @@ name: CI
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   scaffold:
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22.13.0, 24.11.1]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: ${{ matrix.node }}
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          toolchain: 1.92.0
           components: rustfmt, clippy
-      - name: Enable pnpm for generated-app checks
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.7.0 --activate
-      - name: Install root dependencies
-        run: npm install
-      - name: Run fast scaffold checks
-        run: npm run check:fast
-      - name: Verify generated npm apps
-        run: npm run check:generated:npm
-      - name: Verify generated pnpm starter app
-        run: npm run check:generated:pnpm
-      - name: Verify strict full app
-        run: npm run check:generated:strict
+      - name: Install pinned package managers
+        run: npm install --global npm@11.6.2 pnpm@11.7.0
+      - run: npm ci
+      - run: npm run check:fast
+      - run: npm run check:generated:npm
+      - run: npm run check:generated:pnpm
+      - run: npm run check:generated:pnpm:full
+      - run: npm run check:generated:strict
+      - run: npm run check:contracts
+      - run: npm run check:feature-matrix:pnpm
+
+  feature-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/.matrix-cargo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.1
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.92.0
+          components: rustfmt, clippy
+      - if: runner.os == 'Linux'
+        name: Install Tauri Linux build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf
+      - run: npm install --global npm@11.6.2 pnpm@11.7.0
+      - run: npm ci
+      - run: node scripts/verify-generated-app.js --recipe starter --package-manager npm
+      - run: node scripts/verify-generated-app.js --recipe full --package-manager npm
+      - name: Verify standalone features and boundary combinations
+        run: node scripts/verify-feature-matrix.js --output matrix-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: feature-evidence-${{ matrix.os }}
+          path: matrix-evidence

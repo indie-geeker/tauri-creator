@@ -7,14 +7,20 @@
   },
   "dependsOn": [],
   "conflictsWith": [],
-  "npmDependencies": [],
+  "npmDependencies": [
+    "prettier"
+  ],
   "cargoDependencies": [
     "specta",
     "tauri-specta",
     "specta-typescript"
   ],
   "files": [
-    "src-tauri/src/bindings.rs"
+    "src-tauri/src/bindings.rs",
+    "scripts/check-bindings.mjs",
+    "src/lib/command-result.ts",
+    "src/lib/command-result.test.ts",
+    "docs/features/specta-bindings.md"
   ],
   "tauriCommands": [],
   "capabilities": [],

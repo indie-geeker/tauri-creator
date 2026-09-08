@@ -1,9 +1,21 @@
-import { execFileSync } from 'node:child_process'
-import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises'
+import { processCommand } from './lib/process-command.js'
+import { spawnSync } from 'node:child_process'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import {
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { defaultPackageManager, normalizePackageManager } from './package-managers.js'
+import {
+  defaultPackageManager,
+  normalizePackageManager,
+} from './package-managers.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const recipesDir = path.join(root, 'recipes')
@@ -14,6 +26,8 @@ function printUsage() {
   console.log(`Usage: node scripts/verify-generated-app.js [--quick] [--strict] [--tauri-build] [--recipe <name>] [--feature <name>] [--sidebar <left|right|both>] [--package-manager <npm|pnpm>]
 
 Options:
+  --features           Verify an exact comma-separated feature closure (exclusive with recipe/feature).
+  --keep-output        Preserve this run’s unique generated directory.
   --quick              Generate apps and run lightweight structural checks only.
   --strict             Run the generated app's own check:all before build.
   --tauri-build        Run the generated app's Tauri bundle build after checks.
@@ -25,8 +39,7 @@ Options:
 }
 
 function fail(message) {
-  console.error(`verify-generated-app: ${message}`)
-  process.exit(1)
+  throw new Error(`verify-generated-app: ${message}`)
 }
 
 function textFromCodes(codes) {
@@ -46,6 +59,11 @@ function parseArgs(argv) {
 
     if (arg === '--help' || arg === '-h') {
       args.help = true
+      continue
+    }
+
+    if (arg === '--keep-output') {
+      args.keepOutput = true
       continue
     }
 
@@ -92,6 +110,10 @@ function parseArgs(argv) {
     index += 1
   }
 
+  if (args.features && (args.recipe || args.feature))
+    fail('--features is exclusive with --recipe and --feature')
+  if (args.features && !args.features.split(',').every((name) => name.trim()))
+    fail('--features must contain nonempty names')
   return args
 }
 
@@ -105,22 +127,42 @@ async function pathExists(filePath) {
   }
 }
 
+let commandLogDirectory
+let commandSequence = 0
 function run(command, args, options = {}) {
-  try {
-    execFileSync(command, args, {
-      cwd: options.cwd ?? root,
-      stdio: options.stdio ?? 'pipe',
-    })
-  } catch (error) {
-    const renderedCommand = [command, ...args].join(' ')
-    const stdout = error.stdout?.toString('utf8') ?? ''
-    const stderr = error.stderr?.toString('utf8') ?? ''
-    throw new Error([
-      `Command failed: ${renderedCommand}`,
-      stdout.trim(),
-      stderr.trim(),
-    ].filter(Boolean).join('\n'))
+  const executable = processCommand(command, args)
+  const cwd = options.cwd ?? root
+  const result = spawnSync(executable.command, executable.args, {
+    cwd,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  })
+  const record = {
+    command,
+    args,
+    cwd,
+    exitCode: result.status ?? 1,
+    stdout: result.stdout ?? '',
+    stderr: (result.stderr ?? '') + (result.error?.message ?? ''),
   }
+  if (commandLogDirectory)
+    writeFileSync(
+      path.join(
+        commandLogDirectory,
+        `${String(++commandSequence).padStart(3, '0')}.json`
+      ),
+      JSON.stringify(record, null, 2)
+    )
+  if (record.exitCode !== 0)
+    throw new Error(
+      [
+        `Command failed: ${[command, ...args].join(' ')}`,
+        record.stdout.trim(),
+        record.stderr.trim(),
+      ]
+        .filter(Boolean)
+        .join('\n')
+    )
 }
 
 async function readTextFileIfPossible(filePath) {
@@ -141,7 +183,7 @@ async function listFiles(dir, prefix = '') {
     const fullPath = path.join(dir, entry.name)
 
     if (entry.isDirectory()) {
-      files.push(...await listFiles(fullPath, relativePath))
+      files.push(...(await listFiles(fullPath, relativePath)))
     } else if (entry.isFile()) {
       files.push(relativePath.split(path.sep).join('/'))
     }
@@ -156,7 +198,9 @@ async function assertNoUnresolvedPlaceholders(targetDir) {
     /{{[A-Z][A-Z0-9_]*}}/,
     'YOUR_USERNAME',
     'YOUR_',
-    textFromCodes([116, 97, 117, 114, 105, 45, 116, 101, 109, 112, 108, 97, 116, 101]),
+    textFromCodes([
+      116, 97, 117, 114, 105, 45, 116, 101, 109, 112, 108, 97, 116, 101,
+    ]),
   ]
 
   for (const file of files) {
@@ -165,7 +209,9 @@ async function assertNoUnresolvedPlaceholders(targetDir) {
 
     for (const pattern of placeholderPatterns) {
       const hasUnresolvedPlaceholder =
-        typeof pattern === 'string' ? text.includes(pattern) : pattern.test(text)
+        typeof pattern === 'string'
+          ? text.includes(pattern)
+          : pattern.test(text)
       if (hasUnresolvedPlaceholder) {
         fail(`${file} contains unresolved placeholder '${pattern}'`)
       }
@@ -200,7 +246,10 @@ async function assertTauriBuildPrerequisites(targetDir) {
   const state = await readJson(path.join(targetDir, '.tauri-creator.json'))
   const enabledFeatures = new Set(state.enabledFeatures ?? [])
 
-  if (enabledFeatures.has('updater') && !process.env.TAURI_SIGNING_PRIVATE_KEY) {
+  if (
+    enabledFeatures.has('updater') &&
+    !process.env.TAURI_SIGNING_PRIVATE_KEY
+  ) {
     fail(
       '--tauri-build requires TAURI_SIGNING_PRIVATE_KEY when the generated app enables updater. ' +
         'Set TAURI_SIGNING_PRIVATE_KEY or verify a recipe without updater.'
@@ -208,8 +257,15 @@ async function assertTauriBuildPrerequisites(targetDir) {
   }
 }
 
-function runGeneratedAppChecks(targetDir, packageManager, { strict = false, tauriBuild = false } = {}) {
+async function runGeneratedAppChecks(
+  targetDir,
+  packageManager,
+  { strict = false, tauriBuild = false } = {}
+) {
   const commands = [[packageManager, ['install']]]
+  const pkg = await readJson(path.join(targetDir, 'package.json'))
+  if (pkg.scripts['bindings:generate'])
+    commands.push([packageManager, ['run', 'bindings:generate']])
 
   if (strict) {
     commands.push([packageManager, ['run', 'check:all']])
@@ -249,8 +305,18 @@ function renderAppName(recipeName, featureName, sidebar) {
   return ['verify', recipeName, featureName, sidebar].filter(Boolean).join('-')
 }
 
-async function verifyOneRecipe({ recipeName, featureName, sidebar, quick, strict, tauriBuild, packageManager, tempRoot }) {
-  await validateRecipeExists(recipeName)
+async function verifyOneRecipe({
+  recipeName,
+  featureName,
+  features,
+  sidebar,
+  quick,
+  strict,
+  tauriBuild,
+  packageManager,
+  tempRoot,
+}) {
+  if (!features) await validateRecipeExists(recipeName)
 
   const appName = renderAppName(recipeName, featureName, sidebar)
   const targetDir = path.join(tempRoot, appName)
@@ -260,8 +326,7 @@ async function verifyOneRecipe({ recipeName, featureName, sidebar, quick, strict
     appName,
     '--target',
     targetDir,
-    '--recipe',
-    recipeName,
+    ...(features ? ['--features', features] : ['--recipe', recipeName]),
     '--package-manager',
     packageManager,
   ]
@@ -289,12 +354,21 @@ async function verifyOneRecipe({ recipeName, featureName, sidebar, quick, strict
   }
 
   if (!quick) {
-    runGeneratedAppChecks(targetDir, packageManager, { strict, tauriBuild })
+    await runGeneratedAppChecks(targetDir, packageManager, {
+      strict,
+      tauriBuild,
+    })
   }
 
   const featureSuffix = featureName ? ` with feature ${featureName}` : ''
   const sidebarSuffix = sidebar ? ` with sidebar ${sidebar}` : ''
-  console.log(`Verified generated app recipe ${recipeName}${featureSuffix}${sidebarSuffix} using ${packageManager}`)
+  if (quick)
+    console.log(
+      'Structural checks only; installation and compilation were not run.'
+    )
+  console.log(
+    `Verified generated app recipe ${recipeName}${featureSuffix}${sidebarSuffix} using ${packageManager}`
+  )
 }
 
 async function main() {
@@ -305,21 +379,33 @@ async function main() {
   }
 
   if (args.sidebar && !args.recipe) {
-    fail('--sidebar requires --recipe so it is not passed to recipes without ui-layout')
+    fail(
+      '--sidebar requires --recipe so it is not passed to recipes without ui-layout'
+    )
   }
 
   if (args.quick && args.tauriBuild) {
     fail('--tauri-build cannot be combined with --quick')
   }
 
-  const recipes = args.recipe ? [args.recipe] : await listRecipeNames()
-  const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'tauri-creator-verify-'))
+  const recipes = args.features
+    ? ['features']
+    : args.recipe
+      ? [args.recipe]
+      : await listRecipeNames()
+  const tempRoot = await mkdtemp(
+    path.join(os.tmpdir(), 'tauri-creator-verify-')
+  )
 
+  commandLogDirectory = path.join(tempRoot, 'logs')
+  mkdirSync(commandLogDirectory)
+  let failed = false
   try {
     for (const recipeName of recipes) {
       await verifyOneRecipe({
         recipeName,
         featureName: args.feature,
+        features: args.features,
         sidebar: args.sidebar,
         quick: args.quick,
         strict: args.strict,
@@ -328,8 +414,17 @@ async function main() {
         tempRoot,
       })
     }
+  } catch (error) {
+    failed = true
+    await writeFile(
+      path.join(tempRoot, 'failure.log'),
+      error.stack ?? String(error)
+    )
+    throw error
   } finally {
-    await rm(tempRoot, { recursive: true, force: true })
+    if (failed || args.keepOutput)
+      console.log(`Generated output retained: ${tempRoot}`)
+    else await rm(tempRoot, { recursive: true, force: true })
   }
 }
 

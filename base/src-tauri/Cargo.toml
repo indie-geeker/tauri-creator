@@ -5,7 +5,7 @@ description = "{{APP_PRODUCT_NAME}}"
 authors = ["{{APP_AUTHOR}}"]
 {{CARGO_LICENSE_LINE}}
 edition = "2021"
-rust-version = "1.82"
+rust-version = "1.92"
 
 [lib]
 name = "{{CARGO_CRATE_NAME}}_lib"

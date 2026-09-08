@@ -76,5 +76,29 @@
     "file": "src-tauri/src/lib.rs",
     "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
     "insert": "            features::quick_pane::update_quick_pane_shortcut,"
+  },
+  {
+    "id": "quick-pane-submission-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "    // TAURI_CREATOR:RUST_FEATURE_MODULES",
+    "insert": "    pub mod quick_pane_submission;"
+  },
+  {
+    "id": "quick-pane-main-runtime-import",
+    "file": "src/generated/application.tsx",
+    "marker": "// TAURI_CREATOR:APP_IMPORTS",
+    "insert": "import { QuickPaneReceiptView } from '../features/quick-pane'"
+  },
+  {
+    "id": "quick-pane-receipt",
+    "file": "src/generated/application.tsx",
+    "marker": "{/* TAURI_CREATOR:APP_CONTENT */}",
+    "insert": "      <QuickPaneReceiptView />"
+  },
+  {
+    "id": "quick-pane-shortcut-module",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "    // TAURI_CREATOR:RUST_FEATURE_MODULES",
+    "insert": "    pub mod quick_pane_shortcut;"
   }
 ]

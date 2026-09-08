@@ -1,0 +1,25 @@
+{
+  "name": "os-runtime",
+  "description": "Shared operating system plugin runtime.",
+  "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
+  "dependsOn": [],
+  "conflictsWith": [],
+  "npmDependencies": [
+    "@tauri-apps/plugin-os"
+  ],
+  "cargoDependencies": [
+    "tauri-plugin-os"
+  ],
+  "files": [
+    "src/lib/os-runtime.ts",
+    "docs/features/os-runtime.md"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [],
+  "removeHints": [],
+  "spectaExports": []
+}

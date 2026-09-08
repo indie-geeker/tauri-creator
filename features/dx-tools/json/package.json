@@ -8,7 +8,6 @@
     "rust:fmt:check": "cargo fmt --check --manifest-path src-tauri/Cargo.toml",
     "rust:clippy": "cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings",
     "rust:clippy:fix": "cargo clippy --fix --allow-dirty --manifest-path src-tauri/Cargo.toml",
-    "check:all": "tsc --noEmit && eslint . --max-warnings 0 && ast-grep scan && prettier --check . && cargo fmt --check --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings && vitest run && cargo test --manifest-path src-tauri/Cargo.toml",
     "fix:all": "eslint . --fix && prettier --write . && cargo fmt --manifest-path src-tauri/Cargo.toml && cargo clippy --fix --allow-dirty --manifest-path src-tauri/Cargo.toml",
     "knip": "knip",
     "jscpd": "jscpd",

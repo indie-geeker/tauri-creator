@@ -1,7 +1,11 @@
-import { invoke } from '@tauri-apps/api/core'
-import { emit, listen } from '@tauri-apps/api/event'
+import { unwrapCommandResult } from '@/lib/command-result'
+import { disposeAsyncSubscription } from '@/lib/async-subscription'
+import { useLatestSubmission } from './submission-store'
+import { commands } from '@/lib/tauri-bindings'
+import type { QuickPaneState } from '@/lib/tauri-bindings'
+export type { QuickPaneState } from '@/lib/tauri-bindings'
+import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Keyboard, PanelTopOpen, X, Zap } from 'lucide-react'
 import type { FormEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import './quick-pane.css'
@@ -10,14 +14,6 @@ export const QUICK_PANE_FEATURE_ID = 'quick-pane'
 export const DEFAULT_QUICK_PANE_SHORTCUT = 'CommandOrControl+Shift+.'
 export const QUICK_PANE_STATE_CHANGED_EVENT = 'quick-pane-state-changed'
 export const QUICK_PANE_SUBMIT_EVENT = 'quick-pane-submit'
-
-export type QuickPaneState = {
-  visible: boolean
-  shortcut: string
-  shortcutRegistered: boolean
-  shortcutError: string | null
-  windowError: string | null
-}
 
 export type QuickPanePanelProps = {
   onMessage?: (message: string) => void
@@ -28,29 +24,29 @@ export type QuickPaneSubmitPayload = {
 }
 
 export function getQuickPaneState(): Promise<QuickPaneState> {
-  return invoke<QuickPaneState>('get_quick_pane_state')
+  return commands.getQuickPaneState()
 }
 
 export function showQuickPane(): Promise<QuickPaneState> {
-  return invoke<QuickPaneState>('show_quick_pane')
+  return commands.showQuickPane()
 }
 
 export function dismissQuickPane(): Promise<QuickPaneState> {
-  return invoke<QuickPaneState>('dismiss_quick_pane')
+  return commands.dismissQuickPane()
 }
 
 export function toggleQuickPane(): Promise<QuickPaneState> {
-  return invoke<QuickPaneState>('toggle_quick_pane')
+  return commands.toggleQuickPane()
 }
 
 export function getDefaultQuickPaneShortcut(): Promise<string> {
-  return invoke<string>('get_default_quick_pane_shortcut')
+  return commands.getDefaultQuickPaneShortcut()
 }
 
 export function updateQuickPaneShortcut(
-  shortcut: string | null
+  shortcut: string | null | undefined
 ): Promise<QuickPaneState> {
-  return invoke<QuickPaneState>('update_quick_pane_shortcut', { shortcut })
+  return commands.updateQuickPaneShortcut(shortcut ?? null)
 }
 
 export function formatQuickPaneShortcutError(error: unknown): string {
@@ -76,200 +72,71 @@ export function formatQuickPaneSubmissionMessage(text: string): string {
   return `Quick pane submitted: ${text}`
 }
 
-export function QuickPanePanel({ onMessage }: QuickPanePanelProps) {
-  const [state, setState] = useState<QuickPaneState>({
-    visible: false,
-    shortcut: DEFAULT_QUICK_PANE_SHORTCUT,
-    shortcutRegistered: false,
-    shortcutError: null,
-    windowError: null,
-  })
-  const [draft, setDraft] = useState('')
-  const [submissions, setSubmissions] = useState<string[]>([])
+export function QuickPaneReceiptView() {
+  const receipt = useLatestSubmission()
+  return receipt ? <p role="status">Received this run: {receipt.text}</p> : null
+}
 
+export function QuickPanePanel({ onMessage }: QuickPanePanelProps) {
+  const [state, setState] = useState<QuickPaneState | null>(null)
+  const [error, setError] = useState<string | null>(null)
   useEffect(() => {
     let active = true
-    let cleanupState: (() => void) | undefined
-    let cleanupSubmit: (() => void) | undefined
-
-    function syncState(nextState: QuickPaneState) {
-      if (!active) return
-
-      setState(nextState)
-      if (nextState.windowError) {
-        onMessage?.(`Quick pane window failed: ${nextState.windowError}`)
-      } else if (nextState.shortcutError) {
-        onMessage?.(`Quick pane shortcut failed: ${nextState.shortcutError}`)
-      } else if (nextState.shortcutRegistered) {
-        onMessage?.('Quick pane shortcut registered')
-      }
-    }
-
-    getQuickPaneState()
-      .then(syncState)
-      .catch((error: unknown) => {
-        console.error('Quick pane state failed', error)
-        onMessage?.(formatQuickPaneShortcutError(error))
+    void getQuickPaneState()
+      .then(value => {
+        if (active) setState(value)
       })
-
-    void listen<QuickPaneState>(QUICK_PANE_STATE_CHANGED_EVENT, event => {
-      syncState(event.payload)
-    }).then(unlisten => {
-      cleanupState = unlisten
-    })
-
-    void listen<QuickPaneSubmitPayload>(QUICK_PANE_SUBMIT_EVENT, event => {
-      if (!active) return
-
-      const submittedText = normalizeQuickPaneSubmissionText(event.payload)
-      if (!submittedText) return
-
-      setSubmissions(currentSubmissions =>
-        [submittedText, ...currentSubmissions].slice(0, 5)
-      )
-      onMessage?.(formatQuickPaneSubmissionMessage(submittedText))
-    }).then(unlisten => {
-      cleanupSubmit = unlisten
-    })
-
+      .catch(reason => {
+        if (active) setError(String(reason))
+      })
+    const stop = disposeAsyncSubscription(
+      () =>
+        listen<QuickPaneState>(QUICK_PANE_STATE_CHANGED_EVENT, event => {
+          if (active) setState(event.payload)
+        }),
+      reason => {
+        if (active) setError(String(reason))
+      }
+    )
     return () => {
       active = false
-      cleanupState?.()
-      cleanupSubmit?.()
+      stop()
     }
-  }, [onMessage])
-
-  async function openPane() {
-    const nextState = await showQuickPane()
-    setState(nextState)
-    onMessage?.(
-      nextState.windowError
-        ? `Quick pane window failed: ${nextState.windowError}`
-        : 'Quick pane opened'
-    )
-  }
-
-  async function closePane() {
-    const nextState = await dismissQuickPane()
-    setState(nextState)
-    onMessage?.(
-      nextState.windowError
-        ? `Quick pane window failed: ${nextState.windowError}`
-        : 'Quick pane dismissed'
-    )
-  }
-
-  async function saveShortcut() {
-    const nextState = await updateQuickPaneShortcut(state.shortcut)
-    setState(nextState)
-    if (nextState.shortcutError) {
-      onMessage?.(`Quick pane shortcut failed: ${nextState.shortcutError}`)
-    } else {
-      onMessage?.(`Quick pane shortcut set to ${nextState.shortcut}`)
+  }, [])
+  const perform = async (action: () => Promise<QuickPaneState>) => {
+    try {
+      const value = await action()
+      setState(value)
+      setError(value.windowError ?? value.shortcutError ?? null)
+      onMessage?.('Quick pane state updated')
+    } catch (reason) {
+      setError(String(reason))
     }
   }
-
-  function captureDraft() {
-    const trimmedDraft = draft.trim()
-    if (!trimmedDraft) return
-
-    onMessage?.(`Captured: ${trimmedDraft}`)
-    setDraft('')
-  }
-
   return (
     <section className="quick-pane-panel" aria-label="Quick pane">
-      <div className="quick-pane-toolbar">
-        <div>
-          <p className="quick-pane-kicker">
-            {state.windowError
-              ? 'Window unavailable'
-              : state.shortcutError
-                ? 'Shortcut unavailable'
-                : state.shortcutRegistered
-                  ? 'Global shortcut active'
-                  : 'Registering shortcut'}
-          </p>
-          <h2>Quick pane</h2>
-        </div>
-        <div className="quick-pane-actions">
-          <button
-            aria-label="Open quick pane"
-            title="Open quick pane"
-            type="button"
-            onClick={() => {
-              void openPane()
-            }}
-          >
-            <PanelTopOpen aria-hidden="true" size={16} strokeWidth={2} />
-          </button>
-          <button
-            aria-label="Dismiss quick pane"
-            title="Dismiss quick pane"
-            type="button"
-            onClick={() => {
-              void closePane()
-            }}
-          >
-            <X aria-hidden="true" size={16} strokeWidth={2} />
-          </button>
-        </div>
-      </div>
-
-      {state.visible ? (
-        <div className="quick-pane-composer">
-          <label>
-            <span>Capture</span>
-            <textarea
-              rows={3}
-              value={draft}
-              onChange={event => setDraft(event.currentTarget.value)}
-              placeholder="Write a note, command, or next action"
-            />
-          </label>
-          <button
-            className="quick-pane-primary"
-            type="button"
-            onClick={captureDraft}
-          >
-            <Zap aria-hidden="true" size={16} strokeWidth={2} />
-            Capture
-          </button>
-        </div>
-      ) : null}
-
-      {submissions.length > 0 ? (
-        <div className="quick-pane-submissions" aria-live="polite">
-          <p>Recent submissions</p>
-          <ul>
-            {submissions.map((submission, index) => (
-              <li key={`${submission}-${index}`}>{submission}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <div className="quick-pane-shortcut">
-        <Keyboard aria-hidden="true" size={16} strokeWidth={2} />
-        <input
-          aria-label="Quick pane shortcut"
-          value={state.shortcut}
-          onChange={event => {
-            setState(currentState => ({
-              ...currentState,
-              shortcut: event.currentTarget.value,
-            }))
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => {
-            void saveShortcut()
-          }}
-        >
-          Save
-        </button>
-      </div>
+      <h2>Quick pane</h2>
+      <p>{state?.shortcut ?? DEFAULT_QUICK_PANE_SHORTCUT}</p>
+      {error && <p role="alert">{error}</p>}
+      <button
+        type="button"
+        aria-label="Open quick pane"
+        onClick={() => {
+          void perform(showQuickPane)
+        }}
+      >
+        Open quick pane
+      </button>
+      <button
+        type="button"
+        aria-label="Dismiss quick pane"
+        onClick={() => {
+          void perform(dismissQuickPane)
+        }}
+      >
+        Dismiss quick pane
+      </button>
+      <QuickPaneReceiptView />
     </section>
   )
 }
@@ -277,31 +144,26 @@ export function QuickPanePanel({ onMessage }: QuickPanePanelProps) {
 export function QuickPaneWindow() {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const submitting = useRef(false)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
-  useEffect(() => {
-    let cleanup: (() => void) | undefined
-
-    void getCurrentWindow()
-      .onFocusChanged(async ({ payload: focused }) => {
-        if (focused) {
-          inputRef.current?.focus()
-          return
-        }
-
-        await dismissWindow()
-      })
-      .then(unlisten => {
-        cleanup = unlisten
-      })
-
-    return () => {
-      cleanup?.()
-    }
-  }, [])
+  useEffect(
+    () =>
+      disposeAsyncSubscription(
+        () =>
+          getCurrentWindow().onFocusChanged(({ payload: focused }) => {
+            if (focused) inputRef.current?.focus()
+            else if (!submitting.current) void dismissWindow()
+          }),
+        reason => setError(String(reason))
+      ),
+    []
+  )
 
   useEffect(() => {
     async function handleKeyDown(event: globalThis.KeyboardEvent) {
@@ -317,9 +179,10 @@ export function QuickPaneWindow() {
 
   async function dismissWindow() {
     try {
-      await dismissQuickPane()
+      const result = await dismissQuickPane()
+      if (result.windowError) setError(result.windowError)
     } catch (error) {
-      console.error('Quick pane dismiss failed', error)
+      setError(String(error))
     }
   }
 
@@ -327,22 +190,34 @@ export function QuickPaneWindow() {
     event.preventDefault()
 
     const trimmedText = text.trim()
-    if (trimmedText) {
-      await emit(QUICK_PANE_SUBMIT_EVENT, { text: trimmedText })
+    if (!trimmedText || submitting.current) return
+    submitting.current = true
+    setPending(true)
+    setError(null)
+    try {
+      await unwrapCommandResult(commands.submitQuickPane(trimmedText))
       setText('')
+      await dismissWindow()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason))
+    } finally {
+      submitting.current = false
+      setPending(false)
     }
-
-    await dismissWindow()
   }
 
   return (
     <form className="quick-pane-window" onSubmit={submitEntry}>
+      {error && <p role="alert">{error}</p>}
       <input
         ref={inputRef}
+        disabled={pending}
         aria-label="Quick pane input"
         className="quick-pane-window-input"
         value={text}
-        onChange={event => setText(event.currentTarget.value)}
+        onChange={event => {
+          if (!submitting.current) setText(event.currentTarget.value)
+        }}
         placeholder="Enter text..."
         autoComplete="off"
         autoCorrect="off"

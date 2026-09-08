@@ -1,5 +1,10 @@
 {
   "scripts": {
-    "rust:bindings": "cd src-tauri && cargo test export_bindings -- --ignored --nocapture"
+    "rust:bindings": "node scripts/check-bindings.mjs generate",
+    "bindings:generate": "node scripts/check-bindings.mjs generate",
+    "bindings:check": "node scripts/check-bindings.mjs check"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4"
   }
 }

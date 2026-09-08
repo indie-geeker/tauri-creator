@@ -1,22 +1,44 @@
 import { useEffect, useState } from 'react'
-import { emit } from '@tauri-apps/api/event'
 import { ThemeProviderContext, type Theme } from '@/lib/theme-context'
 
 interface ThemeProviderProps {
   children: React.ReactNode
   defaultTheme?: Theme
   storageKey?: string
+  theme?: Theme
+  controlled?: boolean
+  onThemeChange?: (theme: Theme) => void
 }
 
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'ui-theme',
+  theme: authoritativeTheme,
+  controlled = false,
+  onThemeChange,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  )
+  const [localTheme, setLocalTheme] = useState<Theme>(() => {
+    try {
+      const cached = localStorage.getItem(storageKey)
+      return cached === 'dark' || cached === 'light' || cached === 'system'
+        ? cached
+        : defaultTheme
+    } catch {
+      return defaultTheme
+    }
+  })
+  const theme = controlled ? (authoritativeTheme ?? localTheme) : localTheme
+  useEffect(() => {
+    if (controlled && authoritativeTheme) {
+      try {
+        localStorage.setItem(storageKey, authoritativeTheme)
+      } catch {
+        /* Cache is optional. */
+      }
+    }
+  }, [controlled, authoritativeTheme, storageKey])
 
   useEffect(() => {
     const root = window.document.documentElement
@@ -41,10 +63,16 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (newTheme: Theme) => {
-      localStorage.setItem(storageKey, newTheme)
-      setTheme(newTheme)
-      // Notify other windows (e.g., quick pane) of theme change
-      emit('theme-changed', { theme: newTheme })
+      if (controlled) {
+        onThemeChange?.(newTheme)
+        return
+      }
+      try {
+        localStorage.setItem(storageKey, newTheme)
+      } catch {
+        /* Cache is optional. */
+      }
+      setLocalTheme(newTheme)
     },
   }
 

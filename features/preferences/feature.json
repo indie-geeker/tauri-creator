@@ -5,7 +5,9 @@
   "wizard": {
     "visible": false
   },
-  "dependsOn": [],
+  "dependsOn": [
+    "specta-bindings"
+  ],
   "conflictsWith": [],
   "npmDependencies": [
     "@tanstack/react-query"
@@ -21,7 +23,7 @@
   ],
   "tauriCommands": [
     "load_preferences",
-    "save_preferences"
+    "patch_preferences"
   ],
   "capabilities": [],
   "qualityChecks": [
@@ -40,13 +42,16 @@
       "module": "features::preferences",
       "commands": [
         "load_preferences",
-        "save_preferences"
+        "patch_preferences"
       ],
       "files": [
         "src-tauri/src/features/preferences.rs"
       ],
       "types": [
-        "PreferencesSnapshot"
+        "PreferencesSnapshot",
+        "PreferencesPatch",
+        "ThemePreference",
+        "LanguagePreference"
       ]
     }
   ]

@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { locale } from '@tauri-apps/plugin-os'
-import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -8,13 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useTheme } from '@/hooks/use-theme'
 import { SettingsField, SettingsSection } from '../shared/SettingsComponents'
 import { usePreferences, useSavePreferences } from '@/services/preferences'
-import { resolveLanguagePreference } from '@/i18n'
 import type {
   LanguagePreference,
-  PreferencesSnapshot,
   ThemePreference,
 } from '@/features/preferences'
 
@@ -32,50 +27,21 @@ export const settingsLanguageOptions: Array<
 ]
 
 export function AppearancePane() {
-  const { t, i18n } = useTranslation()
-  const { theme, setTheme } = useTheme()
-  const { data: preferences } = usePreferences()
+  const { t } = useTranslation()
+  const { data: preferences, isSuccess, error } = usePreferences()
   const savePreferences = useSavePreferences()
-
-  const handleThemeChange = (value: ThemePreference) => {
-    // Update the theme provider immediately for instant UI feedback
-    setTheme(value)
-
-    // Persist the theme preference to disk, preserving other preferences
-    if (preferences) {
-      savePreferences.mutate({ ...preferences, theme: value })
-    }
-  }
-
-  const handleLanguageChange = async (value: string) => {
-    const language = value as PreferencesSnapshot['language']
-
-    try {
-      const systemLocale = language === 'system' ? await locale() : null
-      const resolvedLanguage = resolveLanguagePreference(language, systemLocale)
-      console.debug('Changing language', {
-        newLang: resolvedLanguage,
-        oldLang: i18n.language,
-      })
-      await i18n.changeLanguage(resolvedLanguage)
-      toast.success(t('toast.success.preferencesSaved'))
-    } catch (error) {
-      console.error('Failed to change language', { error })
-      toast.error(t('toast.error.generic'))
-      return
-    }
-
-    // Persist the language preference to disk
-    if (preferences) {
-      savePreferences.mutate({ ...preferences, language })
-    }
-  }
+  const disabled = !isSuccess || !preferences || savePreferences.isPending
+  const handleThemeChange = (theme: ThemePreference) =>
+    savePreferences.mutate({ theme })
+  const handleLanguageChange = (value: string) =>
+    savePreferences.mutate({ language: value as LanguagePreference })
 
   // Determine the current language value for the select
   const currentLanguageValue = preferences?.language ?? 'system'
 
   return (
     <div className="space-y-6">
+      {error && <p role="alert">{error.message}</p>}
       <SettingsSection title={t('preferences.appearance.language')}>
         <SettingsField
           label={t('preferences.appearance.language')}
@@ -84,7 +50,7 @@ export function AppearancePane() {
           <Select
             value={currentLanguageValue}
             onValueChange={handleLanguageChange}
-            disabled={savePreferences.isPending}
+            disabled={disabled}
           >
             <SelectTrigger>
               <SelectValue />
@@ -111,9 +77,9 @@ export function AppearancePane() {
           description={t('preferences.appearance.colorThemeDescription')}
         >
           <Select
-            value={theme}
+            value={preferences?.theme ?? 'system'}
             onValueChange={value => handleThemeChange(value as ThemePreference)}
-            disabled={savePreferences.isPending}
+            disabled={disabled}
           >
             <SelectTrigger>
               <SelectValue

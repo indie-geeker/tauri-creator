@@ -4,3 +4,5 @@ export {
   resolveLanguagePreference,
   type ResolvedLanguage,
 } from './language-init'
+
+export { startLanguagePreferences } from './language-init'

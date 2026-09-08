@@ -1,3 +1,4 @@
+import { validateSettingsContribution } from './settings-contributions.js'
 import { readdir, readFile, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -78,7 +79,9 @@ function validateManifestShape(manifestPath, manifest) {
   }
 
   if (typeof manifest.stage === 'string' && !/^v\d+$/.test(manifest.stage)) {
-    errors.push(`${manifestPath}: stage '${manifest.stage}' must look like 'v1'`)
+    errors.push(
+      `${manifestPath}: stage '${manifest.stage}' must look like 'v1'`
+    )
   }
 
   for (const field of arrayFields) {
@@ -101,12 +104,18 @@ function validateManifestShape(manifestPath, manifest) {
     } else if (typeof wizard.visible !== 'boolean') {
       errors.push(`${manifestPath}: 'wizard.visible' must be a boolean`)
     } else if (wizard.visible) {
-      if (typeof wizard.label !== 'string' || wizard.label.trim().length === 0) {
+      if (
+        typeof wizard.label !== 'string' ||
+        wizard.label.trim().length === 0
+      ) {
         errors.push(
           `${manifestPath}: visible wizard feature requires non-empty 'wizard.label'`
         )
       }
-      if (typeof wizard.category !== 'string' || wizard.category.trim().length === 0) {
+      if (
+        typeof wizard.category !== 'string' ||
+        wizard.category.trim().length === 0
+      ) {
         errors.push(
           `${manifestPath}: visible wizard feature requires non-empty 'wizard.category'`
         )
@@ -116,7 +125,9 @@ function validateManifestShape(manifestPath, manifest) {
         )
       }
     } else if (Object.keys(wizard).some((field) => field !== 'visible')) {
-      errors.push(`${manifestPath}: hidden wizard metadata may only contain 'visible'`)
+      errors.push(
+        `${manifestPath}: hidden wizard metadata may only contain 'visible'`
+      )
     }
   }
 
@@ -135,23 +146,42 @@ async function validateSpectaExports(featureDir, manifestPath, manifest) {
   const exportedCommands = new Set()
 
   for (const [index, exportGroup] of exports.entries()) {
-    if (!exportGroup || Array.isArray(exportGroup) || typeof exportGroup !== 'object') {
+    if (
+      !exportGroup ||
+      Array.isArray(exportGroup) ||
+      typeof exportGroup !== 'object'
+    ) {
       errors.push(`${manifestPath}: spectaExports[${index}] must be an object`)
       continue
     }
 
-    if (typeof exportGroup.module !== 'string' || exportGroup.module.length === 0) {
-      errors.push(`${manifestPath}: spectaExports[${index}].module must be a string`)
-    } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*(::[a-zA-Z_][a-zA-Z0-9_]*)*$/.test(exportGroup.module)) {
-      errors.push(`${manifestPath}: spectaExports[${index}].module must be a Rust module path`)
+    if (
+      typeof exportGroup.module !== 'string' ||
+      exportGroup.module.length === 0
+    ) {
+      errors.push(
+        `${manifestPath}: spectaExports[${index}].module must be a string`
+      )
+    } else if (
+      !/^[a-zA-Z_][a-zA-Z0-9_]*(::[a-zA-Z_][a-zA-Z0-9_]*)*$/.test(
+        exportGroup.module
+      )
+    ) {
+      errors.push(
+        `${manifestPath}: spectaExports[${index}].module must be a Rust module path`
+      )
     }
 
     if (!Array.isArray(exportGroup.commands)) {
-      errors.push(`${manifestPath}: spectaExports[${index}].commands must be an array`)
+      errors.push(
+        `${manifestPath}: spectaExports[${index}].commands must be an array`
+      )
     } else {
       for (const command of exportGroup.commands) {
         if (typeof command !== 'string' || command.length === 0) {
-          errors.push(`${manifestPath}: spectaExports[${index}].commands values must be strings`)
+          errors.push(
+            `${manifestPath}: spectaExports[${index}].commands values must be strings`
+          )
           continue
         }
 
@@ -165,26 +195,36 @@ async function validateSpectaExports(featureDir, manifestPath, manifest) {
     }
 
     if (!Array.isArray(exportGroup.files)) {
-      errors.push(`${manifestPath}: spectaExports[${index}].files must be an array`)
+      errors.push(
+        `${manifestPath}: spectaExports[${index}].files must be an array`
+      )
     } else {
       for (const file of exportGroup.files) {
         if (typeof file !== 'string' || file.length === 0) {
-          errors.push(`${manifestPath}: spectaExports[${index}].files values must be strings`)
+          errors.push(
+            `${manifestPath}: spectaExports[${index}].files values must be strings`
+          )
           continue
         }
 
         if (!(await pathExists(path.join(featureDir, 'files', file)))) {
-          errors.push(`${manifestPath}: spectaExports[${index}] references missing file '${file}'`)
+          errors.push(
+            `${manifestPath}: spectaExports[${index}] references missing file '${file}'`
+          )
         }
       }
     }
 
     if (!Array.isArray(exportGroup.types)) {
-      errors.push(`${manifestPath}: spectaExports[${index}].types must be an array`)
+      errors.push(
+        `${manifestPath}: spectaExports[${index}].types must be an array`
+      )
     } else {
       for (const typeName of exportGroup.types) {
         if (typeof typeName !== 'string' || typeName.length === 0) {
-          errors.push(`${manifestPath}: spectaExports[${index}].types values must be strings`)
+          errors.push(
+            `${manifestPath}: spectaExports[${index}].types values must be strings`
+          )
         }
       }
     }
@@ -192,7 +232,9 @@ async function validateSpectaExports(featureDir, manifestPath, manifest) {
 
   for (const command of arrayField(manifest, 'tauriCommands')) {
     if (!exportedCommands.has(command)) {
-      errors.push(`${manifestPath}: tauri command '${command}' is missing from spectaExports`)
+      errors.push(
+        `${manifestPath}: tauri command '${command}' is missing from spectaExports`
+      )
     }
   }
 
@@ -222,7 +264,9 @@ async function validateDeclaredFiles(featureDir, manifestPath, manifest) {
 
     for (const docsFile of docsFiles) {
       if (!declaredDocs.includes(docsFile)) {
-        errors.push(`${manifestPath}: docs file '${docsFile}' must be declared in files`)
+        errors.push(
+          `${manifestPath}: docs file '${docsFile}' must be declared in files`
+        )
       }
     }
   }
@@ -249,36 +293,59 @@ async function validateMarkerOperations(featureDir, manifestPath) {
   const ids = new Set()
 
   for (const operation of operations) {
-    if (!operation || Array.isArray(operation) || typeof operation !== 'object') {
+    if (
+      !operation ||
+      Array.isArray(operation) ||
+      typeof operation !== 'object'
+    ) {
       errors.push(`${markerPath}: marker operations must be objects`)
       continue
     }
 
     const { file, id, kind, marker } = operation
     for (const field of ['file', 'id', 'marker']) {
-      if (typeof operation[field] !== 'string' || operation[field].length === 0) {
-        errors.push(`${markerPath}: marker operation requires string '${field}'`)
+      if (
+        typeof operation[field] !== 'string' ||
+        operation[field].length === 0
+      ) {
+        errors.push(
+          `${markerPath}: marker operation requires string '${field}'`
+        )
       }
     }
 
     if (kind === 'named-import') {
-      if (typeof operation.module !== 'string' || operation.module.length === 0) {
-        errors.push(`${markerPath}: named-import operation requires string 'module'`)
+      if (
+        typeof operation.module !== 'string' ||
+        operation.module.length === 0
+      ) {
+        errors.push(
+          `${markerPath}: named-import operation requires string 'module'`
+        )
       }
       if (!Array.isArray(operation.names) || operation.names.length === 0) {
-        errors.push(`${markerPath}: named-import operation requires non-empty 'names' array`)
+        errors.push(
+          `${markerPath}: named-import operation requires non-empty 'names' array`
+        )
       } else {
         for (const name of operation.names) {
           if (typeof name !== 'string' || name.length === 0) {
-            errors.push(`${markerPath}: named-import operation names must be strings`)
+            errors.push(
+              `${markerPath}: named-import operation names must be strings`
+            )
           }
         }
       }
     } else {
       if (kind !== undefined) {
-        errors.push(`${markerPath}: unsupported marker operation kind '${kind}'`)
+        errors.push(
+          `${markerPath}: unsupported marker operation kind '${kind}'`
+        )
       }
-      if (typeof operation.insert !== 'string' || operation.insert.length === 0) {
+      if (
+        typeof operation.insert !== 'string' ||
+        operation.insert.length === 0
+      ) {
         errors.push(`${markerPath}: marker operation requires string 'insert'`)
       }
     }
@@ -296,7 +363,9 @@ async function validateMarkerOperations(featureDir, manifestPath) {
     if (await pathExists(baseTargetPath)) {
       const source = await readFile(baseTargetPath, 'utf8')
       if (!source.includes(marker)) {
-        errors.push(`${markerPath}: marker '${marker}' not found in base file '${file}'`)
+        errors.push(
+          `${markerPath}: marker '${marker}' not found in base file '${file}'`
+        )
       }
     }
   }
@@ -329,11 +398,13 @@ async function loadFeatures() {
     }
 
     errors.push(...validateManifestShape(manifestPath, manifest))
-    errors.push(...await validateSpectaExports(
-      path.join(featuresDir, entry.name),
-      manifestPath,
-      manifest
-    ))
+    errors.push(
+      ...(await validateSpectaExports(
+        path.join(featuresDir, entry.name),
+        manifestPath,
+        manifest
+      ))
+    )
 
     if (manifest.name !== entry.name) {
       errors.push(
@@ -342,15 +413,19 @@ async function loadFeatures() {
     }
 
     featureNames.add(manifest.name)
-    errors.push(...await validateDeclaredFiles(
-      path.join(featuresDir, entry.name),
-      manifestPath,
-      manifest
-    ))
-    errors.push(...await validateMarkerOperations(
-      path.join(featuresDir, entry.name),
-      manifestPath
-    ))
+    errors.push(
+      ...(await validateDeclaredFiles(
+        path.join(featuresDir, entry.name),
+        manifestPath,
+        manifest
+      ))
+    )
+    errors.push(
+      ...(await validateMarkerOperations(
+        path.join(featuresDir, entry.name),
+        manifestPath
+      ))
+    )
 
     manifests.push({ path: manifestPath, manifest })
   }
@@ -358,7 +433,12 @@ async function loadFeatures() {
   const visibleLabels = new Map()
   for (const { path: manifestPath, manifest } of manifests) {
     const wizard = manifest.wizard
-    if (!wizard?.visible || typeof wizard.label !== 'string' || !wizard.label.trim()) continue
+    if (
+      !wizard?.visible ||
+      typeof wizard.label !== 'string' ||
+      !wizard.label.trim()
+    )
+      continue
 
     const normalizedLabel = wizard.label.trim().toLowerCase()
     const existing = visibleLabels.get(normalizedLabel)
@@ -401,6 +481,25 @@ async function loadFeatures() {
     }
   }
 
+  for (const { path: manifestPath, manifest } of manifests) {
+    for (const contribution of manifest.settingsContributions ?? []) {
+      try {
+        validateSettingsContribution(
+          contribution,
+          new Map(manifests.map((entry) => [entry.manifest.name, entry]))
+        )
+      } catch (error) {
+        errors.push(`${manifestPath}: ${error.message}`)
+      }
+      if (
+        !(await pathExists(
+          path.join(path.dirname(manifestPath), contribution.source ?? '')
+        ))
+      )
+        errors.push(`${manifestPath}: missing settings contribution source`)
+    }
+  }
+
   errors.push(...validateDependencyCycles(manifests))
 
   return { featureNames, manifests, errors }
@@ -408,13 +507,17 @@ async function loadFeatures() {
 
 function validateDependencyCycles(manifests) {
   const errors = []
-  const manifestMap = new Map(manifests.map(({ manifest }) => [manifest.name, manifest]))
+  const manifestMap = new Map(
+    manifests.map(({ manifest }) => [manifest.name, manifest])
+  )
   const visiting = new Set()
   const visited = new Set()
 
   function visit(featureName, stack = []) {
     if (visiting.has(featureName)) {
-      errors.push(`feature dependency cycle detected: ${[...stack, featureName].join(' -> ')}`)
+      errors.push(
+        `feature dependency cycle detected: ${[...stack, featureName].join(' -> ')}`
+      )
       return
     }
 
@@ -471,7 +574,10 @@ async function validateRecipes(featureNames) {
       }
     }
 
-    if (typeof recipe.description !== 'string' || recipe.description.trim().length === 0) {
+    if (
+      typeof recipe.description !== 'string' ||
+      recipe.description.trim().length === 0
+    ) {
       errors.push(`${recipePath}: requires non-empty 'description'`)
     }
 
@@ -497,13 +603,19 @@ async function validateReadmeReferences(featureNames, recipeNames) {
   const readme = await readFile(readmePath, 'utf8')
   const errors = []
   const allowedToolReferences = ['pnpm', 'npm']
-  const allowed = new Set([...featureNames, ...recipeNames, ...allowedToolReferences])
+  const allowed = new Set([
+    ...featureNames,
+    ...recipeNames,
+    ...allowedToolReferences,
+  ])
   const codeSpanPattern = /`([a-z0-9][a-z0-9-]*)`/g
 
   for (const match of readme.matchAll(codeSpanPattern)) {
     const reference = match[1]
     if (!allowed.has(reference)) {
-      errors.push(`${readmePath}: unknown feature or recipe reference '${reference}'`)
+      errors.push(
+        `${readmePath}: unknown feature or recipe reference '${reference}'`
+      )
     }
   }
 
@@ -511,7 +623,8 @@ async function validateReadmeReferences(featureNames, recipeNames) {
 }
 
 const { featureNames, errors: featureErrors } = await loadFeatures()
-const { recipeNames, errors: recipeErrors } = await validateRecipes(featureNames)
+const { recipeNames, errors: recipeErrors } =
+  await validateRecipes(featureNames)
 const readmeErrors = await validateReadmeReferences(featureNames, recipeNames)
 const errors = [...featureErrors, ...recipeErrors, ...readmeErrors]
 

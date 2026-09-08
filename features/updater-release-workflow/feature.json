@@ -1,0 +1,26 @@
+{
+  "name": "updater-release-workflow",
+  "description": "Optional signed updater draft-release automation.",
+  "stage": "v1",
+  "wizard": {
+    "visible": false
+  },
+  "dependsOn": [
+    "updater"
+  ],
+  "conflictsWith": [],
+  "npmDependencies": [],
+  "cargoDependencies": [],
+  "files": [
+    ".github/workflows/release.yml",
+    "scripts/check-release-version.mjs",
+    "docs/features/updater-release-workflow.md"
+  ],
+  "tauriCommands": [],
+  "capabilities": [],
+  "qualityChecks": [],
+  "removeHints": [
+    "Remove release automation only after replacing its release process."
+  ],
+  "spectaExports": []
+}

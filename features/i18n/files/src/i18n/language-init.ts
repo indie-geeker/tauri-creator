@@ -4,6 +4,11 @@
  */
 import { locale } from '@tauri-apps/plugin-os'
 import i18n from './config'
+import { listen } from '@tauri-apps/api/event'
+import {
+  loadPreferences,
+  PREFERENCES_CHANGED_EVENT,
+} from '@/features/preferences'
 
 export type ResolvedLanguage = 'en' | 'zh-CN'
 
@@ -42,9 +47,12 @@ export function resolveLanguagePreference(
  *
  * @param savedLanguage - The user's saved language preference from preferences
  */
+let languageGeneration = 0
+
 export async function initializeLanguage(
   savedLanguage: string | null
 ): Promise<void> {
+  const generation = ++languageGeneration
   try {
     if (savedLanguage && savedLanguage !== 'system') {
       const language = resolveLanguagePreference(savedLanguage, null)
@@ -56,11 +64,54 @@ export async function initializeLanguage(
     const systemLocale = await locale()
     console.debug('Detected system locale', { systemLocale })
     const language = resolveLanguagePreference(savedLanguage, systemLocale)
+    if (generation !== languageGeneration) return
     await i18n.changeLanguage(language)
     console.info('Language set from system locale', { systemLocale, language })
   } catch (error) {
     console.error('Failed to initialize language', { error })
     // Ensure we have some language set
-    await i18n.changeLanguage('en')
+    if (generation === languageGeneration) await i18n.changeLanguage('en')
+  }
+}
+
+/** Returns cleanup immediately even when listener installation or loading is delayed. */
+export function startLanguagePreferences(): () => void {
+  let disposed = false
+  let generation = 0
+  let stop: (() => void) | undefined
+  const refresh = async () => {
+    const current = ++generation
+    try {
+      const snapshot = await loadPreferences()
+      if (!disposed && current === generation)
+        await initializeLanguage(snapshot.language ?? 'system')
+    } catch (error) {
+      if (!disposed)
+        console.error('Language preferences could not load:', error)
+    }
+  }
+  Promise.resolve()
+    .then(() =>
+      listen(PREFERENCES_CHANGED_EVENT, () => {
+        void refresh()
+      })
+    )
+    .then(unlisten => {
+      if (disposed) unlisten()
+      else {
+        stop = unlisten
+        void refresh()
+      }
+    })
+    .catch(error => {
+      if (!disposed) {
+        console.error('Language subscription failed:', error)
+        void refresh()
+      }
+    })
+  return () => {
+    disposed = true
+    ++languageGeneration
+    stop?.()
   }
 }

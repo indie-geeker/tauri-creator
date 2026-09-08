@@ -8,6 +8,7 @@
     "category": "Data"
   },
   "dependsOn": [
+    "specta-bindings",
     "app-state"
   ],
   "conflictsWith": [],
@@ -15,7 +16,8 @@
     "@tanstack/react-query"
   ],
   "cargoDependencies": [
-    "rusqlite"
+    "rusqlite",
+    "tokio"
   ],
   "files": [
     "src/features/sqlite",
@@ -27,7 +29,8 @@
     "list_notes",
     "create_note",
     "update_note",
-    "delete_note"
+    "delete_note",
+    "get_note"
   ],
   "capabilities": [],
   "qualityChecks": [
@@ -48,7 +51,8 @@
         "list_notes",
         "create_note",
         "update_note",
-        "delete_note"
+        "delete_note",
+        "get_note"
       ],
       "files": [
         "src-tauri/src/infrastructure/database/mod.rs"
@@ -57,7 +61,11 @@
         "DatabaseHealth",
         "Note",
         "CreateNoteInput",
-        "UpdateNoteInput"
+        "UpdateNoteInput",
+        "NoteSummary",
+        "NoteCursor",
+        "ListNotesInput",
+        "NotePage"
       ]
     }
   ]

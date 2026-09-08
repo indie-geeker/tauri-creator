@@ -1,19 +1,19 @@
 [
   {
     "id": "ui-shadcn-themeprovider-import",
-    "file": "src/App.tsx",
+    "file": "src/generated/application.tsx",
     "marker": "// TAURI_CREATOR:APP_IMPORTS",
-    "insert": "import { ThemeProvider } from './components/ThemeProvider'\nimport { ErrorBoundary } from './components/ErrorBoundary'"
+    "insert": "import { ThemeProvider } from '../components/ThemeProvider'\nimport { ErrorBoundary } from '../components/ErrorBoundary'"
   },
   {
     "id": "ui-shadcn-themeprovider-start",
-    "file": "src/App.tsx",
+    "file": "src/generated/application.tsx",
     "marker": "      {/* TAURI_CREATOR:APP_PROVIDER_START */}",
     "insert": "      <ErrorBoundary>\n        <ThemeProvider>"
   },
   {
     "id": "ui-shadcn-themeprovider-end",
-    "file": "src/App.tsx",
+    "file": "src/generated/application.tsx",
     "marker": "      {/* TAURI_CREATOR:APP_PROVIDER_END */}",
     "insert": "        </ThemeProvider>\n      </ErrorBoundary>"
   }

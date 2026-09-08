@@ -1,9 +1,9 @@
 [
   {
     "id": "ui-tailwind-css-import",
-    "file": "src/main.tsx",
+    "file": "src/generated/providers.tsx",
     "marker": "// TAURI_CREATOR:FRONTEND_IMPORTS",
-    "insert": "import './tailwind.css'"
+    "insert": "import '../tailwind.css'"
   },
   {
     "id": "ui-tailwind-vite-plugin-import",

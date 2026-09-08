@@ -8,6 +8,7 @@
     "category": "Desktop"
   },
   "dependsOn": [
+    "specta-bindings",
     "preferences"
   ],
   "conflictsWith": [],
@@ -23,7 +24,9 @@
     "src/quick-pane-main.tsx",
     "src/features/quick-pane",
     "src-tauri/src/features/quick_pane.rs",
-    "docs/features/quick-pane.md"
+    "docs/features/quick-pane.md",
+    "src-tauri/src/features/quick_pane_submission.rs",
+    "src-tauri/src/features/quick_pane_shortcut.rs"
   ],
   "tauriCommands": [
     "get_quick_pane_state",
@@ -31,7 +34,9 @@
     "show_quick_pane",
     "dismiss_quick_pane",
     "toggle_quick_pane",
-    "update_quick_pane_shortcut"
+    "update_quick_pane_shortcut",
+    "submit_quick_pane",
+    "get_latest_quick_pane_entry"
   ],
   "capabilities": [
     "core:event:default"
@@ -55,7 +60,9 @@
         "show_quick_pane",
         "dismiss_quick_pane",
         "toggle_quick_pane",
-        "update_quick_pane_shortcut"
+        "update_quick_pane_shortcut",
+        "submit_quick_pane",
+        "get_latest_quick_pane_entry"
       ],
       "files": [
         "src-tauri/src/features/quick_pane.rs"
@@ -64,5 +71,21 @@
         "QuickPaneState"
       ]
     }
-  ]
+  ],
+  "settingsContributions": [
+    {
+      "id": "quick-pane",
+      "requires": [
+        "ui-preferences"
+      ],
+      "source": "contributions/ui-preferences/files/src/features/quick-pane/QuickPanePreferencesPane.tsx",
+      "exportName": "QuickPanePreferencesPane",
+      "labelKey": "preferences.general",
+      "order": 10
+    }
+  ],
+  "frontendRuntime": {
+    "module": "features/quick-pane/submission-runtime",
+    "exportName": "startSubmissionRuntime"
+  }
 }

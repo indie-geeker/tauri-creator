@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-const TAURI_CONFIG: &str = include_str!("../../tauri.conf.json");
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdaterStatus {
@@ -23,11 +21,7 @@ pub struct UpdaterConfigSnapshot {
 fn is_placeholder(value: &str) -> bool {
     let trimmed = value.trim();
     let upper = trimmed.to_ascii_uppercase();
-    trimmed.is_empty()
-        || trimmed.contains("{{")
-        || trimmed.contains("}}")
-        || upper.contains("UPDATER_PUBLIC_KEY")
-        || upper.contains("PUBLIC_KEY_HERE")
+    trimmed.is_empty() || upper.contains("UPDATER_PUBLIC_KEY") || upper.contains("PUBLIC_KEY_HERE")
 }
 
 fn parse_config(raw: &str) -> Result<UpdaterConfigSnapshot, String> {
@@ -97,13 +91,24 @@ pub fn get_updater_status_from_config(config: UpdaterConfigSnapshot) -> UpdaterS
 }
 
 #[tauri::command]
-pub fn get_updater_status() -> Result<UpdaterStatus, String> {
-    parse_config(TAURI_CONFIG).map(get_updater_status_from_config)
+pub fn get_updater_status(app: tauri::AppHandle) -> Result<UpdaterStatus, String> {
+    let raw = serde_json::to_string(app.config())
+        .map_err(|error| format!("failed to read effective app configuration: {error}"))?;
+    parse_config(&raw).map(get_updater_status_from_config)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn official_dynamic_endpoint_is_configured() {
+        let status = get_updater_status_from_config(UpdaterConfigSnapshot {
+            endpoints: vec!["https://example.com/{{target}}/{{arch}}/{{current_version}}".into()],
+            pubkey: Some("fixture-public-key".into()),
+        });
+        assert!(status.configured);
+    }
 
     #[test]
     fn missing_endpoint_reports_not_configured() {
@@ -153,12 +158,31 @@ mod tests {
     }
 
     #[test]
-    fn command_returns_actionable_status_from_embedded_tauri_config() {
-        let status = get_updater_status().expect("updater status should parse tauri config");
+    fn disabled_fixture_returns_actionable_status() {
+        let status = parse_config(include_str!("../../tests/fixtures/updater-disabled.json"))
+            .map(get_updater_status_from_config)
+            .unwrap();
 
         assert_eq!(status.status, "disabled");
         assert!(status.endpoint_configured);
         assert!(!status.public_key_configured);
         assert!(status.reason.contains("public key"));
+    }
+}
+
+#[cfg(test)]
+mod configuration_fixtures {
+    use super::*;
+    #[test]
+    fn configured_fixtures_are_independent_of_user_configuration() {
+        for raw in [
+            include_str!("../../tests/fixtures/updater-configured.json"),
+            include_str!("../../tests/fixtures/updater-dynamic.json"),
+        ] {
+            assert!(get_updater_status_from_config(parse_config(raw).unwrap()).configured);
+        }
+        assert!(parse_config("invalid json")
+            .unwrap_err()
+            .contains("failed to parse"));
     }
 }

@@ -1,10 +1,12 @@
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
+use worker::DatabaseWorker;
 
 pub mod migrations;
 pub mod notes;
+pub mod worker;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,7 +20,7 @@ pub struct DatabaseHealth {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Note {
-    pub id: i64,
+    pub id: String,
     pub title: String,
     pub body: String,
     pub created_at: String,
@@ -35,204 +37,272 @@ pub struct CreateNoteInput {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateNoteInput {
-    pub id: i64,
+    pub id: String,
     pub title: String,
     pub body: String,
 }
 
-pub fn database_path_from_app_data_dir(app_data_dir: &Path) -> PathBuf {
-    app_data_dir.join("app.sqlite3")
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoteSummary {
+    pub id: String,
+    pub title: String,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
-pub fn open_database(path: &Path) -> Result<Connection, String> {
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|error| format!("failed to create database directory: {error}"))?;
-    }
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoteCursor {
+    pub updated_at: String,
+    pub id: String,
+}
 
-    let connection =
-        Connection::open(path).map_err(|error| format!("failed to open database: {error}"))?;
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ListNotesInput {
+    #[serde(default)]
+    pub limit: Option<u32>,
+    #[serde(default)]
+    pub cursor: Option<NoteCursor>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotePage {
+    pub items: Vec<NoteSummary>,
+    pub next_cursor: Option<NoteCursor>,
+}
+
+pub fn database_path_from_app_data_dir(directory: &Path) -> PathBuf {
+    directory.join("app.sqlite3")
+}
+
+fn open_database(path: &Path) -> Result<Connection, String> {
+    if let Some(parent) = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("failed to create database directory: {e}"))?;
+    }
+    let connection = Connection::open(path).map_err(|e| format!("failed to open database: {e}"))?;
+    connection
+        .busy_timeout(std::time::Duration::from_secs(2))
+        .map_err(|e| e.to_string())?;
     connection
         .execute_batch("PRAGMA foreign_keys = ON;")
-        .map_err(|error| format!("failed to enable database pragmas: {error}"))?;
+        .map_err(|e| e.to_string())?;
     migrations::run_migrations(&connection)?;
-
     Ok(connection)
 }
 
-fn app_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    app.path()
-        .app_data_dir()
-        .map_err(|error| format!("failed to resolve app data directory: {error}"))
+pub fn init_database(app: &tauri::App) -> Result<(), String> {
+    let directory = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let worker = DatabaseWorker::open(
+        database_path_from_app_data_dir(&directory),
+        worker::QUEUE_CAPACITY,
+    )?;
+    if !app.manage(worker) {
+        return Err("database worker was already initialized".into());
+    }
+    Ok(())
 }
 
-fn path_to_string(path: &Path) -> String {
-    path.to_string_lossy().into_owned()
-}
-
-pub fn get_database_health_from_app_data_dir(
-    app_data_dir: &Path,
-) -> Result<DatabaseHealth, String> {
-    let path = database_path_from_app_data_dir(app_data_dir);
-    let connection = open_database(&path)?;
-    let notes_table_count: i64 = connection
-        .query_row(
-            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'notes'",
-            [],
-            |row| row.get(0),
-        )
-        .map_err(|error| format!("failed to inspect database schema: {error}"))?;
-
-    Ok(DatabaseHealth {
-        status: if notes_table_count == 1 {
-            "ok"
-        } else {
-            "error"
+/// Called from the synchronous application Exit callback, outside the async executor.
+pub fn shutdown_database(app: &AppHandle) {
+    if let Some(worker) = app.try_state::<DatabaseWorker>() {
+        if let Err(error) = worker.shutdown() {
+            eprintln!("database shutdown failed: {error}");
         }
-        .to_string(),
-        driver: "sqlite".to_string(),
-        path: path_to_string(&path),
-        file_backed: true,
-    })
+    }
 }
 
 #[tauri::command]
-pub fn get_database_health(app: AppHandle) -> Result<DatabaseHealth, String> {
-    get_database_health_from_app_data_dir(&app_data_dir(&app)?)
+pub async fn get_database_health(
+    database: State<'_, DatabaseWorker>,
+) -> Result<DatabaseHealth, String> {
+    let path = database.path.to_string_lossy().into_owned();
+    database
+        .request(move |connection| {
+            connection
+                .query_row("SELECT 1 FROM notes LIMIT 1", [], |_| Ok(()))
+                .or_else(|e| {
+                    if matches!(e, rusqlite::Error::QueryReturnedNoRows) {
+                        Ok(())
+                    } else {
+                        Err(e)
+                    }
+                })
+                .map_err(|e| e.to_string())?;
+            Ok(DatabaseHealth {
+                status: "ok".into(),
+                driver: "sqlite".into(),
+                path,
+                file_backed: true,
+            })
+        })
+        .await
 }
 
 #[tauri::command]
-pub fn list_notes(app: AppHandle) -> Result<Vec<Note>, String> {
-    notes::list_notes_at_path(&database_path_from_app_data_dir(&app_data_dir(&app)?))
+pub async fn list_notes(
+    database: State<'_, DatabaseWorker>,
+    input: ListNotesInput,
+) -> Result<NotePage, String> {
+    database
+        .request(move |connection| notes::list_notes(connection, &input))
+        .await
 }
 
 #[tauri::command]
-pub fn create_note(app: AppHandle, input: CreateNoteInput) -> Result<Note, String> {
-    notes::create_note_at_path(
-        &database_path_from_app_data_dir(&app_data_dir(&app)?),
-        &input,
-    )
+pub async fn get_note(database: State<'_, DatabaseWorker>, id: String) -> Result<Note, String> {
+    database
+        .request(move |connection| notes::get_note(connection, &id))
+        .await
 }
 
 #[tauri::command]
-pub fn update_note(app: AppHandle, input: UpdateNoteInput) -> Result<Note, String> {
-    notes::update_note_at_path(
-        &database_path_from_app_data_dir(&app_data_dir(&app)?),
-        &input,
-    )
+pub async fn create_note(
+    database: State<'_, DatabaseWorker>,
+    input: CreateNoteInput,
+) -> Result<Note, String> {
+    database
+        .request(move |connection| notes::create_note(connection, &input))
+        .await
 }
 
 #[tauri::command]
-pub fn delete_note(app: AppHandle, id: i64) -> Result<(), String> {
-    notes::delete_note_at_path(&database_path_from_app_data_dir(&app_data_dir(&app)?), id)
+pub async fn update_note(
+    database: State<'_, DatabaseWorker>,
+    input: UpdateNoteInput,
+) -> Result<Note, String> {
+    database
+        .request(move |connection| notes::update_note(connection, &input))
+        .await
+}
+
+#[tauri::command]
+pub async fn delete_note(database: State<'_, DatabaseWorker>, id: String) -> Result<(), String> {
+    database
+        .request(move |connection| notes::delete_note(connection, &id))
+        .await
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
-    use std::path::PathBuf;
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    fn unique_temp_dir(name: &str) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system time should be valid")
-            .as_nanos();
-        std::env::temp_dir().join(format!("tauri-creator-sqlite-{name}-{unique}"))
+    fn memory() -> Connection {
+        let connection = Connection::open_in_memory().unwrap();
+        migrations::run_migrations(&connection).unwrap();
+        connection
     }
-
     #[test]
-    fn get_database_health_reports_sqlite_driver() {
-        let app_data_dir = unique_temp_dir("driver");
-        let health = get_database_health_from_app_data_dir(&app_data_dir)
-            .expect("database health should be available");
-
-        assert_eq!(health.status, "ok");
-        assert_eq!(health.driver, "sqlite");
-
-        let _ = fs::remove_dir_all(app_data_dir);
-    }
-
-    #[test]
-    fn database_path_resolves_under_app_data_dir() {
-        let app_data_dir = unique_temp_dir("path");
-        let database_path = database_path_from_app_data_dir(&app_data_dir);
-
-        assert!(database_path.starts_with(&app_data_dir));
+    fn note_id_serializes_as_an_exact_decimal_string() {
+        let connection = memory();
+        connection
+            .execute(
+                "INSERT INTO notes (id,title,body) VALUES(9007199254740993,'fixture','large body')",
+                [],
+            )
+            .unwrap();
+        let note = notes::get_note(&connection, "9007199254740993").unwrap();
         assert_eq!(
-            database_path.file_name().and_then(|name| name.to_str()),
-            Some("app.sqlite3")
+            serde_json::to_value(note).unwrap()["id"],
+            "9007199254740993"
         );
     }
-
     #[test]
-    fn migrations_create_notes_table() {
-        let app_data_dir = unique_temp_dir("migrations");
-        let database_path = database_path_from_app_data_dir(&app_data_dir);
-        let connection = open_database(&database_path).expect("database should open");
-
-        migrations::run_migrations(&connection).expect("migrations should run");
-
-        let table_count: i64 = connection
-            .query_row(
-                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'notes'",
-                [],
-                |row| row.get(0),
-            )
-            .expect("notes table query should work");
-        assert_eq!(table_count, 1);
-
-        let _ = fs::remove_dir_all(app_data_dir);
-    }
-
-    #[test]
-    fn notes_repository_persists_across_connections() {
-        let app_data_dir = unique_temp_dir("notes");
-        let database_path = database_path_from_app_data_dir(&app_data_dir);
-
-        let created = notes::create_note_at_path(
-            &database_path,
+    fn notes_crud_preserves_body_and_deletes() {
+        let connection = memory();
+        let created = notes::create_note(
+            &connection,
             &CreateNoteInput {
-                title: "First note".to_string(),
-                body: "Created from a generated app.".to_string(),
+                title: "first".into(),
+                body: "body".into(),
             },
         )
-        .expect("note should be created");
-
-        let listed = notes::list_notes_at_path(&database_path).expect("notes should list");
-        assert_eq!(listed.len(), 1);
-        assert_eq!(listed[0].title, "First note");
-
-        let updated = notes::update_note_at_path(
-            &database_path,
+        .unwrap();
+        let updated = notes::update_note(
+            &connection,
             &UpdateNoteInput {
-                id: created.id,
-                title: "Updated note".to_string(),
-                body: "Updated across connections.".to_string(),
+                id: created.id.clone(),
+                title: "second".into(),
+                body: "changed".into(),
             },
         )
-        .expect("note should update");
-        assert_eq!(updated.title, "Updated note");
-
-        notes::delete_note_at_path(&database_path, created.id).expect("note should delete");
-        let after_delete = notes::list_notes_at_path(&database_path).expect("notes should list");
-        assert!(after_delete.is_empty());
-
-        let _ = fs::remove_dir_all(app_data_dir);
+        .unwrap();
+        assert_eq!(notes::get_note(&connection, &created.id).unwrap(), updated);
+        notes::delete_note(&connection, &created.id).unwrap();
+        assert!(notes::get_note(&connection, &created.id).is_err());
+        assert!(notes::delete_note(&connection, &created.id).is_err());
     }
-
     #[test]
-    fn database_health_reports_file_backed_database_path() {
-        let app_data_dir = unique_temp_dir("health");
-        let health = get_database_health_from_app_data_dir(&app_data_dir)
-            .expect("database health should be available");
-
-        assert_eq!(health.status, "ok");
-        assert_eq!(health.driver, "sqlite");
-        assert!(health.file_backed);
-        assert!(health.path.ends_with("app.sqlite3"));
-
-        let _ = fs::remove_dir_all(app_data_dir);
+    fn paging_ties_are_stable_and_list_does_not_export_body() {
+        let connection = memory();
+        for id in 1..=105 {
+            connection.execute("INSERT INTO notes(id,title,body,updated_at) VALUES(?1,'title','private body','2026-01-01T00:00:00Z')", [id]).unwrap();
+        }
+        let mut input = ListNotesInput::default();
+        let mut ids = Vec::new();
+        loop {
+            let page = notes::list_notes(&connection, &input).unwrap();
+            assert!(page.items.len() <= 50);
+            for note in &page.items {
+                assert!(serde_json::to_value(note).unwrap().get("body").is_none());
+            }
+            ids.extend(
+                page.items
+                    .iter()
+                    .map(|note| note.id.parse::<i32>().unwrap()),
+            );
+            input.cursor = page.next_cursor;
+            if input.cursor.is_none() {
+                break;
+            }
+        }
+        assert_eq!(ids, (1..=105).rev().collect::<Vec<_>>());
+        for limit in [0, 201] {
+            assert!(notes::list_notes(
+                &connection,
+                &ListNotesInput {
+                    limit: Some(limit),
+                    cursor: None
+                }
+            )
+            .is_err());
+        }
+    }
+    #[test]
+    fn worker_reopening_preserves_data_on_disk() {
+        let directory = std::env::temp_dir().join(format!(
+            "sqlite-worker-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let path = database_path_from_app_data_dir(&directory);
+        let worker = DatabaseWorker::open(path.clone(), 2).unwrap();
+        let note = tauri::async_runtime::block_on(worker.request(|connection| {
+            notes::create_note(
+                connection,
+                &CreateNoteInput {
+                    title: "persisted".into(),
+                    body: "body".into(),
+                },
+            )
+        }))
+        .unwrap();
+        worker.shutdown().unwrap();
+        let worker = DatabaseWorker::open(path, 2).unwrap();
+        let restored = tauri::async_runtime::block_on(
+            worker.request(move |connection| notes::get_note(connection, &note.id)),
+        )
+        .unwrap();
+        assert_eq!(restored.title, "persisted");
+        worker.shutdown().unwrap();
+        std::fs::remove_dir_all(directory).unwrap();
     }
 }

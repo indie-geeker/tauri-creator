@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Palette, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,32 +27,39 @@ import {
 } from '@/components/ui/sidebar'
 import { useUIStore } from '@/store/ui-store'
 import { AppearancePane } from './panes/AppearancePane'
-import { GeneralPane } from './panes/GeneralPane'
 
-type PreferencePane = 'general' | 'appearance'
+export interface PreferencesPaneRegistration {
+  id: string
+  labelKey: string
+  component: ComponentType
+  order: number
+}
 
-export const preferenceNavigationItems = [
+export const preferenceNavigationItems: PreferencesPaneRegistration[] = [
   {
-    id: 'general' as const,
-    labelKey: 'preferences.general',
-    icon: Settings,
-  },
-  {
-    id: 'appearance' as const,
+    id: 'appearance',
     labelKey: 'preferences.appearance',
-    icon: Palette,
+    component: AppearancePane,
+    order: 0,
   },
-] as const
+]
 
-export function PreferencesDialog() {
+export function PreferencesDialog({
+  panes = preferenceNavigationItems,
+}: {
+  panes?: PreferencesPaneRegistration[]
+}) {
   const { t } = useTranslation()
-  const [activePane, setActivePane] = useState<PreferencePane>('general')
+  const [selectedPane, setActivePane] = useState('appearance')
+  const navigation = [...panes].sort(
+    (a, b) => a.order - b.order || a.id.localeCompare(b.id)
+  )
+  const pane =
+    navigation.find(item => item.id === selectedPane) ?? navigation[0]
+  const activePane = pane?.id
+  const Pane = pane?.component
   const preferencesOpen = useUIStore(state => state.preferencesOpen)
   const setPreferencesOpen = useUIStore(state => state.setPreferencesOpen)
-
-  const getPaneTitle = (pane: PreferencePane): string => {
-    return t(`preferences.${pane}`)
-  }
 
   return (
     <Dialog open={preferencesOpen} onOpenChange={setPreferencesOpen}>
@@ -68,7 +75,7 @@ export function PreferencesDialog() {
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {preferenceNavigationItems.map(item => (
+                    {navigation.map(item => (
                       <SidebarMenuItem key={item.id}>
                         <SidebarMenuButton
                           asChild
@@ -78,7 +85,7 @@ export function PreferencesDialog() {
                             onClick={() => setActivePane(item.id)}
                             className="w-full"
                           >
-                            <item.icon />
+                            <Settings />
                             <span>{t(item.labelKey)}</span>
                           </button>
                         </SidebarMenuButton>
@@ -103,7 +110,7 @@ export function PreferencesDialog() {
                     <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
                       <BreadcrumbPage>
-                        {getPaneTitle(activePane)}
+                        {pane ? t(pane.labelKey) : t('preferences.title')}
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
@@ -112,8 +119,7 @@ export function PreferencesDialog() {
             </header>
 
             <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0 max-h-[calc(600px-4rem)]">
-              {activePane === 'general' && <GeneralPane />}
-              {activePane === 'appearance' && <AppearancePane />}
+              {Pane ? <Pane /> : <p role="status">No settings available.</p>}
             </div>
           </main>
         </SidebarProvider>

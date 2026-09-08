@@ -24,17 +24,28 @@
     "check:scaffold": "node scripts/test-scaffold.js",
     "check:manifests": "node scripts/check-manifests.js",
     "check:manifest-tests": "node scripts/test-check-manifests.js",
-    "check:fast": "node scripts/check-manifests.js && node scripts/test-check-manifests.js && node scripts/test-generate-docs.js && node scripts/test-verify-generated-app.js && node scripts/test-generated-output-boundary.js && node scripts/test-branding.js && node scripts/test-prompts.js && node scripts/test-create-app.js && node scripts/test-apply-feature.js && node scripts/test-remove-feature.js && node scripts/test-scaffold.js",
+    "check:fast": "node scripts/check-manifests.js && node scripts/test-check-manifests.js && node scripts/test-generate-docs.js && node scripts/test-verify-generated-app.js && node scripts/test-generated-output-boundary.js && node scripts/test-branding.js && node scripts/test-prompts.js && node scripts/test-create-app.js && node scripts/test-apply-feature.js && node scripts/test-remove-feature.js && node scripts/test-scaffold.js && node scripts/test-generated-checks.js && node scripts/test-feature-roundtrip.js && node scripts/test-settings-contributions.js && node scripts/test-generated-registrations.js && node scripts/test-capabilities.js && node scripts/test-feature-matrix.js && node scripts/test-output-ownership.js && node scripts/test-release-version.js",
     "check:generated:npm": "node scripts/verify-generated-app.js --package-manager npm",
     "check:generated:pnpm": "node scripts/verify-generated-app.js --recipe starter --package-manager pnpm",
     "check:generated:strict": "node scripts/verify-generated-app.js --recipe full --package-manager npm --strict",
     "check:generated:tauri-build:starter": "node scripts/verify-generated-app.js --recipe starter --package-manager npm --tauri-build",
     "check:generated:tauri-build:full": "node scripts/verify-generated-app.js --recipe full --package-manager npm --tauri-build",
-    "check:generated": "npm run check:generated:npm && npm run check:generated:pnpm && npm run check:generated:strict",
+    "check:generated": "npm run check:generated:npm && npm run check:generated:pnpm && npm run check:generated:strict && npm run check:generated:pnpm:full",
     "check:release": "npm run check:generated:tauri-build:starter && npm run check:generated:tauri-build:full",
-    "check:all": "npm run check:fast && npm run check:generated"
+    "check:all": "npm run check:fast && npm run check:generated && npm run check:contracts && npm run check:feature-matrix && npm run check:feature-matrix:pnpm",
+    "check:generated-checks": "node scripts/test-generated-checks.js",
+    "check:feature-roundtrip": "node scripts/test-feature-roundtrip.js",
+    "check:settings-contributions": "node scripts/test-settings-contributions.js",
+    "check:generated-registrations": "node scripts/test-generated-registrations.js",
+    "check:capabilities": "node scripts/test-capabilities.js",
+    "check:feature-matrix": "node scripts/verify-feature-matrix.js",
+    "check:contracts": "node scripts/test-feature-contracts.js",
+    "check:feature-matrix:pnpm": "node scripts/verify-feature-matrix.js --package-manager pnpm --only custom-titlebar+i18n,preferences+ui-shadcn,ui-layout+quick-pane,updater+updater-release-workflow",
+    "check:generated:pnpm:full": "node scripts/verify-generated-app.js --recipe full --package-manager pnpm --strict",
+    "check:ownership": "node scripts/test-output-ownership.js",
+    "check:release-version": "node scripts/test-release-version.js"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "^22.13.0 || >=24.0.0"
   }
 }

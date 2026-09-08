@@ -1,3 +1,4 @@
+import { normalizeAppName } from './lib/app-name.js'
 import { stdin as defaultInput, stdout as defaultOutput } from 'node:process'
 import { createInterface } from 'node:readline'
 
@@ -29,8 +30,15 @@ function optionIndexForValue(options, value) {
 
 function parseSelectedIndex(value, options, label) {
   const parsed = Number.parseInt(value, 10)
-  if (!Number.isInteger(parsed) || String(parsed) !== value || parsed < 1 || parsed > options.length) {
-    throw new Error(`${label} selection must be a number from 1 to ${options.length}`)
+  if (
+    !Number.isInteger(parsed) ||
+    String(parsed) !== value ||
+    parsed < 1 ||
+    parsed > options.length
+  ) {
+    throw new Error(
+      `${label} selection must be a number from 1 to ${options.length}`
+    )
   }
   return parsed - 1
 }
@@ -93,7 +101,10 @@ export function createPromptSession({
       output.write(`${formatOptionList(label, options)}\n`)
       const defaultIndex = optionIndexForValue(options, defaultValue)
       while (true) {
-        const answer = await this.ask(`Select ${label.toLowerCase()}`, defaultIndex)
+        const answer = await this.ask(
+          `Select ${label.toLowerCase()}`,
+          defaultIndex
+        )
         try {
           return options[parseSelectedIndex(answer, options, label)]
         } catch (error) {
@@ -109,7 +120,9 @@ export function createPromptSession({
           ''
         )
         try {
-          return parseSelectedIndexes(answer, options, label).map((index) => options[index])
+          return parseSelectedIndexes(answer, options, label).map(
+            (index) => options[index]
+          )
         } catch (error) {
           output.write(`${error.message}\n`)
         }
@@ -156,8 +169,12 @@ function writeWizardSummary(output, values, preview, featureByName) {
   output.write(
     `  Requested capabilities: ${friendlyFeatureList(values.optionalFeatures, featureByName)}\n`
   )
-  output.write(`  Automatic dependencies: ${rawFeatureList(preview.automaticFeatures)}\n`)
-  output.write(`  Resolved features: ${rawFeatureList(preview.resolvedFeatures)}\n`)
+  output.write(
+    `  Automatic dependencies: ${rawFeatureList(preview.automaticFeatures)}\n`
+  )
+  output.write(
+    `  Resolved features: ${rawFeatureList(preview.resolvedFeatures)}\n`
+  )
   output.write(`  Package manager: ${values.packageManager}\n`)
   output.write(`  Bundle identifier prefix: ${values.bundleIdentifierPrefix}\n`)
   if (
@@ -187,7 +204,7 @@ export async function promptForCreateAppWizard({
 } = {}) {
   const prompt = createPromptSession({ input, output })
   const validate = {
-    name: validators.name ?? ((value) => value),
+    name: validators.name ?? normalizeAppName,
     target: validators.target ?? ((value) => value),
     bundleIdentifierPrefix:
       validators.bundleIdentifierPrefix ?? ((value) => value),
@@ -197,10 +214,15 @@ export async function promptForCreateAppWizard({
     windowHeight: validators.windowHeight ?? ((value) => value),
   }
   const recipeOptions = recipes.map(recipeOption)
-  const recipeByOption = new Map(recipes.map((recipe) => [recipeOption(recipe), recipe]))
-  const starter = recipes.find((recipe) => recipe.name === 'starter') ?? recipes[0]
+  const recipeByOption = new Map(
+    recipes.map((recipe) => [recipeOption(recipe), recipe])
+  )
+  const starter =
+    recipes.find((recipe) => recipe.name === 'starter') ?? recipes[0]
   const defaultRecipeOption = starter ? recipeOption(starter) : ''
-  const featureByName = new Map(features.map((feature) => [feature.name, feature]))
+  const featureByName = new Map(
+    features.map((feature) => [feature.name, feature])
+  )
 
   try {
     const name = await prompt.askValidated('Project name', '', validate.name)
@@ -218,7 +240,9 @@ export async function promptForCreateAppWizard({
       )
       const recipe = recipeByOption.get(selectedRecipeOption)
       const templateFeatures = new Set(recipe.resolvedFeatures ?? [])
-      const availableFeatures = features.filter((feature) => !templateFeatures.has(feature.name))
+      const availableFeatures = features.filter(
+        (feature) => !templateFeatures.has(feature.name)
+      )
       const availableFeatureOptions = availableFeatures.map(featureOption)
       const featureByOption = new Map(
         availableFeatures.map((feature) => [featureOption(feature), feature])
@@ -255,7 +279,9 @@ export async function promptForCreateAppWizard({
         try {
           preview = await resolveSelection(recipe.name, optionalFeatures)
         } catch (error) {
-          output.write(`Unable to use template '${recipe.name}': ${error.message}\n`)
+          output.write(
+            `Unable to use template '${recipe.name}': ${error.message}\n`
+          )
           continue
         }
       }
@@ -284,9 +310,21 @@ export async function promptForCreateAppWizard({
 
       if (customizeAdvanced === 'Yes') {
         author = await prompt.askValidated('Author', 'you', validate.author)
-        license = await prompt.askValidated('License', 'UNLICENSED', validate.license)
-        windowWidth = await prompt.askValidated('Window width', '1000', validate.windowWidth)
-        windowHeight = await prompt.askValidated('Window height', '700', validate.windowHeight)
+        license = await prompt.askValidated(
+          'License',
+          'UNLICENSED',
+          validate.license
+        )
+        windowWidth = await prompt.askValidated(
+          'Window width',
+          '1000',
+          validate.windowWidth
+        )
+        windowHeight = await prompt.askValidated(
+          'Window height',
+          '700',
+          validate.windowHeight
+        )
         if (preview.resolvedFeatures.includes('ui-layout')) {
           sidebar = await prompt.choose(
             'Sidebar layout',

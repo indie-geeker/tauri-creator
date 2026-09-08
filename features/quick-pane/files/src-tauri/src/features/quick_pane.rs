@@ -26,8 +26,9 @@ const QUICK_PANE_HEIGHT: f64 = 96.0;
 
 static QUICK_PANE_STATE: LazyLock<Mutex<QuickPaneState>> =
     LazyLock::new(|| Mutex::new(QuickPaneState::default()));
-static CURRENT_QUICK_PANE_SHORTCUT: LazyLock<Mutex<Option<String>>> =
-    LazyLock::new(|| Mutex::new(None));
+static CURRENT_QUICK_PANE_SHORTCUT: LazyLock<
+    Mutex<super::quick_pane_shortcut::ShortcutCoordinator>,
+> = LazyLock::new(|| Mutex::new(super::quick_pane_shortcut::ShortcutCoordinator::default()));
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,6 +38,9 @@ pub struct QuickPaneState {
     pub shortcut_registered: bool,
     pub shortcut_error: Option<String>,
     pub window_error: Option<String>,
+    pub shortcut_degraded: bool,
+    pub active_shortcut: Option<String>,
+    pub registered_shortcuts: Vec<String>,
 }
 
 impl Default for QuickPaneState {
@@ -47,6 +51,9 @@ impl Default for QuickPaneState {
             shortcut_registered: false,
             shortcut_error: None,
             window_error: None,
+            shortcut_degraded: false,
+            active_shortcut: None,
+            registered_shortcuts: Vec::new(),
         }
     }
 }
@@ -87,19 +94,35 @@ pub fn toggle_quick_pane(app: AppHandle) -> QuickPaneState {
 }
 
 #[tauri::command]
-pub fn update_quick_pane_shortcut(app: AppHandle, shortcut: Option<String>) -> QuickPaneState {
-    let shortcut = shortcut.as_deref().unwrap_or(DEFAULT_SHORTCUT);
-    register_quick_pane_shortcut(&app, shortcut)
+pub async fn update_quick_pane_shortcut(
+    app: AppHandle,
+    shortcut: Option<String>,
+) -> QuickPaneState {
+    let worker_app = app.clone();
+    match tauri::async_runtime::spawn_blocking(move || switch_shortcut(&worker_app, shortcut, true))
+        .await
+    {
+        Ok(state) => state,
+        Err(error) => update_shortcut_status(
+            Some(&app),
+            None,
+            false,
+            Some(format!("shortcut worker failed: {error}")),
+        ),
+    }
 }
 
 pub fn register_default_quick_pane_shortcut(app: &AppHandle) -> QuickPaneState {
-    register_quick_pane_shortcut(app, DEFAULT_SHORTCUT)
+    switch_shortcut(app, None, false)
 }
 
 pub fn register_saved_or_default_quick_pane_shortcut(app: &AppHandle) -> QuickPaneState {
-    let saved_shortcut = super::preferences::load_quick_pane_shortcut(app);
-    let shortcut = saved_shortcut.as_deref().unwrap_or(DEFAULT_SHORTCUT);
-    register_quick_pane_shortcut(app, shortcut)
+    let preferences = super::preferences::preferences_path(app)
+        .and_then(|path| super::preferences::preferences_store().load(&path));
+    match preferences {
+        Ok(snapshot) => switch_shortcut(app, snapshot.quick_pane_shortcut, false),
+        Err(error) => update_shortcut_status(Some(app), None, false, Some(error)),
+    }
 }
 
 pub fn init_quick_pane_window(app: &AppHandle) -> QuickPaneState {
@@ -120,43 +143,71 @@ pub fn register_quick_pane_shortcut(app: &AppHandle, shortcut: &str) -> QuickPan
         );
     }
 
-    register_global_shortcut(app, normalized)
+    switch_shortcut(app, Some(normalized.to_owned()), false)
 }
 
-fn register_global_shortcut(app: &AppHandle, shortcut: &str) -> QuickPaneState {
-    use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
-
-    let mut current_shortcut = CURRENT_QUICK_PANE_SHORTCUT
+struct NativeShortcutRegistry<'a>(&'a AppHandle);
+impl super::quick_pane_shortcut::ShortcutRegistry for NativeShortcutRegistry<'_> {
+    fn normalize(&self, shortcut: &str) -> Result<String, String> {
+        shortcut
+            .trim()
+            .parse::<tauri_plugin_global_shortcut::Shortcut>()
+            .map(|value| value.to_string())
+            .map_err(|error| error.to_string())
+    }
+    fn register(&mut self, shortcut: &str) -> Result<(), String> {
+        use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+        let active_key = shortcut.to_owned();
+        let handle = self.0.clone();
+        self.0
+            .global_shortcut()
+            .on_shortcut(shortcut, move |_app, _shortcut, event| {
+                let active = CURRENT_QUICK_PANE_SHORTCUT
+                    .try_lock()
+                    .map(|state| state.active.as_deref() == Some(active_key.as_str()))
+                    .unwrap_or(false);
+                if active && event.state == ShortcutState::Pressed {
+                    toggle_quick_pane(handle.clone());
+                }
+            })
+            .map_err(|error| error.to_string())
+    }
+    fn unregister(&mut self, shortcut: &str) -> Result<(), String> {
+        use tauri_plugin_global_shortcut::GlobalShortcutExt;
+        self.0
+            .global_shortcut()
+            .unregister(shortcut)
+            .map_err(|error| error.to_string())
+    }
+}
+fn switch_shortcut(app: &AppHandle, shortcut: Option<String>, persist: bool) -> QuickPaneState {
+    let mut coordinator = CURRENT_QUICK_PANE_SHORTCUT
         .lock()
-        .expect("quick-pane shortcut should not be poisoned");
-
-    if let Some(old_shortcut) = current_shortcut.take() {
-        if let Ok(parsed_shortcut) = old_shortcut.parse::<Shortcut>() {
-            if let Err(error) = app.global_shortcut().unregister(parsed_shortcut) {
-                eprintln!("Failed to unregister quick-pane shortcut '{old_shortcut}': {error}");
-            }
+        .expect("shortcut coordinator poisoned");
+    let requested = shortcut.as_deref().unwrap_or(DEFAULT_SHORTCUT);
+    coordinator.switch(&mut NativeShortcutRegistry(app), requested, || {
+        if persist {
+            let path = super::preferences::preferences_path(app)?;
+            super::preferences::preferences_store().set_shortcut(&path, shortcut.clone())?;
         }
+        Ok(())
+    });
+    let mut store = QUICK_PANE_STATE.lock().expect("quick-pane state poisoned");
+    store.shortcut_degraded = coordinator.degraded;
+    store.active_shortcut = coordinator.active.clone();
+    store.registered_shortcuts = coordinator.registered.iter().cloned().collect();
+    if let Some(active) = &coordinator.active {
+        store.shortcut = active.clone();
     }
-
-    let app_handle = app.clone();
-    match app
-        .global_shortcut()
-        .on_shortcut(shortcut, move |_app, _shortcut, event| {
-            if event.state == ShortcutState::Pressed {
-                toggle_quick_pane(app_handle.clone());
-            }
-        }) {
-        Ok(()) => {
-            *current_shortcut = Some(shortcut.to_string());
-            update_shortcut_status(Some(app), Some(shortcut.to_string()), true, None)
-        }
-        Err(error) => update_shortcut_status(
-            Some(app),
-            Some(shortcut.to_string()),
-            false,
-            Some(error.to_string()),
-        ),
+    store.shortcut_registered = coordinator.active.is_some();
+    store.shortcut_error = coordinator.error.clone();
+    let state = store.clone();
+    drop(store);
+    drop(coordinator);
+    if persist && state.shortcut_error.is_none() {
+        let _ = app.emit("preferences-changed", ());
     }
+    emit_state(Some(app), state)
 }
 
 fn ensure_quick_pane_window(app: &AppHandle) -> Result<(), String> {
@@ -548,4 +599,26 @@ mod tests {
         assert_eq!(position.x, 820);
         assert_eq!(position.y, 824);
     }
+}
+
+static SUBMISSIONS: LazyLock<super::quick_pane_submission::SubmissionStore> =
+    LazyLock::new(super::quick_pane_submission::SubmissionStore::default);
+
+#[tauri::command]
+pub fn submit_quick_pane(
+    app: AppHandle,
+    text: String,
+) -> Result<super::quick_pane_submission::QuickPaneReceipt, String> {
+    let receipt = SUBMISSIONS.accept(&text)?;
+    // The receipt acknowledges the process-local store. Notification is best effort.
+    if let Err(error) = app.emit_to("main", "quick-pane-submit", &receipt) {
+        eprintln!("quick-pane notification failed: {error}");
+    }
+    Ok(receipt)
+}
+
+#[tauri::command]
+pub fn get_latest_quick_pane_entry(
+) -> Result<Option<super::quick_pane_submission::QuickPaneReceipt>, String> {
+    SUBMISSIONS.latest()
 }

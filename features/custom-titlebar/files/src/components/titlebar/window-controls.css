@@ -1,0 +1,40 @@
+.tc-window-controls > button {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tc-macos > button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  color: #0009;
+}
+.tc-macos > button:nth-child(1) {
+  background: #ff544d;
+}
+.tc-macos > button:nth-child(2) {
+  background: #ffbd2e;
+}
+.tc-macos > button:nth-child(3) {
+  background: #28c93f;
+}
+.tc-windows > button {
+  width: 48px;
+  height: 32px;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+}
+.tc-windows > button:hover {
+  background: #8883;
+}
+.tc-windows > button:last-child:hover {
+  background: #dc2626;
+  color: white;
+}

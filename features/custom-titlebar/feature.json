@@ -6,7 +6,8 @@
     "visible": false
   },
   "dependsOn": [
-    "ui-tailwind"
+    "ui-tailwind",
+    "os-runtime"
   ],
   "conflictsWith": [],
   "npmDependencies": [],
@@ -16,11 +17,19 @@
   ],
   "tauriCommands": [],
   "capabilities": [
-    "core:window:default"
+    "core:window:allow-is-maximized",
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-start-dragging",
+    "core:window:allow-toggle-maximize",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten"
   ],
   "qualityChecks": [],
   "removeHints": [
-    "Remove `Titlebar` from `App.tsx`.",
+    "Remove `TitleBar` from `App.tsx`.",
     "Remove `src/components/titlebar` directory."
   ],
   "spectaExports": []

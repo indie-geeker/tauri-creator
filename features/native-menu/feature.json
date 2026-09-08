@@ -12,7 +12,8 @@
   "npmDependencies": [],
   "cargoDependencies": [],
   "files": [
-    "src/lib/menu.ts"
+    "src/lib/menu.ts",
+    "src/lib/menu-runtime.ts"
   ],
   "tauriCommands": [],
   "capabilities": [
@@ -23,5 +24,9 @@
     "Remove `buildAppMenu` call from `src/App.tsx`.",
     "Remove `src/lib/menu.ts`."
   ],
-  "spectaExports": []
+  "spectaExports": [],
+  "frontendRuntime": {
+    "module": "lib/menu-runtime",
+    "exportName": "startMenuRuntime"
+  }
 }

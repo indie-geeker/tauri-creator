@@ -1,6 +1,6 @@
 {
   "name": "ui-preferences",
-  "description": "Generic settings panel for app-wide shortcuts and appearance preferences.",
+  "description": "Composable appearance settings dialog.",
   "stage": "v1",
   "wizard": {
     "visible": false
@@ -9,8 +9,7 @@
     "preferences",
     "ui-shadcn",
     "app-state",
-    "i18n",
-    "quick-pane"
+    "i18n"
   ],
   "conflictsWith": [],
   "npmDependencies": [],

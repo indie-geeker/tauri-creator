@@ -3,6 +3,7 @@ import {
   createNote,
   deleteNote,
   getDatabaseHealth,
+  getNote,
   listNotes,
   updateNote,
   useCreateNote,
@@ -20,6 +21,11 @@ vi.mock('@tauri-apps/api/core', () => ({
 describe('sqlite feature', () => {
   beforeEach(() => {
     invokeMock.mockReset()
+  })
+
+  it('rejects backend string errors through generated Result commands', async () => {
+    invokeMock.mockRejectedValueOnce('storage unavailable')
+    await expect(listNotes()).rejects.toThrow('storage unavailable')
   })
 
   it('loads database health through the Tauri command', async () => {
@@ -41,27 +47,44 @@ describe('sqlite feature', () => {
     })
   })
 
-  it('lists notes through the Tauri command', async () => {
-    invokeMock.mockResolvedValueOnce([
-      {
-        id: 1,
-        title: 'First note',
-        body: 'Created from the generated app.',
-        createdAt: '2026-06-30T00:00:00Z',
-        updatedAt: '2026-06-30T00:00:00Z',
-      },
-    ])
+  it('lists summaries with an explicit page cursor', async () => {
+    const page = {
+      items: [
+        {
+          id: '9007199254740993',
+          title: 'First',
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+      ],
+      nextCursor: { id: '9007199254740993', updatedAt: '2026-01-01' },
+    }
+    invokeMock.mockResolvedValueOnce(page)
+    const input = {
+      limit: 20,
+      cursor: { id: '9007199254740994', updatedAt: '2026-01-01' },
+    }
+    await expect(listNotes(input)).resolves.toEqual(page)
+    expect(invokeMock).toHaveBeenCalledWith('list_notes', { input })
+    expect(page.items[0]).not.toHaveProperty('body')
+  })
 
-    const notes = await listNotes()
-
-    expect(invokeMock).toHaveBeenCalledWith('list_notes')
-    expect(notes).toHaveLength(1)
-    expect(notes[0].title).toBe('First note')
+  it('fetches the body only for a selected detail', async () => {
+    const detail = {
+      id: '1',
+      title: 'Selected',
+      body: 'Body',
+      createdAt: '2026-01-01',
+      updatedAt: '2026-01-01',
+    }
+    invokeMock.mockResolvedValueOnce(detail)
+    await expect(getNote('1')).resolves.toEqual(detail)
+    expect(invokeMock).toHaveBeenCalledWith('get_note', { id: '1' })
   })
 
   it('creates, updates, and deletes notes through Tauri commands', async () => {
     const created = {
-      id: 1,
+      id: '9007199254740993',
       title: 'Draft',
       body: 'Body',
       createdAt: '2026-06-30T00:00:00Z',
@@ -81,17 +104,19 @@ describe('sqlite feature', () => {
       created
     )
     await expect(
-      updateNote({ id: 1, title: 'Published', body: 'Body' })
+      updateNote({ id: '9007199254740993', title: 'Published', body: 'Body' })
     ).resolves.toEqual(updated)
-    await expect(deleteNote(1)).resolves.toBeUndefined()
+    await expect(deleteNote('9007199254740993')).resolves.toBeUndefined()
 
     expect(invokeMock).toHaveBeenNthCalledWith(1, 'create_note', {
       input: { title: 'Draft', body: 'Body' },
     })
     expect(invokeMock).toHaveBeenNthCalledWith(2, 'update_note', {
-      input: { id: 1, title: 'Published', body: 'Body' },
+      input: { id: '9007199254740993', title: 'Published', body: 'Body' },
     })
-    expect(invokeMock).toHaveBeenNthCalledWith(3, 'delete_note', { id: 1 })
+    expect(invokeMock).toHaveBeenNthCalledWith(3, 'delete_note', {
+      id: '9007199254740993',
+    })
   })
 
   it('exports TanStack Query hooks for notes', () => {

@@ -1,16 +1,9 @@
-import { invoke } from '@tauri-apps/api/core'
+import { commands } from '@/lib/tauri-bindings'
+import { unwrapCommandResult } from '@/lib/command-result'
+import type { UpdaterStatus } from '@/lib/tauri-bindings'
+export type { UpdaterStatus } from '@/lib/tauri-bindings'
 
 export type UpdaterState = 'disabled' | 'ready' | 'error'
-
-export type UpdaterStatus = {
-  configured: boolean
-  status: UpdaterState
-  reason: string
-  endpoints: string[]
-  endpointConfigured: boolean
-  publicKeyConfigured: boolean
-  missing: string[]
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -70,7 +63,9 @@ export function normalizeUpdaterStatus(value: unknown): UpdaterStatus {
 
 export async function getUpdaterStatus(): Promise<UpdaterStatus> {
   try {
-    return normalizeUpdaterStatus(await invoke<unknown>('get_updater_status'))
+    return normalizeUpdaterStatus(
+      await unwrapCommandResult(commands.getUpdaterStatus())
+    )
   } catch (error) {
     return normalizeUpdaterStatus({
       configured: false,

@@ -1,58 +1,33 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { loadPreferences, savePreferences } from './index'
-
+import { loadPreferences, patchPreferences } from './index'
 const invokeMock = vi.hoisted(() => vi.fn())
-
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: invokeMock,
-}))
-
-describe('preferences feature', () => {
-  beforeEach(() => {
-    invokeMock.mockReset()
-  })
-
-  it('loads preferences through the Tauri command', async () => {
-    invokeMock.mockResolvedValueOnce({
-      theme: 'system',
+vi.mock('@tauri-apps/api/core', () => ({ invoke: invokeMock }))
+beforeEach(() => invokeMock.mockReset())
+describe('preferences command adapter', () => {
+  it('loads backend snapshots', async () => {
+    const snapshot = {
+      theme: 'dark',
       language: 'system',
       quick_pane_shortcut: null,
-    })
-
-    const preferences = await loadPreferences()
-
+    }
+    invokeMock.mockResolvedValueOnce(snapshot)
+    await expect(loadPreferences()).resolves.toEqual(snapshot)
     expect(invokeMock).toHaveBeenCalledWith('load_preferences')
-    expect(preferences).toEqual({
-      theme: 'system',
-      language: 'system',
-      quick_pane_shortcut: null,
+  })
+  it('sends only changed fields and returns the backend snapshot', async () => {
+    const snapshot = {
+      theme: 'dark',
+      language: 'zh-CN',
+      quick_pane_shortcut: 'Alt+X',
+    }
+    invokeMock.mockResolvedValueOnce(snapshot)
+    await expect(patchPreferences({ theme: 'dark' })).resolves.toEqual(snapshot)
+    expect(invokeMock).toHaveBeenCalledWith('patch_preferences', {
+      patch: { theme: 'dark' },
     })
   })
-
-  it('saves preferences through the Tauri command', async () => {
-    invokeMock.mockResolvedValueOnce({
-      theme: 'dark',
-      language: 'zh-CN',
-      quick_pane_shortcut: 'CommandOrControl+Alt+Space',
-    })
-
-    const preferences = await savePreferences({
-      theme: 'dark',
-      language: 'zh-CN',
-      quick_pane_shortcut: 'CommandOrControl+Alt+Space',
-    })
-
-    expect(invokeMock).toHaveBeenCalledWith('save_preferences', {
-      preferences: {
-        theme: 'dark',
-        language: 'zh-CN',
-        quick_pane_shortcut: 'CommandOrControl+Alt+Space',
-      },
-    })
-    expect(preferences).toEqual({
-      theme: 'dark',
-      language: 'zh-CN',
-      quick_pane_shortcut: 'CommandOrControl+Alt+Space',
-    })
+  it('rejects backend errors instead of returning default data', async () => {
+    invokeMock.mockRejectedValueOnce('corrupted file')
+    await expect(loadPreferences()).rejects.toThrow('corrupted file')
   })
 })

@@ -38,15 +38,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: {{PACKAGE_MANAGER}}
+          node-version: '24.11.1'
 
       - name: Enable package manager
         run: |
           {{PACKAGE_MANAGER_SETUP_COMMAND}}
 
-      - name: Install Rust stable
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.92.0
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -62,6 +63,14 @@ jobs:
       - name: Install dependencies
         run: {{PACKAGE_MANAGER_INSTALL_COMMAND}}
 
+      - name: Validate release version
+        env:
+          RELEASE_VERSION: ${{ inputs.version || github.ref_name }}
+        run: node scripts/check-release-version.mjs
+
+      - name: Generate bindings
+        run: {{PACKAGE_MANAGER}} run bindings:generate
+
       - name: Run checks
         run: {{PACKAGE_MANAGER}} run check:all
 
@@ -72,10 +81,10 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name || inputs.version }}
-          releaseName: '{{APP_TITLE}} ${{ github.ref_name || inputs.version }}'
+          tagName: ${{ inputs.version || github.ref_name }}
+          releaseName: '{{APP_TITLE}} ${{ inputs.version || github.ref_name }}'
           releaseBody: |
-            ## {{APP_TITLE}} ${{ github.ref_name || inputs.version }}
+            ## {{APP_TITLE}} ${{ inputs.version || github.ref_name }}
 
             ### Installers
             - macOS: download the `.dmg` file.

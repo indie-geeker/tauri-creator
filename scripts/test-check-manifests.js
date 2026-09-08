@@ -1,14 +1,43 @@
 import { execFileSync } from 'node:child_process'
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import {
+  cp,
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises'
 import path from 'node:path'
+import os from 'node:os'
 import { fileURLToPath } from 'node:url'
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const sourceRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..'
+)
+const root = await mkdtemp(path.join(os.tmpdir(), 'tauri-manifest-fixture-'))
+for (const name of [
+  'scripts',
+  'features',
+  'recipes',
+  'base',
+  'docs',
+  'README.md',
+  'package.json',
+])
+  await cp(path.join(sourceRoot, name), path.join(root, name), {
+    recursive: true,
+  })
 const checkManifestsScript = path.join(root, 'scripts', 'check-manifests.js')
 const invalidFeatureDir = path.join(root, 'features', 'zz-invalid-docs')
 const invalidMarkerFeatureDir = path.join(root, 'features', 'zz-invalid-marker')
 const invalidWizardFeatureDir = path.join(root, 'features', 'zz-invalid-wizard')
-const invalidRecipePath = path.join(root, 'recipes', 'zz-invalid-wizard-recipe.json')
+const invalidRecipePath = path.join(
+  root,
+  'recipes',
+  'zz-invalid-wizard-recipe.json'
+)
 
 function assert(condition, message) {
   if (!condition) {
@@ -78,7 +107,8 @@ async function assertInvalidRecipe(recipe, expectedMessage) {
 }
 
 try {
-  const { wizard: _wizard, ...withoutWizard } = createManifest('zz-invalid-wizard')
+  const { wizard: _wizard, ...withoutWizard } =
+    createManifest('zz-invalid-wizard')
   await assertInvalidWizard(withoutWizard, "missing required field 'wizard'")
 
   await assertInvalidWizard(
@@ -109,7 +139,11 @@ try {
   )
   await assertInvalidWizard(
     createManifest('zz-invalid-wizard', {
-      wizard: { visible: true, label: 'Misspelled category', category: 'Dleivery' },
+      wizard: {
+        visible: true,
+        label: 'Misspelled category',
+        category: 'Dleivery',
+      },
     }),
     "'wizard.category' must be one of: Desktop, Product, Data, Delivery"
   )
@@ -158,20 +192,28 @@ try {
     'custom-titlebar',
     'diagnostics',
     'logging',
+    'os-runtime',
     'preferences',
     'specta-bindings',
     'ui-preferences',
     'ui-shadcn',
     'ui-tailwind',
+    'updater-release-workflow',
   ]
   const manifests = []
 
-  for (const entry of await readdir(path.join(root, 'features'), { withFileTypes: true })) {
+  for (const entry of await readdir(path.join(root, 'features'), {
+    withFileTypes: true,
+  })) {
     if (!entry.isDirectory() || entry.name.startsWith('zz-invalid-')) continue
-    manifests.push(JSON.parse(await readFile(
-      path.join(root, 'features', entry.name, 'feature.json'),
-      'utf8'
-    )))
+    manifests.push(
+      JSON.parse(
+        await readFile(
+          path.join(root, 'features', entry.name, 'feature.json'),
+          'utf8'
+        )
+      )
+    )
   }
 
   const visible = manifests
@@ -191,11 +233,21 @@ try {
       .map((manifest) => manifest.wizard.category)
   )
 
-  assert(visible.join(',') === expectedVisible.join(','), 'visible wizard feature set should stay intentional')
-  assert(hidden.join(',') === expectedHidden.join(','), 'hidden wizard feature set should stay intentional')
-  assert(new Set(labels).size === labels.length, 'visible wizard labels should be unique')
   assert(
-    [...categories].sort().join(',') === ['Data', 'Delivery', 'Desktop', 'Product'].join(','),
+    visible.join(',') === expectedVisible.join(','),
+    'visible wizard feature set should stay intentional'
+  )
+  assert(
+    hidden.join(',') === expectedHidden.join(','),
+    'hidden wizard feature set should stay intentional'
+  )
+  assert(
+    new Set(labels).size === labels.length,
+    'visible wizard labels should be unique'
+  )
+  assert(
+    [...categories].sort().join(',') ===
+      ['Data', 'Delivery', 'Desktop', 'Product'].join(','),
     'wizard catalog should use the four supported categories'
   )
 }
@@ -204,14 +256,21 @@ try {
   await mkdir(invalidFeatureDir, { recursive: true })
   await writeFile(
     path.join(invalidFeatureDir, 'feature.json'),
-    `${JSON.stringify(createManifest('zz-invalid-docs', {
-      description: 'Invalid fixture with missing declared docs.',
-      files: ['docs/features/zz-invalid-docs.md'],
-    }), null, 2)}\n`
+    `${JSON.stringify(
+      createManifest('zz-invalid-docs', {
+        description: 'Invalid fixture with missing declared docs.',
+        files: ['docs/features/zz-invalid-docs.md'],
+      }),
+      null,
+      2
+    )}\n`
   )
 
   const { failed, stderr } = runCheckManifests()
-  assert(failed, 'check-manifests should fail when a declared docs file is missing')
+  assert(
+    failed,
+    'check-manifests should fail when a declared docs file is missing'
+  )
   assert(
     stderr.includes("declares missing file 'docs/features/zz-invalid-docs.md'"),
     'check-manifests should report the missing declared docs file'
@@ -224,26 +283,40 @@ try {
   await mkdir(invalidMarkerFeatureDir, { recursive: true })
   await writeFile(
     path.join(invalidMarkerFeatureDir, 'feature.json'),
-    `${JSON.stringify(createManifest('zz-invalid-marker', {
-      description: 'Invalid fixture with a marker that does not exist in the base app.',
-    }), null, 2)}\n`
+    `${JSON.stringify(
+      createManifest('zz-invalid-marker', {
+        description:
+          'Invalid fixture with a marker that does not exist in the base app.',
+      }),
+      null,
+      2
+    )}\n`
   )
   await writeFile(
     path.join(invalidMarkerFeatureDir, 'markers.json'),
-    `${JSON.stringify([
-      {
-        id: 'missing-marker',
-        file: 'src/App.tsx',
-        marker: '// TAURI_CREATOR:DOES_NOT_EXIST',
-        insert: 'const missing = true',
-      },
-    ], null, 2)}\n`
+    `${JSON.stringify(
+      [
+        {
+          id: 'missing-marker',
+          file: 'src/App.tsx',
+          marker: '// TAURI_CREATOR:DOES_NOT_EXIST',
+          insert: 'const missing = true',
+        },
+      ],
+      null,
+      2
+    )}\n`
   )
 
   const { failed, stderr } = runCheckManifests()
-  assert(failed, 'check-manifests should fail when a marker is missing from a base file')
   assert(
-    stderr.includes("marker '// TAURI_CREATOR:DOES_NOT_EXIST' not found in base file 'src/App.tsx'"),
+    failed,
+    'check-manifests should fail when a marker is missing from a base file'
+  )
+  assert(
+    stderr.includes(
+      "marker '// TAURI_CREATOR:DOES_NOT_EXIST' not found in base file 'src/App.tsx'"
+    ),
     'check-manifests should report the missing base marker'
   )
 } finally {
@@ -251,3 +324,5 @@ try {
 }
 
 console.log('check-manifests negative fixture passed')
+
+await rm(root, { recursive: true, force: true })

@@ -12,9 +12,9 @@
     "insert": "            features::preferences::load_preferences,"
   },
   {
-    "id": "preferences-save-command",
+    "id": "preferences-patch-command",
     "file": "src-tauri/src/lib.rs",
     "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
-    "insert": "            features::preferences::save_preferences,"
+    "insert": "            features::preferences::patch_preferences,"
   }
 ]

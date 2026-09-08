@@ -1,0 +1,10 @@
+{
+  "plugins": {
+    "updater": {
+      "pubkey": "fixture-public-key",
+      "endpoints": [
+        "https://example.com/latest.json"
+      ]
+    }
+  }
+}

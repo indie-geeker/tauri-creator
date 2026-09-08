@@ -35,7 +35,7 @@ Generated from the `recipes/*.json` ladder. Do not edit this list by hand.
 
 - `minimal`: Base Tauri React app with no optional feature packages. Features: base only.
 - `starter`: Recommended production foundation for a new solo Tauri product. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`.
-- `full`: Reference and strict verification app containing the complete stable production feature set. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`, `app-lifecycle`, `command-palette`, `native-menu`, `ui-tailwind`, `ui-shadcn`, `app-state`, `i18n`, `quick-pane`, `ui-preferences`, `ui-layout`, `sqlite`, `project-governance`, `updater`, `dx-tools`.
+- `full`: Reference and strict verification app containing the complete stable production feature set. Features: `specta-bindings`, `preferences`, `logging`, `diagnostics`, `app-lifecycle`, `command-palette`, `native-menu`, `quick-pane`, `ui-tailwind`, `ui-shadcn`, `app-state`, `os-runtime`, `i18n`, `ui-preferences`, `ui-layout`, `sqlite`, `project-governance`, `updater`, `updater-release-workflow`, `dx-tools`.
 <!-- TAURI_CREATOR:README_RECIPES_END -->
 
 - Feature manifests with dependencies, files, permissions, and checks
@@ -164,3 +164,22 @@ npm run check:all
 
 The full gate validates scaffold metadata, docs generation, create/apply/remove
 flows, all npm recipe outputs, pnpm starter output, and strict full output.
+
+## Template quality and compatibility
+
+Generated apps with custom Rust commands require `bindings:generate` after the
+first install and before `check:all` or build. The bindings check is read-only;
+regeneration is explicit. Minimal apps without Specta omit that step.
+
+The supported engine range is Node `^22.13.0 || >=24.0.0`, with representative
+checks on 22.13.0 and 24.11.1. Package managers are pinned to npm 11.6.2 / pnpm
+11.7.0, and generated Rust toolchains to 1.92.0.
+
+- [Quality gates and independent matrix](docs/QUALITY_GATE.md)
+- [Compatibility and safe feature changes](docs/TEMPLATE_COMPATIBILITY.md)
+- [Native acceptance checklist](docs/NATIVE_ACCEPTANCE.md)
+- [Implementation status and evidence](docs/TEMPLATE_QUALITY_IMPLEMENTATION.md)
+
+`npm run check:all` includes generator, recipe, contract and independent feature
+checks. This is an expensive local validation command. Native window behavior,
+actual IPC rejection and signed releases require separate recorded acceptance.

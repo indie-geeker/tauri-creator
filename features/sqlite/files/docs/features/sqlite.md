@@ -1,23 +1,13 @@
 # SQLite
 
-Adds file-backed SQLite persistence with a notes repository and frontend query hooks.
+`init_database` starts one bounded worker during application setup. The worker opens `app.sqlite3` in the app data directory, performs schema migration once, and owns the connection until synchronous application Exit drains admitted jobs and joins the thread. Async commands enqueue work and await oneshot replies; a full 64-request queue returns a `database busy` error instead of growing without limit. SQLite lock waits have a two-second timeout.
 
-## Frontend
+Migration version 1 accepts an empty database or the exact legacy notes schema and known index definitions. Unknown tables, columns, defaults, constraints, triggers, indexes, and future versions are refused. Migration statements and `user_version` updates share one transaction, so errors roll back both schema and data changes. Back up real application data before upgrading generated projects; these tests use temporary databases only.
 
-- `getDatabaseHealth()` invokes `get_database_health` and returns the SQLite driver, database path, and file-backed status.
-- `listNotes()` invokes `list_notes`.
-- `createNote(input)` invokes `create_note`.
-- `updateNote(input)` invokes `update_note`.
-- `deleteNote(id)` invokes `delete_note`.
-- `useDatabaseHealth()`, `useNotes()`, `useCreateNote()`, `useUpdateNote()`, and `useDeleteNote()` wrap the commands with TanStack Query.
+`listNotes({ limit, cursor })` returns `{ items, nextCursor }`. Pages default to 50 summaries and allow at most 200; summaries include id, title, createdAt and updatedAt, never the note body. Pass `nextCursor` back for the next page. Ordering and the matching index use `(updated_at DESC, id DESC)`; cursor queries use a tuple range, avoiding offset pagination. Concurrent updates can move records between pages, so consumers should restart pagination when their data changes.
 
-## Rust
+`getNote(id)` fetches a selected note including its body. `createNote`, `updateNote`, and `deleteNote` preserve the CRUD operations; IDs are canonical positive decimal strings over IPC and strict i64 values inside SQL. Invalid, negative, zero, padded, and overflowing IDs fail before SQL execution.
 
-- `src-tauri/src/infrastructure/database/mod.rs` owns the database entry point.
-- `migrations.rs` creates the `notes` table and index.
-- `notes.rs` implements file-backed create, list, update, and delete operations.
-- Commands resolve `app.sqlite3` under Tauri's app data directory, create parent directories when needed, and run migrations idempotently before use.
+TanStack Query hooks include `useNotes(input)`, `useNote(id)`, `useDatabaseHealth`, and the three mutation hooks. Page keys include the input cursor, while mutations invalidate the common page prefix and update or remove detail cache entries.
 
-## Data Model
-
-`Note` records include `id`, `title`, `body`, `createdAt`, and `updatedAt`. Titles must not be empty.
+Tests cover legacy migration, unknown-schema refusal, rollback, decimal ID precision, equal-timestamp pagination, bounded queues with a paused worker, error recovery, explicit shutdown and disk persistence across worker restarts. No production database or signed native application is exercised by these tests.

@@ -8,16 +8,15 @@
     "category": "Product"
   },
   "dependsOn": [
-    "preferences"
+    "preferences",
+    "os-runtime"
   ],
   "conflictsWith": [],
   "npmDependencies": [
     "i18next",
     "react-i18next"
   ],
-  "cargoDependencies": [
-    "tauri-plugin-os"
-  ],
+  "cargoDependencies": [],
   "files": [
     "src/i18n",
     "locales"
@@ -31,5 +30,9 @@
     "Remove `i18n` imports and initializations from `src/App.tsx`.",
     "Delete `src/i18n` and `locales` directories."
   ],
-  "spectaExports": []
+  "spectaExports": [],
+  "frontendRuntime": {
+    "module": "i18n/language-init",
+    "exportName": "startLanguagePreferences"
+  }
 }

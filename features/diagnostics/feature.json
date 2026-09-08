@@ -5,7 +5,9 @@
   "wizard": {
     "visible": false
   },
-  "dependsOn": [],
+  "dependsOn": [
+    "specta-bindings"
+  ],
   "conflictsWith": [],
   "npmDependencies": [],
   "cargoDependencies": [

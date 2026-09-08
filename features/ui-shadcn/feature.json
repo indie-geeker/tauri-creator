@@ -39,7 +39,7 @@
     "src/hooks/use-mobile.ts",
     "src/hooks/use-theme.ts",
     "src/lib/theme-context.ts",
-    "src/lib/utils.ts"
+    "src/components/ThemeProvider.test.tsx"
   ],
   "tauriCommands": [],
   "capabilities": [],

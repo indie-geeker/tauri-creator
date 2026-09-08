@@ -1,5 +1,22 @@
+import { formatJson } from './lib/json-format.js'
+import { renderCapabilities } from './lib/capability-renderer.js'
+import { renderRegistrations } from './lib/registration-renderer.js'
+import { loadFeatureCatalog, resolveFeatures } from './lib/feature-catalog.js'
+import { syncSettingsContributions } from './settings-contributions.js'
+import { syncCheckScripts } from './generated-checks.js'
+import { normalizeAppName } from './lib/app-name.js'
 import { execFileSync } from 'node:child_process'
-import { cp, mkdir, readFile, readdir, rename, rm, rmdir, stat, writeFile } from 'node:fs/promises'
+import {
+  cp,
+  mkdir,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  rmdir,
+  stat,
+  writeFile,
+} from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { renderProjectMap } from './project-map.js'
@@ -22,7 +39,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const baseDir = path.join(root, 'base')
 const recipesDir = path.join(root, 'recipes')
 const featuresDir = path.join(root, 'features')
-const applyFeatureScript = path.join(root, 'scripts', 'apply-feature.js')
+const applyFeatureScript = path.join(root, 'scripts', 'render-feature.js')
 
 function printUsage() {
   console.log(`Usage: node scripts/create-app.js
@@ -61,14 +78,19 @@ class GenerationInterruptedError extends Error {
 
 function createGenerationInterruptGuard() {
   let interruptedSignal = null
-  const handleSigint = () => { interruptedSignal ??= 'SIGINT' }
-  const handleSigterm = () => { interruptedSignal ??= 'SIGTERM' }
+  const handleSigint = () => {
+    interruptedSignal ??= 'SIGINT'
+  }
+  const handleSigterm = () => {
+    interruptedSignal ??= 'SIGTERM'
+  }
   process.on('SIGINT', handleSigint)
   process.on('SIGTERM', handleSigterm)
 
   return {
     throwIfInterrupted() {
-      if (interruptedSignal) throw new GenerationInterruptedError(interruptedSignal)
+      if (interruptedSignal)
+        throw new GenerationInterruptedError(interruptedSignal)
     },
     close() {
       process.off('SIGINT', handleSigint)
@@ -141,7 +163,7 @@ async function listFiles(dir, prefix = '') {
     const fullPath = path.join(dir, entry.name)
 
     if (entry.isDirectory()) {
-      files.push(...await listFiles(fullPath, relativePath))
+      files.push(...(await listFiles(fullPath, relativePath)))
     } else if (entry.isFile()) {
       files.push(relativePath.split(path.sep).join('/'))
     }
@@ -192,52 +214,19 @@ async function listRecipeNames() {
     .sort((left, right) => {
       const leftOrder = preferredOrder.get(left) ?? Number.MAX_SAFE_INTEGER
       const rightOrder = preferredOrder.get(right) ?? Number.MAX_SAFE_INTEGER
-      return leftOrder === rightOrder ? left.localeCompare(right) : leftOrder - rightOrder
+      return leftOrder === rightOrder
+        ? left.localeCompare(right)
+        : leftOrder - rightOrder
     })
 }
 
 function resolveFeatureOrder(selection, featureManifests) {
-  const resolved = []
-  const visiting = new Set()
-  const visited = new Set()
-
-  function visit(featureName, parent = selection.name) {
-    const manifest = featureManifests.get(featureName)
-    if (!manifest) {
-      throw new Error(`selection '${parent}' references unknown feature '${featureName}'`)
-    }
-
-    if (visiting.has(featureName)) {
-      throw new Error(`cyclic feature dependency involving '${featureName}'`)
-    }
-
-    if (visited.has(featureName)) return
-
-    visiting.add(featureName)
-    for (const dependency of manifest.dependsOn ?? []) {
-      visit(dependency, featureName)
-    }
-    visiting.delete(featureName)
-
-    visited.add(featureName)
-    resolved.push(manifest)
-  }
-
-  for (const featureName of selection.features) {
-    visit(featureName)
-  }
-
-  for (const feature of resolved) {
-    for (const conflict of feature.conflictsWith ?? []) {
-      if (visited.has(conflict)) {
-        throw new Error(
-          `feature '${feature.name}' conflicts with '${conflict}' in selection '${selection.name}'`
-        )
-      }
-    }
-  }
-
-  return resolved
+  const catalog = new Map(
+    [...featureManifests].map(([name, manifest]) => [name, { manifest }])
+  )
+  return resolveFeatures(selection.features, catalog).map((name) =>
+    featureManifests.get(name)
+  )
 }
 
 async function listRecipeCatalog(featureManifests) {
@@ -296,7 +285,11 @@ async function validateTargetDirectory(value) {
   return targetDir
 }
 
-async function createSelectionPreview(recipeName, optionalFeatures, featureManifests) {
+async function createSelectionPreview(
+  recipeName,
+  optionalFeatures,
+  featureManifests
+) {
   const recipe = await loadRecipe(recipeName)
   const recipeFeatures = resolveFeatureOrder(recipe, featureManifests).map(
     (feature) => feature.name
@@ -315,19 +308,11 @@ async function createSelectionPreview(recipeName, optionalFeatures, featureManif
     recipeFeatures,
     requestedFeatures: optionalFeatures,
     automaticFeatures: resolvedFeatures.filter(
-      (feature) => !recipeFeatureSet.has(feature) && !optionalFeatureSet.has(feature)
+      (feature) =>
+        !recipeFeatureSet.has(feature) && !optionalFeatureSet.has(feature)
     ),
     resolvedFeatures,
   }
-}
-
-function toPackageName(name) {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/_+/g, '-')
 }
 
 function toTitle(name) {
@@ -353,7 +338,10 @@ function normalizeLicense(value, optionName = '--license') {
   return normalizeTomlString(value, optionName, 'UNLICENSED')
 }
 
-function normalizeBundleIdentifierPrefix(value, optionName = '--bundle-prefix') {
+function normalizeBundleIdentifierPrefix(
+  value,
+  optionName = '--bundle-prefix'
+) {
   const prefix = String(value ?? 'com.local')
     .trim()
     .toLowerCase()
@@ -362,7 +350,9 @@ function normalizeBundleIdentifierPrefix(value, optionName = '--bundle-prefix') 
   if (!prefix) return 'com.local'
 
   if (!/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/.test(prefix)) {
-    throw new Error(`${optionName} must use reverse-DNS segments such as com.example`)
+    throw new Error(
+      `${optionName} must use reverse-DNS segments such as com.example`
+    )
   }
 
   return prefix
@@ -376,24 +366,16 @@ function normalizeWindowDimension(value, optionName, fallback) {
   const raw = String(value ?? fallback).trim()
   const parsed = Number.parseInt(raw, 10)
 
-  if (!Number.isInteger(parsed) || String(parsed) !== raw || parsed < 320 || parsed > 10000) {
+  if (
+    !Number.isInteger(parsed) ||
+    String(parsed) !== raw ||
+    parsed < 320 ||
+    parsed > 10000
+  ) {
     throw new Error(`${optionName} must be an integer between 320 and 10000`)
   }
 
   return String(parsed)
-}
-
-function normalizeAppName(rawName, optionName = '--name') {
-  const appName = toPackageName(rawName)
-  if (!appName) {
-    throw new Error(`${optionName} must contain at least one letter or number`)
-  }
-
-  if (!/^[a-z0-9][a-z0-9-]*$/.test(appName)) {
-    throw new Error(`${optionName} normalizes to invalid npm package name '${appName}'`)
-  }
-
-  return appName
 }
 
 function buildTemplateValues(rawName, options = {}) {
@@ -403,9 +385,19 @@ function buildTemplateValues(rawName, options = {}) {
   const title = toTitle(appName)
   const author = normalizeTomlString(options.author, '--author', 'you')
   const license = normalizeLicense(options.license)
-  const bundleIdentifierPrefix = normalizeBundleIdentifierPrefix(options.bundleIdentifierPrefix)
-  const windowWidth = normalizeWindowDimension(options.windowWidth, '--window-width', '1000')
-  const windowHeight = normalizeWindowDimension(options.windowHeight, '--window-height', '700')
+  const bundleIdentifierPrefix = normalizeBundleIdentifierPrefix(
+    options.bundleIdentifierPrefix
+  )
+  const windowWidth = normalizeWindowDimension(
+    options.windowWidth,
+    '--window-width',
+    '1000'
+  )
+  const windowHeight = normalizeWindowDimension(
+    options.windowHeight,
+    '--window-height',
+    '700'
+  )
   const packageManager = normalizePackageManagerOption(options.packageManager)
   const packageManagerPinnedSpec = packageManagerSpec(packageManager)
 
@@ -418,13 +410,18 @@ function buildTemplateValues(rawName, options = {}) {
     APP_TITLE: title,
     APP_WINDOW_HEIGHT: windowHeight,
     APP_WINDOW_WIDTH: windowWidth,
-    CARGO_LICENSE_LINE: license === 'UNLICENSED' ? '' : `license = "${license}"`,
+    CARGO_LICENSE_LINE:
+      license === 'UNLICENSED' ? '' : `license = "${license}"`,
     CARGO_CRATE_NAME: cargoCrateName,
     CARGO_NAME: appName,
     PACKAGE_MANAGER: packageManager,
-    PACKAGE_MANAGER_INSTALL_COMMAND: packageManagerInstallCommand(packageManager),
+    PACKAGE_MANAGER_INSTALL_COMMAND:
+      packageManagerInstallCommand(packageManager),
     PACKAGE_MANAGER_SPEC: packageManagerPinnedSpec,
-    PACKAGE_MANAGER_SETUP_COMMAND: packageManagerSetupCommand(packageManager, packageManagerPinnedSpec),
+    PACKAGE_MANAGER_SETUP_COMMAND: packageManagerSetupCommand(
+      packageManager,
+      packageManagerPinnedSpec
+    ),
   }
 }
 
@@ -442,7 +439,9 @@ function parseOptionalFeatureArgs(args) {
 }
 
 function normalizeSidebarOption(value) {
-  const sidebar = String(value ?? 'both').trim().toLowerCase()
+  const sidebar = String(value ?? 'both')
+    .trim()
+    .toLowerCase()
   if (!['left', 'right', 'both'].includes(sidebar)) {
     throw new Error('--sidebar must be one of: left, right, both')
   }
@@ -469,7 +468,10 @@ async function resolveCreateOptions(args, featureManifests) {
         },
         target: validateTargetDirectory,
         bundleIdentifierPrefix(value) {
-          return normalizeBundleIdentifierPrefix(value, 'Bundle identifier prefix')
+          return normalizeBundleIdentifierPrefix(
+            value,
+            'Bundle identifier prefix'
+          )
         },
         author(value) {
           return normalizeTomlString(value, 'Author', 'you')
@@ -485,7 +487,11 @@ async function resolveCreateOptions(args, featureManifests) {
         },
       },
       resolveSelection(recipeName, optionalFeatures) {
-        return createSelectionPreview(recipeName, optionalFeatures, featureManifests)
+        return createSelectionPreview(
+          recipeName,
+          optionalFeatures,
+          featureManifests
+        )
       },
     })
   }
@@ -498,7 +504,11 @@ async function resolveCreateOptions(args, featureManifests) {
     sidebar: args.sidebar,
     packageManager: optionFromArgs(args, 'package-manager', 'packageManager'),
     author: args.author,
-    bundleIdentifierPrefix: optionFromArgs(args, 'bundle-prefix', 'bundlePrefix'),
+    bundleIdentifierPrefix: optionFromArgs(
+      args,
+      'bundle-prefix',
+      'bundlePrefix'
+    ),
     windowWidth: optionFromArgs(args, 'window-width', 'windowWidth'),
     windowHeight: optionFromArgs(args, 'window-height', 'windowHeight'),
     license: args.license,
@@ -506,7 +516,9 @@ async function resolveCreateOptions(args, featureManifests) {
 }
 
 async function writeTextIfChanged(filePath, content) {
-  const current = (await pathExists(filePath)) ? await readFile(filePath, 'utf8') : null
+  const current = (await pathExists(filePath))
+    ? await readFile(filePath, 'utf8')
+    : null
   if (current !== content) {
     await writeFile(filePath, content)
   }
@@ -546,7 +558,11 @@ async function prepareGenerationTarget(targetDir, appName) {
   return stagingDir
 }
 
-async function publishGeneratedTarget(stagingDir, targetDir, throwIfInterrupted) {
+async function publishGeneratedTarget(
+  stagingDir,
+  targetDir,
+  throwIfInterrupted
+) {
   if (await pathExists(targetDir)) {
     try {
       await rmdir(targetDir)
@@ -582,7 +598,9 @@ function removeSidebarBlocks(source, side) {
   const sideName = side.toUpperCase()
   let updated = source
 
-  for (const marker of source.matchAll(new RegExp(`TAURI_CREATOR:SIDEBAR_${sideName}_START ([^\\s}*]+)`, 'g'))) {
+  for (const marker of source.matchAll(
+    new RegExp(`TAURI_CREATOR:SIDEBAR_${sideName}_START ([^\\s}*]+)`, 'g')
+  )) {
     const blockName = marker[1]
     updated = removeMarkedBlock(
       updated,
@@ -595,19 +613,17 @@ function removeSidebarBlocks(source, side) {
 }
 
 function removeRightSidebarFromMainWindow(source) {
-  return removeSidebarBlocks(source, 'right')
-    .replace(
-      'const MAIN_CONTENT_DEFAULT =\n  100 - LAYOUT.leftSidebar.default - LAYOUT.rightSidebar.default',
-      'const MAIN_CONTENT_DEFAULT = 100 - LAYOUT.leftSidebar.default'
-    )
+  return removeSidebarBlocks(source, 'right').replace(
+    'const MAIN_CONTENT_DEFAULT =\n  100 - LAYOUT.leftSidebar.default - LAYOUT.rightSidebar.default',
+    'const MAIN_CONTENT_DEFAULT = 100 - LAYOUT.leftSidebar.default'
+  )
 }
 
 function removeLeftSidebarFromMainWindow(source) {
-  return removeSidebarBlocks(source, 'left')
-    .replace(
-      'const MAIN_CONTENT_DEFAULT =\n  100 - LAYOUT.leftSidebar.default - LAYOUT.rightSidebar.default',
-      'const MAIN_CONTENT_DEFAULT = 100 - LAYOUT.rightSidebar.default'
-    )
+  return removeSidebarBlocks(source, 'left').replace(
+    'const MAIN_CONTENT_DEFAULT =\n  100 - LAYOUT.leftSidebar.default - LAYOUT.rightSidebar.default',
+    'const MAIN_CONTENT_DEFAULT = 100 - LAYOUT.rightSidebar.default'
+  )
 }
 
 function removeRightSidebarFromTitleBar(source) {
@@ -628,34 +644,69 @@ async function applySidebarOption(targetDir, sidebar) {
   const titleBarPath = path.join(layoutDir, 'LayoutTitleBar.tsx')
   const indexPath = path.join(layoutDir, 'index.ts')
   const uiStorePath = path.join(targetDir, 'src', 'store', 'ui-store.ts')
-  const uiStoreTestPath = path.join(targetDir, 'src', 'store', 'ui-store.test.ts')
+  const uiStoreTestPath = path.join(
+    targetDir,
+    'src',
+    'store',
+    'ui-store.test.ts'
+  )
 
   const mainWindow = await readFile(mainWindowPath, 'utf8')
   const titleBar = await readFile(titleBarPath, 'utf8')
   const index = await readFile(indexPath, 'utf8')
 
   if (sidebar === 'left') {
-    await writeTextIfChanged(mainWindowPath, removeRightSidebarFromMainWindow(mainWindow))
-    await writeTextIfChanged(titleBarPath, removeRightSidebarFromTitleBar(titleBar))
-    await writeTextIfChanged(indexPath, index.replace("export { RightSideBar } from './RightSideBar'\n", ''))
+    await writeTextIfChanged(
+      mainWindowPath,
+      removeRightSidebarFromMainWindow(mainWindow)
+    )
+    await writeTextIfChanged(
+      titleBarPath,
+      removeRightSidebarFromTitleBar(titleBar)
+    )
+    await writeTextIfChanged(
+      indexPath,
+      index.replace("export { RightSideBar } from './RightSideBar'\n", '')
+    )
     if (await pathExists(uiStorePath)) {
-      await writeTextIfChanged(uiStorePath, removeSidebarBlocks(await readFile(uiStorePath, 'utf8'), 'right'))
+      await writeTextIfChanged(
+        uiStorePath,
+        removeSidebarBlocks(await readFile(uiStorePath, 'utf8'), 'right')
+      )
     }
     if (await pathExists(uiStoreTestPath)) {
-      await writeTextIfChanged(uiStoreTestPath, removeSidebarBlocks(await readFile(uiStoreTestPath, 'utf8'), 'right'))
+      await writeTextIfChanged(
+        uiStoreTestPath,
+        removeSidebarBlocks(await readFile(uiStoreTestPath, 'utf8'), 'right')
+      )
     }
     await removePathIfExists(path.join(layoutDir, 'RightSideBar.tsx'))
     return
   }
 
-  await writeTextIfChanged(mainWindowPath, removeLeftSidebarFromMainWindow(mainWindow))
-  await writeTextIfChanged(titleBarPath, removeLeftSidebarFromTitleBar(titleBar))
-  await writeTextIfChanged(indexPath, index.replace("export { LeftSideBar } from './LeftSideBar'\n", ''))
+  await writeTextIfChanged(
+    mainWindowPath,
+    removeLeftSidebarFromMainWindow(mainWindow)
+  )
+  await writeTextIfChanged(
+    titleBarPath,
+    removeLeftSidebarFromTitleBar(titleBar)
+  )
+  await writeTextIfChanged(
+    indexPath,
+    index.replace("export { LeftSideBar } from './LeftSideBar'\n", '')
+  )
   if (await pathExists(uiStorePath)) {
-    await writeTextIfChanged(uiStorePath, removeSidebarBlocks(await readFile(uiStorePath, 'utf8'), 'left'))
+    await writeTextIfChanged(
+      uiStorePath,
+      removeSidebarBlocks(await readFile(uiStorePath, 'utf8'), 'left')
+    )
   }
   if (await pathExists(uiStoreTestPath)) {
-    await writeTextIfChanged(uiStoreTestPath, removeSidebarBlocks(await readFile(uiStoreTestPath, 'utf8'), 'left'))
+    await writeTextIfChanged(
+      uiStoreTestPath,
+      removeSidebarBlocks(await readFile(uiStoreTestPath, 'utf8'), 'left')
+    )
   }
   await removePathIfExists(path.join(layoutDir, 'LeftSideBar.tsx'))
 }
@@ -668,9 +719,13 @@ async function main() {
   }
 
   if (args.advanced) {
-    const combinedOptions = Object.keys(args).filter((key) => key !== 'advanced')
+    const combinedOptions = Object.keys(args).filter(
+      (key) => key !== 'advanced'
+    )
     if (combinedOptions.length > 0) {
-      fail(`--advanced cannot be combined with ${combinedOptions.map((key) => `--${key}`).join(', ')}`)
+      fail(
+        `--advanced cannot be combined with ${combinedOptions.map((key) => `--${key}`).join(', ')}`
+      )
     }
   }
 
@@ -678,10 +733,13 @@ async function main() {
   const options = await resolveCreateOptions(args, featureManifests)
 
   const isPrompted = args.advanced || Object.keys(args).length === 0
-  if (!options.name) fail(isPrompted ? 'app name is required' : 'missing required --name')
+  if (!options.name)
+    fail(isPrompted ? 'app name is required' : 'missing required --name')
 
   const values = buildTemplateValues(options.name, options)
-  const targetDir = path.resolve(options.target ?? path.join(process.cwd(), values.APP_NAME))
+  const targetDir = path.resolve(
+    options.target ?? path.join(process.cwd(), values.APP_NAME)
+  )
   const baseFiles = await listFiles(baseDir)
 
   if (baseFiles.length === 0) {
@@ -698,10 +756,13 @@ async function main() {
   if (!recipe && requestedFeatureNames.length === 0 && !args.advanced) {
     fail('missing required --recipe or --features')
   }
-  const allFeatures = resolveFeatureOrder({
-    name: recipe?.name ?? 'manual-features',
-    features: requestedFeatureNames,
-  }, featureManifests)
+  const allFeatures = resolveFeatureOrder(
+    {
+      name: recipe?.name ?? 'manual-features',
+      features: requestedFeatureNames,
+    },
+    featureManifests
+  )
   const resolvedFeatureNames = allFeatures.map((feature) => feature.name)
   const sidebar = normalizeSidebarOption(options.sidebar)
   if (args.sidebar && !resolvedFeatureNames.includes('ui-layout')) {
@@ -725,7 +786,11 @@ async function main() {
     recipe: recipe?.name ?? null,
     requestedFeatures: requestedFeatureNames,
     resolvedFeatures: resolvedFeatureNames,
-    recipeFeatures: recipe ? resolveFeatureOrder(recipe, featureManifests).map((feature) => feature.name) : [],
+    recipeFeatures: recipe
+      ? resolveFeatureOrder(recipe, featureManifests).map(
+          (feature) => feature.name
+        )
+      : [],
     optionalFeatures: optionalFeatureNames,
     options: {
       layout: {
@@ -762,32 +827,53 @@ async function main() {
     )
 
     for (const feature of allFeatures) {
-      execFileSync(process.execPath, [
-        applyFeatureScript,
-        '--target',
-        stagingDir,
-        '--feature',
-        feature.name,
-      ], {
-        cwd: root,
-        stdio: 'pipe',
-      })
+      execFileSync(
+        process.execPath,
+        [applyFeatureScript, '--target', stagingDir, '--feature', feature.name],
+        {
+          cwd: root,
+          stdio: 'pipe',
+        }
+      )
       generationInterrupt.throwIfInterrupted()
     }
 
     const statePath = path.join(stagingDir, '.tauri-creator.json')
     const finalState = await readJson(statePath)
-    await applySidebarOption(stagingDir, finalState.options?.layout?.sidebar ?? 'both')
+    await syncSettingsContributions(
+      stagingDir,
+      finalState,
+      await loadFeatureCatalog(root)
+    )
+    await renderRegistrations(
+      stagingDir,
+      finalState,
+      await loadFeatureCatalog(root)
+    )
+    await renderCapabilities(
+      stagingDir,
+      finalState,
+      await loadFeatureCatalog(root)
+    )
+    await syncCheckScripts(stagingDir, finalState)
+    await applySidebarOption(
+      stagingDir,
+      finalState.options?.layout?.sidebar ?? 'both'
+    )
     // Feature files and JSON patches are applied after the base template pass.
     await replaceTemplatesInTree(stagingDir, values)
-    await writeFile(
-      statePath,
-      `${JSON.stringify(finalState, null, 2)}\n`
-    )
+    await writeFile(statePath, `${JSON.stringify(finalState, null, 2)}\n`)
     await writeFile(
       path.join(stagingDir, 'PROJECT_MAP.md'),
       renderProjectMap(finalState, featureManifests)
     )
+
+    for (const relative of await listFiles(stagingDir)) {
+      if (relative.endsWith('.json')) {
+        const file = path.join(stagingDir, relative)
+        await writeFile(file, formatJson(await readJson(file)))
+      }
+    }
 
     generationInterrupt.throwIfInterrupted()
     await publishGeneratedTarget(
@@ -815,13 +901,15 @@ async function main() {
   console.log(`Created ${values.APP_NAME} at ${targetDir}`)
   console.log(`Integration mode: ${integrationMode}`)
   console.log(`Recipe: ${recipe?.name ?? 'none'}`)
-  console.log(`Requested features: ${optionalFeatureNames.length === 0 && !recipe ? 'none' : requestedFeatureNames.join(', ') || 'none'}`)
+  console.log(
+    `Requested features: ${optionalFeatureNames.length === 0 && !recipe ? 'none' : requestedFeatureNames.join(', ') || 'none'}`
+  )
   console.log(`Resolved features: ${resolvedFeatureNames.join(', ') || 'none'}`)
   console.log(`Enabled features: ${formatFeatureList(allFeatures)}`)
   console.log(`Sidebar layout: ${sidebar}`)
   console.log(`Package manager: ${values.PACKAGE_MANAGER}`)
   console.log(
-    `Next: cd ${quoteShellArgument(targetDir)} && ${values.PACKAGE_MANAGER} install && ${values.PACKAGE_MANAGER} run check:all`
+    `Next: cd ${quoteShellArgument(targetDir)} && ${values.PACKAGE_MANAGER} install ${resolvedFeatureNames.includes('specta-bindings') ? `&& ${values.PACKAGE_MANAGER} run bindings:generate ` : ''}&& ${values.PACKAGE_MANAGER} run check:all`
   )
 }
 

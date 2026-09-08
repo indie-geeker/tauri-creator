@@ -34,5 +34,23 @@
     "file": "src-tauri/src/lib.rs",
     "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
     "insert": "            infrastructure::database::delete_note,"
+  },
+  {
+    "id": "sqlite-init",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_SETUP",
+    "insert": "            infrastructure::database::init_database(app)?;"
+  },
+  {
+    "id": "sqlite-shutdown",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "                // TAURI_CREATOR:TAURI_EXIT_CLEANUP",
+    "insert": "                infrastructure::database::shutdown_database(app_handle);"
+  },
+  {
+    "id": "sqlite-get-note-command",
+    "file": "src-tauri/src/lib.rs",
+    "marker": "            // TAURI_CREATOR:TAURI_COMMANDS",
+    "insert": "            infrastructure::database::get_note,"
   }
 ]

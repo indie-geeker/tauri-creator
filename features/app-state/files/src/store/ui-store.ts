@@ -10,7 +10,6 @@ interface UIState {
   // TAURI_CREATOR:SIDEBAR_RIGHT_END interface
   commandPaletteOpen: boolean
   preferencesOpen: boolean
-  lastQuickPaneEntry: string | null
 
   // TAURI_CREATOR:SIDEBAR_LEFT_START interface-actions
   toggleLeftSidebar: () => void
@@ -24,7 +23,6 @@ interface UIState {
   setCommandPaletteOpen: (open: boolean) => void
   togglePreferences: () => void
   setPreferencesOpen: (open: boolean) => void
-  setLastQuickPaneEntry: (text: string) => void
   setSquareCorners: (enabled: boolean) => void
 }
 
@@ -39,7 +37,6 @@ export const useUIStore = create<UIState>()(
       // TAURI_CREATOR:SIDEBAR_RIGHT_END state
       commandPaletteOpen: false,
       preferencesOpen: false,
-      lastQuickPaneEntry: null,
 
       // TAURI_CREATOR:SIDEBAR_LEFT_START actions
       toggleLeftSidebar: () =>
@@ -92,9 +89,6 @@ export const useUIStore = create<UIState>()(
 
       setPreferencesOpen: open =>
         set({ preferencesOpen: open }, undefined, 'setPreferencesOpen'),
-
-      setLastQuickPaneEntry: text =>
-        set({ lastQuickPaneEntry: text }, undefined, 'setLastQuickPaneEntry'),
 
       setSquareCorners: (enabled: boolean) => {
         document.documentElement.classList.toggle('square-corners', enabled)

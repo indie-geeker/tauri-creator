@@ -8,7 +8,7 @@
     "category": "Delivery"
   },
   "dependsOn": [
-    "project-governance"
+    "specta-bindings"
   ],
   "conflictsWith": [],
   "npmDependencies": [
@@ -20,7 +20,8 @@
   "files": [
     "src/features/updater",
     "src-tauri/src/features/updater.rs",
-    "docs/features/updater.md"
+    "docs/features/updater.md",
+    "src-tauri/tests/fixtures"
   ],
   "tauriCommands": [
     "get_updater_status"
