@@ -19,7 +19,9 @@
     "src/components/layout"
   ],
   "tauriCommands": [],
-  "capabilities": [],
+  "capabilities": [
+    "core:window:allow-start-dragging"
+  ],
   "qualityChecks": [],
   "removeHints": [
     "Remove `<MainWindow>` from `src/App.tsx`.",

@@ -24,7 +24,7 @@
     "check:scaffold": "node scripts/test-scaffold.js",
     "check:manifests": "node scripts/check-manifests.js",
     "check:manifest-tests": "node scripts/test-check-manifests.js",
-    "check:fast": "node scripts/check-manifests.js && node scripts/test-check-manifests.js && node scripts/test-generate-docs.js && node scripts/test-verify-generated-app.js && node scripts/test-generated-output-boundary.js && node scripts/test-branding.js && node scripts/test-prompts.js && node scripts/test-create-app.js && node scripts/test-apply-feature.js && node scripts/test-remove-feature.js && node scripts/test-scaffold.js && node scripts/test-generated-checks.js && node scripts/test-feature-roundtrip.js && node scripts/test-settings-contributions.js && node scripts/test-generated-registrations.js && node scripts/test-capabilities.js && node scripts/test-feature-matrix.js && node scripts/test-output-ownership.js && node scripts/test-release-version.js",
+    "check:fast": "node scripts/check-manifests.js && node scripts/test-check-manifests.js && node scripts/test-generate-docs.js && node scripts/test-verify-generated-app.js && node scripts/test-generated-output-boundary.js && node scripts/test-branding.js && node scripts/test-prompts.js && node scripts/test-create-app.js && node scripts/test-apply-feature.js && node scripts/test-remove-feature.js && node scripts/test-scaffold.js && node scripts/test-generated-checks.js && node scripts/test-feature-roundtrip.js && node scripts/test-settings-contributions.js && node scripts/test-generated-registrations.js && node scripts/test-capabilities.js && node scripts/test-feature-matrix.js && node scripts/test-output-ownership.js && node scripts/test-release-version.js && node scripts/test-agent-guidance.js",
     "check:generated:npm": "node scripts/verify-generated-app.js --package-manager npm",
     "check:generated:pnpm": "node scripts/verify-generated-app.js --recipe starter --package-manager pnpm",
     "check:generated:strict": "node scripts/verify-generated-app.js --recipe full --package-manager npm --strict",
@@ -43,7 +43,8 @@
     "check:feature-matrix:pnpm": "node scripts/verify-feature-matrix.js --package-manager pnpm --only custom-titlebar+i18n,preferences+ui-shadcn,ui-layout+quick-pane,updater+updater-release-workflow",
     "check:generated:pnpm:full": "node scripts/verify-generated-app.js --recipe full --package-manager pnpm --strict",
     "check:ownership": "node scripts/test-output-ownership.js",
-    "check:release-version": "node scripts/test-release-version.js"
+    "check:release-version": "node scripts/test-release-version.js",
+    "check:agent-guidance": "node scripts/test-agent-guidance.js"
   },
   "engines": {
     "node": "^22.13.0 || >=24.0.0"

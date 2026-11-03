@@ -529,7 +529,7 @@ async function writePackageManagerConfig(targetDir, packageManager) {
 
   await writeFile(
     path.join(targetDir, 'pnpm-workspace.yaml'),
-    "allowBuilds:\n  '@ast-grep/cli': true\n"
+    "allowBuilds:\n  '@ast-grep/cli': true\n  esbuild: true\n"
   )
 }
 

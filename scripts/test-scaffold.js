@@ -225,9 +225,9 @@ try {
   assert(
     ciUsesPnpmAction ||
       ciUsesCorepackPnpm ||
-      (ciWorkflow.indexOf('npm install --global npm@11.6.2 pnpm@11.7.0') <
+      (ciWorkflow.indexOf('npm install --global npm@11.6.2 pnpm@12.9.1') <
         pnpmGeneratedCheckIndex &&
-        ciWorkflow.includes('npm install --global npm@11.6.2 pnpm@11.7.0')),
+        ciWorkflow.includes('npm install --global npm@11.6.2 pnpm@12.9.1')),
     'CI should install or activate pnpm before running generated pnpm verification'
   )
   assert(

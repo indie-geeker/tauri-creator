@@ -22,7 +22,7 @@ jobs:
           toolchain: 1.92.0
           components: rustfmt, clippy
       - name: Install pinned package managers
-        run: npm install --global npm@11.6.2 pnpm@11.7.0
+        run: npm install --global npm@11.6.2 pnpm@12.9.1
       - run: npm ci
       - run: npm run check:fast
       - run: npm run check:generated:npm
@@ -52,7 +52,7 @@ jobs:
       - if: runner.os == 'Linux'
         name: Install Tauri Linux build dependencies
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf
-      - run: npm install --global npm@11.6.2 pnpm@11.7.0
+      - run: npm install --global npm@11.6.2 pnpm@12.9.1
       - run: npm ci
       - run: node scripts/verify-generated-app.js --recipe starter --package-manager npm
       - run: node scripts/verify-generated-app.js --recipe full --package-manager npm

@@ -2,7 +2,7 @@ export const defaultPackageManager = 'npm'
 export const supportedPackageManagers = ['npm', 'pnpm']
 
 const fallbackVersions = {
-  pnpm: '11.7.0',
+  pnpm: '12.9.1',
   npm: '11.6.2',
 }
 

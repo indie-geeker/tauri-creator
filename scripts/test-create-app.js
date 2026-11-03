@@ -1162,8 +1162,8 @@ try {
     'utf8'
   )
   assert(
-    pnpmWorkspace === "allowBuilds:\n  '@ast-grep/cli': true\n",
-    'pnpm generated apps should approve the required @ast-grep/cli build script'
+    pnpmWorkspace === "allowBuilds:\n  '@ast-grep/cli': true\n  esbuild: true\n",
+    'pnpm generated apps should approve the required @ast-grep/cli and esbuild build scripts'
   )
 
   runCreateApp([
@@ -1194,7 +1194,7 @@ try {
     'pnpm generated release workflow should use pnpm dependency cache'
   )
   assert(
-    pnpmFullWorkflow.includes('npm install --global pnpm@11.7.0'),
+    pnpmFullWorkflow.includes('npm install --global pnpm@12.9.1'),
     'pnpm generated release workflow should activate the pinned pnpm version'
   )
   assert(

@@ -77,6 +77,11 @@ project starting point.
 
 ### Automation
 
+For AI-assisted creation, install the personal skill described in
+[AI usage](docs/ai/USAGE.md). Each generated app includes `AGENTS.md` and a
+feature-aware `PROJECT_MAP.md` for continued development. Generator maintenance
+instructions live in this repository's [AGENTS.md](AGENTS.md).
+
 Explicit flags remain available for scripts and CI; they are not commands you
 need to memorize for normal use:
 
@@ -173,7 +178,7 @@ regeneration is explicit. Minimal apps without Specta omit that step.
 
 The supported engine range is Node `^22.13.0 || >=24.0.0`, with representative
 checks on 22.13.0 and 24.11.1. Package managers are pinned to npm 11.6.2 / pnpm
-11.7.0, and generated Rust toolchains to 1.92.0.
+12.9.1, and generated Rust toolchains to 1.92.0.
 
 - [Quality gates and independent matrix](docs/QUALITY_GATE.md)
 - [Compatibility and safe feature changes](docs/TEMPLATE_COMPATIBILITY.md)

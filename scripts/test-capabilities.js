@@ -18,6 +18,11 @@ try {
   )
   assert.deepEqual(main.windows, ['main'])
   assert.deepEqual(quick.windows, ['quick-pane'])
+  assert.ok(
+    main.permissions.includes('core:window:allow-start-dragging'),
+    'Full layout must allow dragging the main window titlebar'
+  )
+  assert.ok(!quick.permissions.includes('core:window:allow-start-dragging'))
   assert.ok(main.permissions.includes('allow-patch-preferences'))
   assert.ok(!quick.permissions.includes('allow-patch-preferences'))
   assert.ok(!quick.permissions.includes('updater:default'))

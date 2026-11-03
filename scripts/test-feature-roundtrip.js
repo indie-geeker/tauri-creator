@@ -13,6 +13,15 @@ async function change(f, action, feature) {
     feature,
   ])
 }
+async function canDragMainWindow(f) {
+  const capability = JSON.parse(
+    await readFile(
+      path.join(f.target, 'src-tauri/capabilities/main.json'),
+      'utf8'
+    )
+  )
+  return capability.permissions.includes('core:window:allow-start-dragging')
+}
 for (const feature of ['dx-tools', 'ui-layout', 'ui-shadcn']) {
   const f = await createGeneratedFixture({ features: ['ui-tailwind'] })
   try {
@@ -22,8 +31,22 @@ for (const feature of ['dx-tools', 'ui-layout', 'ui-shadcn']) {
     const config = JSON.parse(
       await readFile(path.join(f.target, 'src-tauri/tauri.conf.json'), 'utf8')
     )
+    if (feature === 'ui-layout')
+      assert.equal(await canDragMainWindow(f), false)
     assert.equal((await change(f, 'apply', feature)).exitCode, 0)
+    if (feature === 'ui-layout')
+      assert.equal(
+        await canDragMainWindow(f),
+        true,
+        'Layout enables titlebar dragging'
+      )
     assert.equal((await change(f, 'remove', feature)).exitCode, 0)
+    if (feature === 'ui-layout')
+      assert.equal(
+        await canDragMainWindow(f),
+        false,
+        'Removing layout revokes dragging'
+      )
     const after = JSON.parse(
       await readFile(path.join(f.target, 'package.json'), 'utf8')
     )
